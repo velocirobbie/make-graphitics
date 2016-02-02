@@ -26,4 +26,4 @@ print bulk.system_size(lattice_dimensions)
 
 output = Writer(coords)
 output.write_xyz('bulk.xyz','bulk graphite')
-output.write_lammps(bulk.system_size(lattice_dimensions),'in.bulk')
+output.write_lammps(bulk.system_size(lattice_dimensions),'data.bulk')

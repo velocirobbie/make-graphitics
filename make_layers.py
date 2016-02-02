@@ -26,4 +26,4 @@ print layers.system_size(lattice_dimensions)
 
 output = Writer(coords)
 output.write_xyz('layers.xyz','layers of graphite')
-output.write_lammps(layers.system_size(lattice_dimensions),'in.layers')
+output.write_lammps(layers.system_size(lattice_dimensions),'data.layers')

@@ -26,4 +26,4 @@ print sheet.system_size(lattice_dimensions)
 
 output = Writer(coords)
 output.write_xyz('graphene.xyz','graphene')
-output.write_lammps(sheet.system_size(lattice_dimensions),'in.graphene')
+output.write_lammps(sheet.system_size(lattice_dimensions),'data.graphene')

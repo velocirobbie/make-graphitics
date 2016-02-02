@@ -16,7 +16,7 @@ class Writer(object):
             print 'Coords written to '+str(filename)
 
     def write_lammps(
-            self,system_size,filename='in.lammps',system_name='comment line'):
+            self,system_size,filename='data.lammps',system_name='comment line'):
         with open(filename,'w') as outfile:
             outfile.write('# '+ system_name +'\n \n')
             outfile.write(str(len(self.coords))+' atoms \n \n')
