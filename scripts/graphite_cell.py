@@ -30,3 +30,13 @@ class Graphite(object):
         C8 = [cos_CC, sin_CC, layer_gap]
         cell_coords = np.array([C1,C2,C3,C4,C5,C6,C7,C8])
         return cell_coords
+
+    def orthorhombic_ABgraphite_assign_molecule(self,lattice_dimensions):
+        unit_cell_molecule_label = [1,1,1,1,2,2,2,2]
+        molecule_labels = []
+        for x in range(lattice_dimensions[0]):
+             for y in range(lattice_dimensions[1]):
+                 for z in range(lattice_dimensions[2]):
+                     labels = np.array(unit_cell_molecule_label)+z
+                     molecule_labels.append(labels)
+        return molecule_labels
