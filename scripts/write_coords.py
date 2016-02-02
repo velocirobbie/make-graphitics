@@ -1,10 +1,11 @@
 import os
 
 class Writer(object):
-    def __init__(self, coords):
+    def __init__(self, coords, molecule_labels):
         # Takes a numpy 3xN array of atom coordinates and outputs
         # them in different formats for viewing
         self.coords = coords
+        self.molecule = molecule_labels
 
     def write_xyz(
             self,filename='out.xyz',system_name='comment line'):
@@ -17,9 +18,10 @@ class Writer(object):
 
     def write_lammps(
             self,system_size,filename='data.lammps',system_name='comment line'):
+        # atom_type full
         with open(filename,'w') as outfile:
             outfile.write(
-                    '# '+ system_name +
+                    '# '+ system_name +'\n' +
                     str(len(self.coords)) +' atoms \n' 
                     '\n'
                     '1 atom types \n' 
@@ -31,7 +33,7 @@ class Writer(object):
                     'Masses \n'
                     '\n'
                     '1 12.01 \n'
-                    '/n'
+                    '\n'
                     'Pair Coeffs \n' 
                     '\n'
                     '1  0.1     3.56 \n' 
@@ -40,11 +42,16 @@ class Writer(object):
                     '\n'
                     )
             
-            i=1
-            for atom in self.coords:
-                outfile.write(str(i)+'\t 1 1 0 '+str(atom[0])+'\t '+str(atom[1])+'\t '+str(atom[2])+' \n')
-                i+=1
-            
-            print 'Coords written to '+str(filename)
+            for i in range(len(self.coords)):
+                outfile.write(
+                        str(i+1)+'\t ' +                  # atom ID
+                        str(self.molecule[i]) +         # molecule ID
+                        ' 1'                            # atom type
+                        ' 0 '+                           # atom charge
+                        str(self.coords[i][0])+' \t' +  # x
+                        str(self.coords[i][1])+' \t' +  # y
+                        str(self.coords[i][2])+' \n'    # z
+                        )            
+            print 'Coords written to '+filename
 
 
