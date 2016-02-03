@@ -1,6 +1,7 @@
 crystal:
     CC: 1.421
     layer_gap: 3.354
+
 system:
-    vdw_cutoff: 10.0
+    vdw_cutoff: 12.0
     N_layers: 1

@@ -34,10 +34,6 @@ class Writer(object):
                     '\n'
                     '1 12.01 \n'
                     '\n'
-                    'Pair Coeffs \n' 
-                    '\n'
-                    '1  0.1     3.56 \n' 
-                    '\n'
                     'Atoms \n'
                     '\n'
                     )
