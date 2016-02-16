@@ -14,7 +14,8 @@ graphite = Graphite(CC,layer_gap)
 bulk = Lattice(graphite.cell_shape())
 
 cell_coords = graphite.cell_coords()
-lattice_dimensions = bulk.lattice_size_vdw(vdw_cutoff)
+#lattice_dimensions = bulk.lattice_size_vdw(vdw_cutoff)
+lattice_dimensions = bulk.lattice_size_layers(vdw_cutoff,N_layers)
 lattice_points = bulk.create_lattice_points(lattice_dimensions)
 coords = bulk.cell_onto_lattice(cell_coords,lattice_points)
 molecule_labels = graphite.assign_molecules(lattice_dimensions)
@@ -30,5 +31,5 @@ print system_size
 
 system_size[2] = 70
 
-output = Shifter(coords,molecule_labels,8,'lammps',system_size)
-output.z_shift(12,13,1)
+output = Shifter(coords,molecule_labels,2,'lammps',system_size)
+output.in_plane_shift([1,0],0,3.0,0.02)

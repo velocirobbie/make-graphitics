@@ -10,12 +10,13 @@ vdw_cutoff = config['system']['vdw_cutoff']
 N_layers = config['system']['N_layers']
 
 graphite = Graphite(CC,layer_gap)
-layers = Lattice(graphite.orthorhombic_ABgraphite_shape())
+layers = Lattice(graphite.cell_shape())
 
-cell_coords = graphite.orthorhombic_ABgraphite_coords()
+cell_coords = graphite.cell_coords()
 lattice_dimensions = layers.lattice_size_layers(vdw_cutoff,N_layers)
 lattice_points = layers.create_lattice_points(lattice_dimensions)
 coords = layers.cell_onto_lattice(cell_coords,lattice_points)
+molecule_lables = graphite.assign_molecules(lattice_dimensions)
 
 print 'Cell dimensions:'
 print graphite.orthorhombic_ABgraphite_shape()

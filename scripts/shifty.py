@@ -17,7 +17,15 @@ class Shifter(object):
         for shift in shift_range:
             shifted_coords = self.move_molecule(0,0,shift)
             self.write_shifted_coords(shifted_coords,shift)
-            
+    
+    def in_plane_shift(self,direction,start,end,step):
+        # direction form [x,y] - should be a unit vector
+        shift_range = np.arange(start,end,step)
+        for shift in shift_range:
+            shifted_coords = self.move_molecule(
+                    shift*direction[0],shift*direction[1],0)
+            self.write_shifted_coords(shifted_coords,shift)
+
     def move_molecule(self,x_shift,y_shift,z_shift):
         new_coords = np.empty(np.shape(self.coords))
         for i in range(len(self.coords)):
