@@ -1,6 +1,7 @@
 from scripts.lattice import Lattice
 from scripts.graphite_cell import Graphite
 from scripts.write_coords import Writer
+from scripts.connector  import Connector
 import yaml
 
 config = yaml.load(open('config.yaml'))
@@ -18,6 +19,11 @@ lattice_points = bulk.create_lattice_points(lattice_dimensions)
 coords = bulk.cell_onto_lattice(cell_coords,lattice_points)
 molecule_labels = graphite.assign_molecules(lattice_dimensions)
 
+connect = Connector()
+bonds = connect.graphite_bonds(lattice_dimensions)
+angles = connect.angles(bonds)
+torsions = connect.torsions(bonds)
+
 print 'Cell dimensions:'
 print graphite.cell_shape()
 print 'Lattice structure:'
@@ -25,6 +31,6 @@ print bulk.lattice_size_vdw(vdw_cutoff)
 print 'System size:'
 print bulk.system_size(lattice_dimensions)
 
-output = Writer(coords,molecule_labels)
-output.write_xyz('bulk.xyz','bulk graphite')
+output = Writer(coords,molecule_labels,bonds,angles,torsions,'bulk graphite')
+output.write_xyz('bulk.xyz')
 output.write_lammps(bulk.system_size(lattice_dimensions),'data.bulk')

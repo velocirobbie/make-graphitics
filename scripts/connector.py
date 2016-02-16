@@ -17,16 +17,18 @@ class Connector(object):
         internal_bonds = np.array([[1,2],[2,3],[3,4],
                                    [5,6],[6,7],[7,8]])
         bonds = np.empty((0,2))
-       
+        # loop through all cells
         for x in range(lattice_dimensions[0]):
          for y in range(lattice_dimensions[1]):
           for z in range(lattice_dimensions[2]):
             cell_position = [x,y,z]
-            xcell_position,ycell_position,xycell_position = find_adjacent_cells(cell_position,lattice_dimensions)
+            xcell_position,ycell_position,xycell_position = (
+             find_adjacent_cells(cell_position,lattice_dimensions))
             
+            # Add bonds within cell
             i = self.index_cell([x,y,z],lattice_dimensions,8)
             bonds = np.vstack((bonds,internal_bonds+i))
-
+            # Add bonds that cross cell boundries
             bonds = self.add_cross_bond(lattice_dimensions,
                     xcell_position,[3,2],bonds,i)
             bonds = self.add_cross_bond(lattice_dimensions,
@@ -45,10 +47,9 @@ class Connector(object):
 
     def angles(self,bonds):
         angles = np.empty((0,3))
-        N = int(np.amax(bonds))
+        N = int(np.amax(bonds)) # Number of atoms
         
-        for centre in range(1,N):
-            connections = find_connections(bonds,centre)
+        for centre in range(1,N+1):
             neighbours = find_neighbours(bonds,centre)
             for i in range(len(neighbours)):
                 for j in range(i+1,len(neighbours)):
