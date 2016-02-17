@@ -16,7 +16,7 @@ class Connector(object):
     def graphite_bonds(self,lattice_dimensions):
         internal_bonds = np.array([[1,2],[2,3],[3,4],
                                    [5,6],[6,7],[7,8]])
-        bonds = np.empty((0,2))
+        bonds = np.empty((0,2),dtype=int)
         # loop through all cells
         for x in range(lattice_dimensions[0]):
          for y in range(lattice_dimensions[1]):
@@ -46,7 +46,7 @@ class Connector(object):
         return bonds
 
     def angles(self,bonds):
-        angles = np.empty((0,3))
+        angles = np.empty((0,3),dtype=int)
         N = int(np.amax(bonds)) # Number of atoms
         
         for centre in range(1,N+1):
@@ -58,7 +58,7 @@ class Connector(object):
         return angles
 
     def torsions(self,bonds):
-        torsions = np.empty((0,4))
+        torsions = np.empty((0,4),dtype=int)
         for bond in bonds:
             neighbours1 = find_neighbours(bonds,bond[0])
             neighbours1.remove(bond[1])
