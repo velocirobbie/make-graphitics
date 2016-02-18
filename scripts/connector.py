@@ -15,7 +15,7 @@ class Connector(object):
 
     def graphite_bonds(self,lattice_dimensions):
         internal_bonds = np.array([[1,2],[2,3],[3,4],
-                                   [5,6],[6,7],[7,8]])
+                                   [5,6],[6,7],[8,5]])
         bonds = np.empty((0,2),dtype=int)
         # loop through all cells
         for x in range(lattice_dimensions[0]):
@@ -41,7 +41,7 @@ class Connector(object):
             bonds = self.add_cross_bond(lattice_dimensions,
                     xcell_position,[8,5],bonds,i)
             bonds = self.add_cross_bond(lattice_dimensions,
-                    ycell_position,[8,5],bonds,i)
+                    ycell_position,[7,8],bonds,i)
 
         return bonds
 

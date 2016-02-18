@@ -35,13 +35,13 @@ class Writer(object):
             if len(self.angles): outfile.write(
                     str(len(self.angles)) +' angles \n')
             if len(self.torsions): outfile.write(
-                    str(len(self.torsions))+' torsions \n')
+                    str(len(self.torsions))+' dihedrals \n')
             outfile.write('\n'
                     '1 atom types \n')
             if len(self.bonds): outfile.write('1 bond types \n')
             if len(self.angles): outfile.write('1 angle types \n')
             if len(self.torsions): outfile.write(
-                    '1 torsion types \n')
+                    '1 dihedral types \n')
             outfile.write('\n'
                     '0.0 \t'+str(system_size[0])+'\t xlo xhi \n'
                     '0.0 \t'+str(system_size[1])+'\t ylo yhi \n'
@@ -77,8 +77,6 @@ class Writer(object):
                             )
              
             if len(self.angles):
-                print self.angles
-                print self.angles.shape
                 outfile.write('\n Angles \n \n')
                 for i in range(len(self.angles)):
                     outfile.write(
@@ -90,7 +88,7 @@ class Writer(object):
                             )
             
             if len(self.torsions):
-                outfile.write('\n Torsions \n \n')
+                outfile.write('\n Dihedrals \n \n')
                 for i in range(len(self.torsions)):
                     outfile.write(
                             str(i+1)+'\t'+
