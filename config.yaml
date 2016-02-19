@@ -1,6 +1,18 @@
 crystal:
     CC: 1.421
     layer_gap: 3.354
+OPLS:
+    CC: 1.4148         # OPLS
+    layer_gap: 3.3827
+AMBER:
+    CC: 1.4293          # AMBER
+    layer_gap: 3.3693
+COMPASS:
+    CC: 1.3913          # COMPASS
+    layer_gap: 3.3548
+Driedling:
+    CC: 1.3838          # Driedling
+    layer_gap:  3.3955
 
 system:
     vdw_cutoff: 12.0

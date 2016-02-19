@@ -2,7 +2,7 @@ import os
 
 class Writer(object):
     def __init__(self, coords, molecule_labels=[],
-            bonds=[],angles=[],torsions=[],
+            bonds=[],angles=[],torsions=[],box_dimensions=[],
             system_name='comment line'):
         # Takes a numpy 3xN array of atom coordinates and outputs
         # them in different formats for viewing/modelling
@@ -11,6 +11,7 @@ class Writer(object):
         self.bonds = bonds
         self.angles = angles
         self.torsions = torsions
+        self.size = box_dimensions
         self.system_name = system_name
         
     def write_xyz(
@@ -24,7 +25,7 @@ class Writer(object):
             print 'Coords written to '+str(filename)
 
     def write_lammps(
-            self,system_size,filename='data.lammps'):
+            self,filename='data.lammps'):
         # atom_type full
         with open(filename,'w') as outfile:
             outfile.write(
@@ -43,9 +44,9 @@ class Writer(object):
             if len(self.torsions): outfile.write(
                     '1 dihedral types \n')
             outfile.write('\n'
-                    '0.0 \t'+str(system_size[0])+'\t xlo xhi \n'
-                    '0.0 \t'+str(system_size[1])+'\t ylo yhi \n'
-                    '0.0 \t'+str(system_size[2])+'\t zlo zhi \n'
+                    '0.0 \t'+str(self.size[0])+'\t xlo xhi \n'
+                    '0.0 \t'+str(self.size[1])+'\t ylo yhi \n'
+                    '0.0 \t'+str(self.size[2])+'\t zlo zhi \n'
                     '\n'
                     'Masses \n'
                     '\n'

@@ -2,15 +2,20 @@ import numpy as np
 from write_coords import Writer
 
 class Shifter(object):
-    def __init__(
-            self,coords,molecule_labels,target,
-            output_style,cell_dimensions):
+    def __init__(self, target, output_style,
+            coords, molecule_labels=[],
+            bonds=[],angles=[],torsions=[],box_dimensions=[],
+            system_name='comment line'):
         
         self.coords = coords
         self.mol = molecule_labels
         self.target = target
         self.output_style = output_style
-        self.cell = cell_dimensions
+        
+        self.data = [coords,molecule_labels,bonds,angles,torsions,box_dimensions]
+        
+        if target == 'top':
+            self.target = np.amax(molecule_labels)
 
     def z_shift(self,start,end,step):
         shift_range = np.arange(start,end,step)
@@ -38,9 +43,11 @@ class Shifter(object):
         return new_coords
 
     def write_shifted_coords(self,shifted_coords,shift):
-        writer = Writer(shifted_coords,self.mol)
+        temp_data = self.data
+        temp_data[0] = shifted_coords
+        writer = Writer(*temp_data)
         if self.output_style == 'xyz':
-            writer.write_xyz('shift_'+str(shift)+'.xyz',str(shift))
+            writer.write_xyz('shift_'+str(shift)+'.xyz')
         elif self.output_style == 'lammps':
-            writer.write_lammps(self.cell,'data.shift_'+str(shift))
+            writer.write_lammps('data.shift_'+str(shift))
 
