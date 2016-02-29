@@ -45,6 +45,36 @@ class Connector(object):
 
         return bonds
 
+    def coronene_bonds(self,lattice_dimensions):
+        segment_bonds = np.array([[1,2],[2,3],[2,4],[3,5],[4,6],
+                                  [1,7],[3,10]])
+        molecule_bonds = np.empty((0,2),dtype=int)
+        for i in range(6):
+            molecule_bonds = np.vstack(
+                    (molecule_bonds,segment_bonds+(6*i)))
+        molecule_bonds[-2][1] = 1
+        molecule_bonds[-1][1] = 4
+                
+        bonds = np.empty((0,2),dtype=int)
+        for z in range(lattice_dimensions[2]):
+            bonds = np.vstack((bonds,molecule_bonds+(z*36)))
+        
+        return bonds 
+
+    def bond_labels(self,atom_labels,bonds,bond_types):
+        bond_labels = []
+        for bond in bonds:
+            atoms = [atom_labels[bond[0]-1],
+                     atom_labels[bond[1]-1]]
+            for i in range(len(bond_types)):
+                flag1 = bond_types[i]==atoms
+                flag2 = bond_types[i]==list(reversed(atoms)) 
+                if flag1 or flag2: 
+                    bond_labels.append(i+1)
+        if len(bond_labels) != len(bonds):
+            assert ValueError('angle assignment went wrong')
+        return bond_labels
+
     def angles(self,bonds):
         angles = np.empty((0,3),dtype=int)
         N = int(np.amax(bonds)) # Number of atoms
@@ -56,6 +86,21 @@ class Connector(object):
                     angle = [neighbours[i],centre,neighbours[j]]
                     angles = np.vstack((angles,angle))
         return angles
+    
+    def angle_labels(self,atom_labels,angles,angle_types):
+        angle_labels = []
+        for angle in angles:
+            atoms = [atom_labels[angle[0]-1],
+                     atom_labels[angle[1]-1],
+                     atom_labels[angle[2]-1]]
+            for i in range(len(angle_types)):
+                flag1 = angle_types[i]==atoms
+                flag2 = angle_types[i]==list(reversed(atoms))
+                if flag1 or flag2: 
+                    angle_labels.append(i+1)
+        if len(angle_labels) != len(angles):
+            assert ValueError('angle assignment went wrong')
+        return angle_labels
 
     def torsions(self,bonds):
         torsions = np.empty((0,4),dtype=int)
@@ -71,6 +116,25 @@ class Connector(object):
                                    bond[1],neighbour2]
                         torsions = np.vstack((torsions,torsion))
         return torsions       
+
+    def torsion_labels(self,atom_labels,torsions,torsion_types):
+        torsion_labels = []
+        for torsion in torsions:
+            atoms = [atom_labels[torsion[0]-1],
+                     atom_labels[torsion[1]-1],
+                     atom_labels[torsion[2]-1],
+                     atom_labels[torsion[3]-1]]
+            for i in range(len(torsion_types)):
+                flag1 = torsion_types[i]==atoms
+                flag2 = torsion_types[i]==list(reversed(atoms))
+                if flag1 or flag2: 
+                    torsion_labels.append(i+1)
+        if len(torsion_labels) != len(torsions):
+            assert ValueError('torsion assignment went wrong')
+        return torsion_labels
+
+
+
 
     def add_cross_bond(self,lattice_dimensions,
                    cell_position,atoms,bonds,i):

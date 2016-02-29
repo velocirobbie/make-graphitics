@@ -2,20 +2,15 @@ import numpy as np
 from write_coords import Writer
 
 class Shifter(object):
-    def __init__(self, target, output_style,
-            coords, molecule_labels=[],
-            bonds=[],angles=[],torsions=[],box_dimensions=[],
-            system_name='comment line'):
-        
-        self.coords = coords
-        self.mol = molecule_labels
+    def __init__(self, target, output_style,data):
+        self.data = data
+        self.coords = data[0]
+        self.mol = data[3]
         self.target = target
         self.output_style = output_style
         
-        self.data = [coords,molecule_labels,bonds,angles,torsions,box_dimensions]
-        
         if target == 'top':
-            self.target = np.amax(molecule_labels)
+            self.target = np.amax(data[3])
 
     def z_shift(self,start,end,step):
         shift_range = np.arange(start,end,step)
