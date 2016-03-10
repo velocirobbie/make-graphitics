@@ -1,16 +1,36 @@
 import numpy as np
+from math import cos, sin, pi
 from write_coords import Writer
 
 class Shifter(object):
-    def __init__(self, target, output_style,data):
-        self.data = data
-        self.coords = data[0]
-        self.mol = data[3]
+    def __init__(self, sim, output_style='xyz', target=0):
+        self.sim = sim
+        self.coords = sim.coords
+        self.mol = sim.molecule_labels
         self.target = target
         self.output_style = output_style
         
-        if target == 'top':
-            self.target = np.amax(data[3])
+        if not target:
+            self.target = np.amax(self.mol)
+
+    def rotate(self,end,steps):
+        rotate_range = np.arange(0,end,steps)
+        for rotation in rotate_range:
+            rotated_coords =self.rotate_molecule(rotation*pi/180.0)
+            self.write_shifted_coords(rotated_coords,rotation)
+
+    def rotate_molecule(self,theta):
+        sint = sin(theta); cost = cos(theta)
+        new_coords = np.empty(np.shape(self.coords))
+        for i in range(len(self.coords)):
+          if self.mol[i] == self.target:
+            a = cost * self.coords[i][0] - sint * self.coords[i][1]
+            b = sint * self.coords[i][0] + cost * self.coords[i][1]
+            c = self.coords[i][2] 
+            new_coords[i] = [a,b,c]
+          else:
+            new_coords[i] = self.coords[i]
+        return new_coords
 
     def z_shift(self,start,end,step):
         shift_range = np.arange(start,end,step)
@@ -38,9 +58,9 @@ class Shifter(object):
         return new_coords
 
     def write_shifted_coords(self,shifted_coords,shift):
-        temp_data = self.data
-        temp_data[0] = shifted_coords
-        writer = Writer(*temp_data)
+        temp_sim = self.sim
+        temp_sim.coords = shifted_coords
+        writer = Writer(temp_sim)
         if self.output_style == 'xyz':
             writer.write_xyz('shift_'+str(shift)+'.xyz')
         elif self.output_style == 'lammps':

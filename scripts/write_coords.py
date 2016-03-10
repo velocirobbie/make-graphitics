@@ -2,30 +2,25 @@ import os
 import numpy as np
 
 class Writer(object):
-    def __init__(self, coords, atom_labels=[],atom_charges=[],
-            molecule_labels=[],
-            bonds=[],bond_labels=[],
-            angles=[],angle_labels=[],
-            torsions=[],torsion_labels=[],
-            box_dimensions=[],
+    def __init__(self, sim,
             system_name='comment line'):
         # Takes a numpy 3xN array of atom coordinates and outputs
         # them in different formats for viewing/modelling
-        self.coords = coords
-        self.atom_labels = atom_labels
+        self.coords = sim.coords
+        self.atom_labels = sim.atom_labels
         self.natom_types = len(np.unique(self.atom_labels))
-        self.molecule = molecule_labels
-        self.charges = atom_charges
-        self.bonds = bonds
-        self.bond_labels = bond_labels
+        self.molecule = sim.molecule_labels
+        self.charges = sim.atom_charges
+        self.bonds = sim.bonds
+        self.bond_labels = sim.bond_labels
         self.nbond_types = len(np.unique(self.bond_labels))
-        self.angles = angles
-        self.angle_labels = angle_labels
+        self.angles = sim.angles
+        self.angle_labels = sim.angle_labels
         self.nangle_types = len(np.unique(self.angle_labels))
-        self.torsions = torsions
-        self.torsion_labels = torsion_labels
+        self.torsions = sim.torsions
+        self.torsion_labels = sim.torsion_labels
         self.ntorsion_types = len(np.unique(self.torsion_labels))
-        self.size = box_dimensions
+        self.size = sim.box_dimensions
         self.system_name = system_name
         
         self.atom_masses = []
@@ -41,7 +36,9 @@ class Writer(object):
                 xyz=(str(self.coords[i][0])+' '+
                      str(self.coords[i][1])+' '+
                      str(self.coords[i][2]))
-                atom_label = str(self.atom_labels[i])+'\t '
+                if self.atom_labels[i] == 1: atom_label = 'C '
+                elif self.atom_labels[i] == 2: atom_label = 'H '
+                else: atom_label = str(self.atom_labels[i])+' '
                 outfile.write(atom_label + xyz + '\n')
             print 'Coords written to '+str(filename)
 
