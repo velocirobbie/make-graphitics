@@ -46,7 +46,7 @@ class Crystal(object):
                 self.lattice_dimensions,self.config[self.forcefield]['dq'])
     def generate_connections(self):
         connect = Connector()
-        bond_types, angle_types, torsion_types = self.molecule.connection_types()
+        bond_types, angle_types, torsion_types, improper_types = self.molecule.connection_types()
         self.bonds = self.molecule.assign_bonds(
                 self.lattice_dimensions)
         self.bond_labels = connect.bond_labels(
@@ -60,4 +60,6 @@ class Crystal(object):
         self.torsion_labels = connect.torsion_labels(
                 self.atom_labels,self.torsions,torsion_types)
 
-                
+        self.impropers = connect.impropers(self.bonds)
+        self.improper_labels = connect.improper_labels(
+                self.atom_labels,self.impropers,improper_types)

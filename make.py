@@ -6,15 +6,18 @@ import numpy as np
 config = yaml.load(open('config.yaml'))
 forcefield = 'OPLS'
 
-#graphite = Graphite(config,forcefield)
-#bulk = Crystal(graphite,config,forcefield,'vdw')
+graphite = Graphite(config,forcefield)
+bulk = Crystal(graphite,config,forcefield,[20,12,4])
 
 molecule = Hexagon_Graphene(config,forcefield,10)
-sim = Crystal(molecule,config,forcefield,[1,1,1])
+flake = Crystal(molecule,config,forcefield,[1,1,1])
 
-#output = Shifter(sim)
-#output.rotate(60,20)
-output2 = Writer(sim,'factory class test')
-output2.write_xyz('graphene.xyz')
+flake.coords = flake.coords + np.array((
+    5 * 2*(3**0.5) * config[forcefield]['CC'],
+    11*config[forcefield]['CC'],
+    8*config[forcefield]['layer_gap']))
 
-#output.write_lammps('data.graphene')
+sim = Combine(bulk,flake)
+output = Writer(sim,'flake on graphite')
+#output.write_xyz('graphene.xyz')
+#output.write_lammps('data.flake')

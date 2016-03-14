@@ -74,6 +74,33 @@ class Connector(object):
             raise ValueError('torsion assignment went wrong')
         return torsion_labels
 
+    def impropers(self,bonds):
+        impropers = np.empty((0,4),dtype=int)
+        N = int(np.amax(bonds)) # Number of atoms
+        for centre in range(1,N+1):
+            neighbours = self.find_neighbours(bonds,centre)
+            if len(neighbours) == 3:
+                improper = [neighbours[0],neighbours[1],
+                        centre,neighbours[2]]
+                impropers = np.vstack((impropers,improper))
+        return impropers
+    
+    def improper_labels(self,atom_labels,
+            impropers,improper_types):
+        improper_labels = []
+        for improper in impropers:
+            atoms = [atom_labels[improper[0]-1],
+                     atom_labels[improper[1]-1],
+                     atom_labels[improper[2]-1],
+                     atom_labels[improper[3]-1]]
+            for i in range(len(improper_types)):
+                flag1 = improper_types[i][2]==atoms[2]
+                if flag1:
+                    improper_labels.append(i+1)
+        if len(improper_labels) != len(impropers):
+            raise ValueError('improper assignment went wrong',len(improper_labels))
+        return improper_labels
+
     def find_connections(self,bonds,centre):
         connections = np.where(bonds==centre)
         connections =np.vstack((connections[0],connections[1]))

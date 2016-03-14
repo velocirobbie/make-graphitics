@@ -20,6 +20,9 @@ class Writer(object):
         self.torsions = sim.torsions
         self.torsion_labels = sim.torsion_labels
         self.ntorsion_types = len(np.unique(self.torsion_labels))
+        self.impropers = sim.impropers
+        self.improper_labels = sim.improper_labels
+        self.nimproper_types = len(np.unique(self.improper_labels))
         self.size = sim.box_dimensions
         self.system_name = system_name
         
@@ -51,12 +54,14 @@ class Writer(object):
                     str(len(self.coords)) +' atoms \n'+
                     str(len(self.bonds)) +' bonds \n'+
                     str(len(self.angles)) +' angles \n'+
-                    str(len(self.torsions))+' dihedrals \n'
+                    str(len(self.torsions))+' dihedrals \n'+
+                    str(len(self.impropers))+' impropers \n'
                     '\n'+
                     str(self.natom_types)+' atom types \n'+
                     str(self.nbond_types)+' bond types \n'+
                     str(self.nangle_types)+' angle types \n'+
                     str(self.ntorsion_types)+' dihedral types \n'+
+                    str(self.nimproper_types)+' improper types \n'+
                     '\n'
                     '0.0 \t'+str(self.size[0])+'\t xlo xhi \n'
                     '0.0 \t'+str(self.size[1])+'\t ylo yhi \n'
@@ -114,6 +119,18 @@ class Writer(object):
                             str(self.torsions[i][3])+' \n'
                             )
             
+            if len(self.impropers):
+                outfile.write('\n Impropers \n \n')
+                for i in range(len(self.impropers)):
+                    outfile.write(
+                            str(i+1)+'\t'+
+                            str(self.improper_labels[i])+'\t'+
+                            str(self.impropers[i][0])+' \t'+
+                            str(self.impropers[i][1])+' \t'+
+                            str(self.impropers[i][2])+' \t'+
+                            str(self.impropers[i][3])+' \n'
+                            )
+
             print 'Coords written to '+filename
 
 

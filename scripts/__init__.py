@@ -1,3 +1,4 @@
+from combine import Combine
 from connector import Connector
 from crystal import Crystal
 from lattice import Lattice
