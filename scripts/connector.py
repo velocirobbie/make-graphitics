@@ -80,8 +80,8 @@ class Connector(object):
         for centre in range(1,N+1):
             neighbours = self.find_neighbours(bonds,centre)
             if len(neighbours) == 3:
-                improper = [neighbours[0],neighbours[1],
-                        centre,neighbours[2]]
+                improper = [centre,neighbours[0],
+                            neighbours[1],neighbours[2]]
                 impropers = np.vstack((impropers,improper))
         return impropers
     
@@ -94,7 +94,7 @@ class Connector(object):
                      atom_labels[improper[2]-1],
                      atom_labels[improper[3]-1]]
             for i in range(len(improper_types)):
-                flag1 = improper_types[i][2]==atoms[2]
+                flag1 = improper_types[i][0]==atoms[0]
                 if flag1:
                     improper_labels.append(i+1)
         if len(improper_labels) != len(impropers):

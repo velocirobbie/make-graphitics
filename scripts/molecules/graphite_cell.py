@@ -114,7 +114,7 @@ class Graphite(object):
         bond_types = [[1,1]]
         angle_types = [[1,1,1]]
         torsion_types = [[1,1,1,1]]
-        improper_types = [[0,0,1,0]]
+        improper_types = [[1,0,0,0]]
         return bond_types, angle_types, torsion_types, improper_types
 
 def find_connections(bonds,centre):
