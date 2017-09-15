@@ -6,11 +6,18 @@ import numpy as np
 config = yaml.load(open('config.yaml'))
 forcefield = 'OPLS'
 
-graphene = Graphene(config,forcefield)
-print graphene.assign_bonds([2,2,1])
-print graphene.assign_atom_labels([2,2,1])
-bulk = Crystal(graphene,config,forcefield,'layers')
+motif = Hexagon_Graphene(config,forcefield,15)
+layer = Crystal(motif,config,forcefield,[1,1,1])
 
-output = Writer(bulk,'graphene')
-output.write_xyz('graphene.xyz')
-output.write_lammps('data.bulk')
+layer.coords = layer.coords + np.array((
+        5 * 2*(3**0.5) * config[forcefield]['CC'],
+        24*config[forcefield]['CC'],
+        0))#*config[forcefield]['layer_gap']))
+#bulk.box_dimensions[2] = bulk.box_dimensions[2] + 20 - config[forcefield]['layer_gap']
+
+
+
+name = 'graphene'
+output = Writer(layer,name)
+output.write_xyz(name+'.xyz')
+output.write_lammps(name+'.data')

@@ -1,9 +1,24 @@
 Crystal:
     CC: 1.421
     layer_gap: 3.354
+
+GraFF_5:
+    CC: 1.42845
+    layer_gap: 3.4827
+    CH: 1.077
+    dq: 0.115
+
+GraFF_77:
+    CC: 1.42827
+    layer_gap: 3.4827
+    CH: 1.077
+    dq: 0.115
+    
+
 OPLS:
     CC: 1.4148         # OPLS
-    layer_gap: 3.3827
+#    layer_gap: 3.3827
+    layer_gap: 3.4827
     CH: 1.077 
     dq: 0.115
 
@@ -27,4 +42,4 @@ Driedling:
 
 system:
     vdw_cutoff: 12.0
-    N_layers: 1
+    N_layers: 2

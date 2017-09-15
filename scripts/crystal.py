@@ -44,6 +44,7 @@ class Crystal(object):
                 self.lattice_dimensions)
         self.atom_charges = self.molecule.assign_atom_charges(
                 self.lattice_dimensions,self.config[self.forcefield]['dq'])
+
     def generate_connections(self):
         connect = Connector()
         bond_types, angle_types, torsion_types, improper_types = self.molecule.connection_types()

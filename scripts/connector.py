@@ -95,7 +95,8 @@ class Connector(object):
                      atom_labels[improper[3]-1]]
             for i in range(len(improper_types)):
                 flag1 = improper_types[i][0]==atoms[0]
-                if flag1:
+                flag2 = set(improper_types[i][1:])==set(atoms[0:]) 
+                if flag1 and flag2:
                     improper_labels.append(i+1)
         if len(improper_labels) != len(impropers):
             raise ValueError('improper assignment went wrong',len(improper_labels))

@@ -1,8 +1,9 @@
 import numpy as np
 from math import pi,sin,cos
 import yaml
+from molecule import Molecule
 
-class Graphene(object):
+class Graphene(Molecule):
     def __init__(self,config,forcefield):
         self.CC = config[forcefield]['CC']
         self.layer_gap = config[forcefield]['layer_gap']
@@ -99,7 +100,7 @@ class Graphene(object):
         bond_types = [[1,1]]
         angle_types = [[1,1,1]]
         torsion_types = [[1,1,1,1]]
-        improper_types = [[1,0,0,0]]
+        improper_types = [[1,1,1,1]]
         return bond_types, angle_types, torsion_types, improper_types
 
 def find_connections(bonds,centre):

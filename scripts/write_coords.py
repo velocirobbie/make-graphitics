@@ -30,6 +30,12 @@ class Writer(object):
         for atom in np.unique(self.atom_labels):
             if atom == 1: self.atom_masses.append(12.01)
             if atom == 2: self.atom_masses.append(1.00)
+            if atom == 3: self.atom_masses.append(12.01)
+            if atom == 4: self.atom_masses.append(16)
+            if atom == 5: self.atom_masses.append(1)
+            if atom == 6: self.atom_masses.append(12)
+            if atom == 7: self.atom_masses.append(16)
+
 
     def write_xyz(self,filename='out.xyz'):
         with open(filename,'w') as outfile:
@@ -41,6 +47,11 @@ class Writer(object):
                      str(self.coords[i][2]))
                 if self.atom_labels[i] == 1: atom_label = 'C '
                 elif self.atom_labels[i] == 2: atom_label = 'H '
+                elif self.atom_labels[i] == 3: atom_label = 'C '
+                elif self.atom_labels[i] == 5: atom_label = 'H '
+                elif self.atom_labels[i] == 4: atom_label = 'O '
+                elif self.atom_labels[i] == 6: atom_label = 'C '
+                elif self.atom_labels[i] == 7: atom_label = 'O '
                 else: atom_label = str(self.atom_labels[i])+' '
                 outfile.write(atom_label + xyz + '\n')
             print 'Coords written to '+str(filename)

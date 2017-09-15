@@ -1,7 +1,8 @@
 from math import pi,cos,sin,sqrt
 import numpy as np
+from molecule import Molecule
 
-class Hexagon_Graphene(object):
+class Hexagon_Graphene(Molecule):
     def __init__(self,config,forcefield,radius):
         self.CC = config[forcefield]['CC']
         self.CH = config[forcefield]['CH']
@@ -147,7 +148,7 @@ class Hexagon_Graphene(object):
         bond_types = [[1,1],[1,2]]
         angle_types = [[1,1,1],[1,1,2]]
         torsion_types = [[1,1,1,1],[1,1,1,2],[2,1,1,2]]
-        improper_types = [[1,0,0,0]]
+        improper_types = [[1,1,1,1],[1,1,1,2]]
         return bond_types, angle_types, torsion_types, improper_types
 
 
