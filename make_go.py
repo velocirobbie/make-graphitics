@@ -9,6 +9,9 @@ forcefield = 'OPLS'
 motif = Hexagon_Graphene(config,forcefield,100)
 layer = Crystal(motif,config,forcefield,[1,1,1])
 
+#motif = Graphene(config,forcefield)
+#layer = Crystal(motif,config,forcefield,[30,15,1])
+
 a = Oxidiser(layer)
 
 name = 'graphene'

@@ -35,6 +35,7 @@ class Writer(object):
             if atom == 5: self.atom_masses.append(1)
             if atom == 6: self.atom_masses.append(12)
             if atom == 7: self.atom_masses.append(16)
+            if atom == 8: self.atom_masses.append(12)
 
 
     def write_xyz(self,filename='out.xyz'):
@@ -48,10 +49,11 @@ class Writer(object):
                 if self.atom_labels[i] == 1: atom_label = 'C '
                 elif self.atom_labels[i] == 2: atom_label = 'H '
                 elif self.atom_labels[i] == 3: atom_label = 'N '
-                elif self.atom_labels[i] == 5: atom_label = 'O '
-                elif self.atom_labels[i] == 4: atom_label = 'H '
+                elif self.atom_labels[i] == 4: atom_label = 'O '
+                elif self.atom_labels[i] == 5: atom_label = 'H '
                 elif self.atom_labels[i] == 6: atom_label = 'F '
                 elif self.atom_labels[i] == 7: atom_label = 'O '
+                elif self.atom_labels[i] == 8: atom_label = 'P '
                 else: atom_label = str(self.atom_labels[i])+' '
                 outfile.write(atom_label + xyz + '\n')
             print 'Coords written to '+str(filename)
