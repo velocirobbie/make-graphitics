@@ -6,7 +6,7 @@ import numpy as np
 config = yaml.load(open('config.yaml'))
 forcefield = 'OPLS'
 
-motif = Hexagon_Graphene(config,forcefield,50)
+motif = Hexagon_Graphene(config,forcefield,100)
 layer = Crystal(motif,config,forcefield,[1,1,1])
 
 a = Oxidiser(layer)

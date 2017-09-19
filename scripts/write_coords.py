@@ -47,10 +47,10 @@ class Writer(object):
                      str(self.coords[i][2]))
                 if self.atom_labels[i] == 1: atom_label = 'C '
                 elif self.atom_labels[i] == 2: atom_label = 'H '
-                elif self.atom_labels[i] == 3: atom_label = 'C '
-                elif self.atom_labels[i] == 5: atom_label = 'H '
-                elif self.atom_labels[i] == 4: atom_label = 'O '
-                elif self.atom_labels[i] == 6: atom_label = 'C '
+                elif self.atom_labels[i] == 3: atom_label = 'N '
+                elif self.atom_labels[i] == 5: atom_label = 'O '
+                elif self.atom_labels[i] == 4: atom_label = 'H '
+                elif self.atom_labels[i] == 6: atom_label = 'F '
                 elif self.atom_labels[i] == 7: atom_label = 'O '
                 else: atom_label = str(self.atom_labels[i])+' '
                 outfile.write(atom_label + xyz + '\n')

@@ -9,6 +9,11 @@ forcefield = 'GraFF_5'
 #config[forcefield]['CC'] = config[forcefield]['CC'] * 0.999
 graphite = Graphite(config,forcefield)
 bulk = Crystal(graphite,config,forcefield,[21,12,1])
+bulk.coords = bulk.coords + np.array((
+    0,
+    0,
+    1*config[forcefield]['layer_gap']))
+
 
 molecule1 = Hexagon_Graphene(config,forcefield,15)
 flake1 = Crystal(molecule1,config,forcefield,[1,1,1])
@@ -16,14 +21,14 @@ flake1 = Crystal(molecule1,config,forcefield,[1,1,1])
 flake1.coords = flake1.coords + np.array((
     10 * 2*math.cos(math.pi/6) * config[forcefield]['CC'],
     6 * 3 *config[forcefield]['CC'],
-    2*config[forcefield]['layer_gap']))
+    3*config[forcefield]['layer_gap']))
 
 graphene = Graphene(config,forcefield)
 top = Crystal(graphene,config,forcefield,[21,12,1])
 top.coords = top.coords + np.array((
     0,
     0,
-    45))
+    50))
 for i in range(len(top.atom_labels)):
     top.atom_labels[i] = 3
 
