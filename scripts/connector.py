@@ -7,11 +7,15 @@ class Connector(object):
         for bond in bonds:
             atoms = [atom_labels[bond[0]-1],
                      atom_labels[bond[1]-1]]
+            found = False
             for i in range(len(bond_types)):
                 flag1 = bond_types[i]==atoms
                 flag2 = bond_types[i]==list(reversed(atoms)) 
                 if flag1 or flag2: 
                     bond_labels.append(i+1)
+                    found = True
+            if not found:
+                raise TypeError('bond not found',atoms)
         if len(bond_labels) != len(bonds):
             raise ValueError('bond assignment went wrong')
         return bond_labels
@@ -34,11 +38,15 @@ class Connector(object):
             atoms = [atom_labels[angle[0]-1],
                      atom_labels[angle[1]-1],
                      atom_labels[angle[2]-1]]
+            found = False
             for i in range(len(angle_types)):
                 flag1 = angle_types[i]==atoms
                 flag2 = angle_types[i]==list(reversed(atoms))
                 if flag1 or flag2: 
                     angle_labels.append(i+1)
+                    found = True
+            if not found:
+                raise TypeError('angle not found',atoms)
         if len(angle_labels) != len(angles):
             raise ValueError('angle assignment went wrong')
         return angle_labels
@@ -65,13 +73,20 @@ class Connector(object):
                      atom_labels[torsion[1]-1],
                      atom_labels[torsion[2]-1],
                      atom_labels[torsion[3]-1]]
+            found = False
             for i in range(len(torsion_types)):
                 flag1 = torsion_types[i]==atoms
                 flag2 = torsion_types[i]==list(reversed(atoms))
                 if flag1 or flag2: 
                     torsion_labels.append(i+1)
+                    found = True
+            if not found:
+#                torsion_types += [atoms]
+                raise TypeError('torsion not found',atoms)
         if len(torsion_labels) != len(torsions):
             raise ValueError('torsion assignment went wrong')
+#        print 'types ',len(torsion_types)
+#        print torsion_types
         return torsion_labels
 
     def impropers(self,bonds):
@@ -85,8 +100,7 @@ class Connector(object):
                 impropers = np.vstack((impropers,improper))
         return impropers
     
-    def improper_labels(self,atom_labels,
-            impropers,improper_types):
+    def improper_labels(self,atom_labels, impropers,improper_types):
         improper_labels = []
         for improper in impropers:
             atoms = [atom_labels[improper[0]-1],
@@ -95,10 +109,12 @@ class Connector(object):
                      atom_labels[improper[3]-1]]
             for i in range(len(improper_types)):
                 flag1 = improper_types[i][0]==atoms[0]
-                flag2 = set(improper_types[i][1:])==set(atoms[0:]) 
+                flag2 = set(improper_types[i][1:])==set(atoms[1:]) 
                 if flag1 and flag2:
                     improper_labels.append(i+1)
+            #print atoms
         if len(improper_labels) != len(impropers):
+            print len(improper_labels), len(impropers)
             raise ValueError('improper assignment went wrong',len(improper_labels))
         return improper_labels
 
@@ -115,4 +131,71 @@ class Connector(object):
             neighbour = bonds[connection[0]][connection[1]-1]
             neighbours.append(neighbour)
         return neighbours
+
+    def find_torsion_types(self,atom_labels,torsions):
+        torsion_types = []
+        for torsion in torsions:
+            atoms = [atom_labels[torsion[0]-1],
+                     atom_labels[torsion[1]-1],
+                     atom_labels[torsion[2]-1],
+                     atom_labels[torsion[3]-1]]
+            found = False
+            for i in range(len(torsion_types)):
+                flag1 = torsion_types[i]==atoms
+                flag2 = torsion_types[i]==list(reversed(atoms))
+                if flag1 or flag2: 
+                    found = True
+            if not found:
+                torsion_types += [atoms]
+        return torsion_types
+
+    def find_bond_types(self,atom_labels,bonds):
+        bond_types = []
+        for bond in bonds:
+            atoms = [atom_labels[bond[0]-1],
+                     atom_labels[bond[1]-1]]
+            found = False
+            for i in range(len(bond_types)):
+                flag1 = bond_types[i]==atoms
+                flag2 = bond_types[i]==list(reversed(atoms))
+                if flag1 or flag2: 
+                    found = True
+            if not found:
+                bond_types += [atoms]
+        return bond_types
+
+
+
+    def find_angle_types(self,atom_labels,angles):
+        angle_types = []
+        for angle in angles:
+            atoms = [atom_labels[angle[0]-1],
+                     atom_labels[angle[1]-1],
+                     atom_labels[angle[2]-1]]
+            found = False
+            for i in range(len(angle_types)):
+                flag1 = angle_types[i]==atoms
+                flag2 = angle_types[i]==list(reversed(atoms))
+                if flag1 or flag2: 
+                    found = True
+            if not found:
+                angle_types += [atoms]
+        return angle_types
+
+    def find_improper_types(self,atom_labels,impropers):
+        improper_types = []
+        for improper in impropers:
+            atoms = [atom_labels[improper[0]-1],
+                     atom_labels[improper[1]-1],
+                     atom_labels[improper[2]-1],
+                     atom_labels[improper[3]-1]]
+            found = False
+            for improper_type in improper_types:
+                flag1 = improper_type[0]==atoms[0]
+                flag2 = set(atoms[1:4]) == set(improper_type[1:4])
+                if flag1 and flag2: 
+                    found = True
+            if not found:
+                improper_types += [atoms]
+        return improper_types
 

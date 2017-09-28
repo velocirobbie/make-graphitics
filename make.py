@@ -6,7 +6,7 @@ import numpy as np
 config = yaml.load(open('config.yaml'))
 forcefield = 'OPLS'
 
-motif = Hexagon_Graphene(config,forcefield,15)
+motif = Hexagon_Graphene(config,forcefield,30)
 layer = Crystal(motif,config,forcefield,[1,1,1])
 
 layer.coords = layer.coords + np.array((

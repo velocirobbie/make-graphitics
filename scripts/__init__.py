@@ -1,3 +1,4 @@
+from params import Parameterise
 from oxidiser import Oxidiser
 from combine import Combine
 from connector import Connector

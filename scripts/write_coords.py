@@ -28,15 +28,10 @@ class Writer(object):
         
         self.atom_masses = []
         for atom in np.unique(self.atom_labels):
-            if atom == 1: self.atom_masses.append(12.01)
-            if atom == 2: self.atom_masses.append(1.00)
-            if atom == 3: self.atom_masses.append(12.01)
-            if atom == 4: self.atom_masses.append(16)
-            if atom == 5: self.atom_masses.append(1)
-            if atom == 6: self.atom_masses.append(12)
-            if atom == 7: self.atom_masses.append(16)
-            if atom == 8: self.atom_masses.append(12)
-
+            if atom in [1,3,8,11]: self.atom_masses.append(12.01)
+            elif atom in [2,5]  : self.atom_masses.append(1.00)
+            elif atom in [4,6,7,9,10]: self.atom_masses.append(15.999)
+            else: raise TypeError('ataom type not found:',atom)
 
     def write_xyz(self,filename='out.xyz'):
         with open(filename,'w') as outfile:
@@ -46,14 +41,10 @@ class Writer(object):
                 xyz=(str(self.coords[i][0])+' '+
                      str(self.coords[i][1])+' '+
                      str(self.coords[i][2]))
-                if self.atom_labels[i] == 1: atom_label = 'C '
-                elif self.atom_labels[i] == 2: atom_label = 'H '
-                elif self.atom_labels[i] == 3: atom_label = 'N '
-                elif self.atom_labels[i] == 4: atom_label = 'O '
-                elif self.atom_labels[i] == 5: atom_label = 'H '
-                elif self.atom_labels[i] == 6: atom_label = 'F '
-                elif self.atom_labels[i] == 7: atom_label = 'O '
-                elif self.atom_labels[i] == 8: atom_label = 'P '
+                if   self.atom_labels[i] in [1,8,11]: atom_label = 'C '
+                elif self.atom_labels[i] in [2,5]: atom_label = 'H '
+                elif self.atom_labels[i] in [3]: atom_label = 'N '
+                elif self.atom_labels[i] in [4,6,7,9,10]: atom_label = 'O '
                 else: atom_label = str(self.atom_labels[i])+' '
                 outfile.write(atom_label + xyz + '\n')
             print 'Coords written to '+str(filename)
@@ -86,6 +77,54 @@ class Writer(object):
                 outfile.write(
                       str(i+1)+'\t '+
                       str(self.atom_masses[i])+'\n')
+            if self.pair_coeffs:    
+                outfile.write('\n Pair Coeffs \n \n')
+                for i in range(len(self.pair_coeffs['a'])):
+                    outfile.write(
+                            str(self.pair_coeffs['a'][i])+'\t'+
+                            str(self.pair_coeffs['e'][i])+'\t'+
+                            str(self.pair_coeffs['s'][i])+'\n'
+                            )
+ 
+            if self.bond_coeffs:    
+                outfile.write('\n Bond Coeffs \n \n')
+                for i in range(len(self.bond_coeffs['r'])):
+                    outfile.write(
+                            str(self.bond_coeffs['type'][i])+'\t'+
+                            str(self.bond_coeffs['k'][i])+'\t'+
+                            str(self.bond_coeffs['r'][i])+'\n'
+                            )
+            if self.angle_coeffs:    
+                outfile.write('\n Angle Coeffs \n \n')
+                for i in range(len(self.angle_coeffs['r'])):
+                    outfile.write(
+                            str(self.angle_coeffs['type'][i])+'\t'+
+                            str(self.angle_coeffs['k'][i])+'\t'+
+                            str(self.angle_coeffs['r'][i])+'\n'
+                            )
+            if self.torsion_coeffs:    
+                outfile.write('\n Dihedral Coeffs \n \n')
+                for i in range(len(self.torsion_coeffs['k1'])):
+                    outfile.write(
+                            str(self.torsion_coeffs['type'][i])+'\t'+
+                            str(self.torsion_coeffs['k1'][i])+'\t'+
+                            str(self.torsion_coeffs['k2'][i])+'\t'+
+                            str(self.torsion_coeffs['k3'][i])+'\t'+
+                            str(self.torsion_coeffs['k4'][i])+'\n'
+                            )
+
+            if self.improper_coeffs:    
+                outfile.write('\n Improper Coeffs \n \n')
+                for i in range(len(self.improper_coeffs['k'])):
+                    outfile.write(
+                            str(self.improper_coeffs['type'][i])+'\t'+
+                            str(self.improper_coeffs['k'][i])+'\t'+
+                            str(self.improper_coeffs['r'][i])+'\n'
+                            )
+
+
+
+                
             outfile.write('\n Atoms \n \n')
             
             for i in range(len(self.coords)):
