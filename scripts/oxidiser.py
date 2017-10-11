@@ -44,14 +44,15 @@ class Oxidiser(object):
     11 = Cc - Oa
     """
     
-    def __init__(self, crystal, ratio = 2.6, 
+    def __init__(self, crystal, ratio = 2.6,
+                 affinity = 0.999,
                  surface_OHratio = 0.7,
                  edge_OHratio = 0.3,
                  edge_carboxyl_ratio = 0.3):
         self.crystal = crystal
         self.molecule = crystal.molecule
         
-        self.affinity = 0.995
+        self.affinity = affinity
     
         # C/O ratio 
         self.ratio = ratio
@@ -67,6 +68,23 @@ class Oxidiser(object):
         self.oxidise(crystal, self.NO)
 #        crystal.bond_labels = [1] * len(crystal.bonds)
         self.generate_connections(crystal)
+        self.vdw_defs = {1: 90, # Cg, graphitic (aromatic)
+                         2: 91, # Hg, graphitic edge
+                         3: 101,# Ct, tertiary C-OH
+                         4: 96, # Oa, C-OH
+                         5: 97, # Ha, C-OH
+                         # 3 = Ct, epoxy C-O-C 
+                         6: 122,# Oe, epoxy 
+                         11: 108,# Cb, Benzyl 
+                         7: 109,# Oa, C-OH
+                         #5 = Ha, C-OH
+                         #11 = Cb, Benzyl carbon
+                         8: 209, # Cc, Carboxylic carbon
+                         9: 210, # Oc, Ketone oxygen
+                         10: 211 # Oa, alcohol
+                         #5   = Ha, alcohol
+                         }
+
 
     def generate_connections(self,crystal):
         crystal.bond_types = [[1,1], # Cg-Cg 1
@@ -86,46 +104,6 @@ class Oxidiser(object):
                       [3,11], # Ct-Cs 15
                       [11,11] # Cs-Cs 16
                       ]
-        #angle_types= [[1,1,1],
-        #              [1,1,2],
-        #              [1,1,3],
-        #              [1,1,11],
-        #              [2,1,3],
-        #              [2,1,11],
-        #              [3,1,3],
-        #              [3,1,11],
-        #              [11,1,11],
-        #              [1,3,1],
-        #              [1,3,3],
-        #              [1,3,4],
-        #              [1,3,6],
-        #              [1,3,11],
-        #              [3,3,3],
-         #             [3,3,4],
-          #            [3,3,6],
-           #           [3,3,11],
-           #           [4,3,11],
-            #          [6,3,11],
-             #         [11,3,11],
-             #3        [3,4,5],
-               #       [3,6,3],
-                #      [5,7,11],
-                 #     [9,8,10],
-               #       [9,8,11],
-                   #   [10,8,11],
-                #    #  [5,10,8],
-                 #     [1,11,1],
-                  #    [1,11,3],
-                   #   [1,11,7],
-                    #  [1,11,8],
-                     # [1,11,11],
-                      #[3,11,3],
-                    #  [3,11,7],
-                    #  [3,11,8],
-                    #  [3,11,11],
-                    #  [7,11,11],
-                    #  [8,11,11]
-                     # ]
 
         connect = Connector()
         crystal.bond_labels = connect.bond_labels(

@@ -1,44 +1,98 @@
 import yaml
+from opls_reader import OPLS_Reader
 
 class Parameterise(object):
-    def __init__(self, params, definitions):
-        self.params = params
-        self.definitions = yaml.load(open(definitions))
-        self.bond_data = self.read_bond_data()
-        self.angle_data = self.read_angle_data()
-        self.torsion_data = self.read_torsion_data()
-        self.improper_data = self.read_improper_data()
+    def __init__(self, crystal, vdw_defs, forcefield = 'OPLS'):
+        
+        self.vdw_defs = vdw_defs
+        
+        if forcefield == 'OPLS':
+            paramfile = 'params/oplsaa.prm'
+            data = OPLS_Reader(paramfile)
+        else:
+            raise TypeError(forcefield,'forcefield not implemented')
+        self.vdw_type = data.vdw_type
+        self.bond_data = data.bond
+        self.angle_data = data.angle
+        self.torsion_data = data.torsion
+        self.improper_data = data.improper
+        self.pair_data = data.pair
+        self.mass_data = data.mass
+        self.charge_data = data.charge
+        
+        self.type_defs = {}
+        for label in self.vdw_defs:
+            vdw = self.vdw_defs[label]
+            self.type_defs[label] = self.vdw_type['type'][ 
+                                            self.vdw_type['vdw'].index(vdw) ]
+        print 'Atom label -> OPLS vdw definitions: \t',  self.vdw_defs
+        print 'Atom label -> OPLS type definitions: \t', self.type_defs
 
-    def pair_coeffs(self, pairfile='scripts/params/opls_pair.dat'):
-        pair_data = {'a':[],'s':[],'e':[]}
-        with open(pairfile) as f:
-            for line in f:
-                line = line.split()
-                pair_data['a'] += [int(line[0])]
-                pair_data['e'] += [float(line[1])]
-                pair_data['s'] += [float(line[2])]
-        return pair_data
+        crystal.bond_coeffs = self.match_bonds(crystal.bond_types)
+        crystal.angle_coeffs = self.match_angles(crystal.angle_types)
+        crystal.torsion_coeffs = self.match_torsions(crystal.torsion_types)
+        crystal.improper_coeffs = self.match_impropers(crystal.improper_types)
+        crystal.pair_coeffs = self.match_pairs()
+        crystal.masses = self.match_masses()
+
+    def match_charges(self):
+        charge_data = self.charge_data
+        charge_coeffs = {'a':[], 'q':[]}
+        for label in self.vdw_defs:
+            found = 0
+            for j in range(len(charge_data['a'])):
+                atom_data = charge_data['a'][j] 
+                if self.vdw_defs[label] == atom_data:
+                    found += 1
+                    charge_coeffs['a'] += [label]
+                    charge_coeffs['q']    += [ charge_data['q'][j] ]
+            if found != 1:
+                raise ValueError('WRONG',label,'\t found ',found,' entries')
+        return charge_coeffs
 
 
-    def read_bond_data(self,bondfile='scripts/params/opls_bond.dat'):
-        bond_data = {'a1':[], 'a2':[], 'k':[], 'r':[]}
-        with open(bondfile) as f:
-            for line in f:
-                line = line.split()
-                bond_data['a1'] += [ int(line[1]) ]
-                bond_data['a2'] += [ int(line[2]) ]
-                bond_data['k']  += [ float(line[3]) ]
-                bond_data['r']  += [ float(line[4]) ]
-        return bond_data
+
+    def match_masses(self):
+        mass_data = self.mass_data
+        mass_coeffs = {'a':[], 'm':[]}
+        for label in self.vdw_defs:
+            found = 0
+            for j in range(len(mass_data['a'])):
+                atom_data = mass_data['a'][j] 
+                if self.vdw_defs[label] == atom_data:
+                    found += 1
+                    mass_coeffs['a'] += [label]
+                    mass_coeffs['m']    += [ mass_data['m'][j] ]
+            if found != 1:
+                raise ValueError('WRONG',label,'\t found ',found,' entries')
+        return mass_coeffs
+
+        
+    def match_pairs(self):
+        pair_data = self.pair_data
+        pair_coeffs = {'a':[], 'e':[], 's':[]}
+        for label in self.vdw_defs:
+            found = 0
+            for j in range(len(pair_data['a'])):
+                atom_data = pair_data['a'][j] 
+                if self.vdw_defs[label] == atom_data:
+                    found += 1
+                    pair_coeffs['a'] += [label]
+                    pair_coeffs['e']    += [ pair_data['e'][j] ]
+                    pair_coeffs['s']    += [ pair_data['s'][j] ]
+            if found != 1:
+                raise ValueError('WRONG',label,'\t found ',found,' entries')
+        return pair_coeffs
+
+
 
     def match_bonds(self, bond_types):
         bond_data = self.bond_data
         bond_coeffs = {'type':[], 'k':[], 'r':[]}
         for i in range(len(bond_types)):
-            a1 = self.definitions[ bond_types[i][0] ]
-            a2 = self.definitions[ bond_types[i][1] ]
+            a1 = self.type_defs[ bond_types[i][0] ]
+            a2 = self.type_defs[ bond_types[i][1] ]
             atoms = [a1,a2]
-            
             found = 0
             for j in range(len(bond_data['k'])):
                 atom_data =[ bond_data['a1'][j], bond_data['a2'][j] ]
@@ -52,18 +106,6 @@ class Parameterise(object):
             if found != 1:
                 raise ValueError('WRONG',atoms,'\t found ',found,' entries')
         return bond_coeffs
-
-    def read_angle_data(self,anglefile='scripts/params/opls_angle.dat'):
-        angle_data = {'a1':[], 'a2':[], 'a3':[], 'k':[], 'r':[]}
-        with open(anglefile) as f:
-            for line in f:
-                line = line.split()
-                angle_data['a1'] += [ int(line[1]) ]
-                angle_data['a2'] += [ int(line[2]) ]
-                angle_data['a3'] += [ int(line[3]) ]
-                angle_data['k']  += [ float(line[4]) ]
-                angle_data['r']  += [ float(line[5]) ]
-        return angle_data
 
     def match_angles(self, angle_types):
 
@@ -86,11 +128,11 @@ class Parameterise(object):
         angle_coeffs = {'type':[], 'k':[], 'r':[]}
         questionable_substitutions = 0
         for i in range(len(angle_types)):
-            a1 = self.definitions[ angle_types[i][0] ]
-            a2 = self.definitions[ angle_types[i][1] ]
-            a3 = self.definitions[ angle_types[i][2] ]
+            a1 = self.type_defs[ angle_types[i][0] ]
+            a2 = self.type_defs[ angle_types[i][1] ]
+            a3 = self.type_defs[ angle_types[i][2] ]
             atoms = [a1,a2,a3]
-            
+            #print atoms, angle_types[i]
             angle_coeffs, found = search_angles(angle_data, atoms, angle_coeffs)
 
             if found == 0:
@@ -116,25 +158,6 @@ class Parameterise(object):
         if questionable_substitutions != 0:
             print 'made ',questionable_substitutions,' questionable angle subs'
         return angle_coeffs
-
-    def read_torsion_data(self,torsionfile='scripts/params/opls_torsion.dat'):
-        torsion_data = {'a1':[], 'a2':[], 'a3':[], 'a4':[],
-                        'k1':[], 'k2':[], 'k3':[], 'k4':[]}
-        with open(torsionfile) as f:
-            for line in f:
-                line = line.split()
-                torsion_data['a1'] += [ int(line[1]) ]
-                torsion_data['a2'] += [ int(line[2]) ]
-                torsion_data['a3'] += [ int(line[3]) ]
-                torsion_data['a4'] += [ int(line[4]) ]
-                torsion_data['k1']  += [ float(line[5]) ]
-                torsion_data['k2']  += [ float(line[8]) ]
-                torsion_data['k3']  += [ float(line[11]) ]
-                if len(line) == 17:
-                    torsion_data['k4']  += [ float(line[14]) ]
-                else:
-                    torsion_data['k4']  += [ 0.0 ]
-        return torsion_data
 
     def match_torsions(self, torsion_types):
         def add_coeff(torsion_data, torsion_coeffs, j):
@@ -199,16 +222,16 @@ class Parameterise(object):
         torsion_coeffs = {'type':[], 'k1':[], 'k2':[], 'k3':[], 'k4':[]}
         questionable = 0
         for i in range(len(torsion_types)):
-            a1 = self.definitions[ torsion_types[i][0] ]
-            a2 = self.definitions[ torsion_types[i][1] ]
-            a3 = self.definitions[ torsion_types[i][2] ]
-            a4 = self.definitions[ torsion_types[i][3] ]
+            a1 = self.type_defs[ torsion_types[i][0] ]
+            a2 = self.type_defs[ torsion_types[i][1] ]
+            a3 = self.type_defs[ torsion_types[i][2] ]
+            a4 = self.type_defs[ torsion_types[i][3] ]
             atoms = [a1,a2,a3,a4]
             #print atoms
             
             torsion_coeffs,found = search_torsions(torsion_data, atoms, 
                                                    torsion_coeffs)
-
+            
             if found == 0:
                 for j in range(4):
                     if atoms[j] == 48: 
@@ -254,26 +277,27 @@ class Parameterise(object):
                                                    torsion_coeffs)
                     if found != 0:
                         print found, [a1,a2,a3,a4], atoms, 'made phenol sub'
-           
+            
             if found != 1:
-                #raise ValueError('WRONG',atoms,'\t found ',found,' entries')
-                print 'WRONG',[a1,a2,a3,a4],'\t found ',found,' entries'
+                raise ValueError('Torsion',[a1,a2,a3,a4],
+                                 'found ',found,' entries')
+                #print 'WRONG',[a1,a2,a3,a4],'\t found ',found,' entries'
         if questionable != 0:
             print 'made ',questionable,' questionable torsion substitutions'            
         return torsion_coeffs
 
     def match_impropers(self, improper_types):
-        def search_impropers(improper_data, atoms, improper_coeffs):
+        def search_impropers(improper_data, centre, neighbours, improper_coeffs):
             found = 0
             for j in range(len(improper_data['k'])):
-                atom_data =[ improper_data['centre'][j], 
-                             improper_data['a1'][j],
-                             improper_data['a2'][j],
-                             improper_data['a3'][j] ]
-                flag1 = atom_data[0] == atoms[0]
+                data_neighbours =[ improper_data['a1'][j], 
+                                   improper_data['a2'][j],
+                                   improper_data['a3'][j] ]
+                data_centre     = improper_data['centre'][j] 
+                flag1 = data_centre == centre
                 # Test if other improper atom in connected to centre
-                flag2 = set(atoms[1:]) >= {atom_data[3]}
-                flag3 = atom_data[1:] == [0,0,0]
+                flag2 = set(neighbours) >= {data_neighbours[2]}
+                flag3 = data_neighbours == [0,0,0]
                 if flag1 and (flag2 or flag3):
                     found += 1
                     improper_coeffs['type'] += [i+1]
@@ -285,30 +309,18 @@ class Parameterise(object):
         improper_coeffs = {'type':[], 'k':[], 'r':[]}
         questionable_substitutions = 0
         for i in range(len(improper_types)):
-            centre = self.definitions[ improper_types[i][0] ]
-            a1 = self.definitions[ improper_types[i][1] ]
-            a2 = self.definitions[ improper_types[i][2] ]
-            a3 = self.definitions[ improper_types[i][3] ]
-            atoms = [centre,a1,a2,a3]
+            centre = self.type_defs[ improper_types[i][0] ]
+            a1 = self.type_defs[ improper_types[i][1] ]
+            a2 = self.type_defs[ improper_types[i][2] ]
+            a3 = self.type_defs[ improper_types[i][3] ]
+            neighbours = [a1,a2,a3]
             
-            improper_coeffs, found = search_impropers(improper_data, 
-                                                      atoms, improper_coeffs)
+            improper_coeffs, found = search_impropers(improper_data, centre,
+                                                      neighbours, improper_coeffs)
             if found != 1:
-                 #raise ValueError('WRONG',atoms,'\t found ',found,' entries')
-                 print 'WRONG',atoms,'\t found ',found,' entries'
+                 raise ValueError('Improper',centre,neighbours,
+                                  'found ',found,' entries')
+                 #print 'WRONG',centre,neighbours,'\t found ',found,' entries'
         return improper_coeffs 
-
-    def read_improper_data(self,improperfile='scripts/params/opls_improper.dat'):
-        improper_data = {'a1':[], 'a2':[], 'centre':[], 'a3':[], 'k':[], 'r':[]}
-        with open(improperfile) as f:
-            for line in f:
-                line = line.split()
-                improper_data['a1'] += [ int(line[1]) ]
-                improper_data['a2'] += [ int(line[2]) ]
-                improper_data['centre'] += [ int(line[3]) ]
-                improper_data['a3'] += [ int(line[4]) ]
-                improper_data['k']  += [ float(line[5]) ]
-                improper_data['r']  += [ float(line[6]) ]
-        return improper_data
 
 
