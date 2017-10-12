@@ -55,14 +55,16 @@ class ReadLammpsData(object):
                 return True
             except ValueError:
                 return False
+        Ncoeff = {
+                'Pair'      : 'Natom_types',
+                'Bond'      : 'Nbond_types',
+                'Angle'     : 'Nangle_types',
+                'Dihedral'  : 'Ndihedral_types',
+                'Improper'  : 'Nimproper_types'
+                }
 
         main = {
                 'Masses'    : self.read_masses,
-                'Pair'      : self.read_pair_coeffs,
-           #     'Bond'      : self.read_bond_coeffs,
-           #     'Angle'     : self.read_angle_coeffs,
-           #     'Dihedral'  : self.read_dihedral_coeffs,
-           #     'Improper'  : self.read_improper_coeffs,
                 'Atoms'     : self.read_atoms,
                 'Velocities': self.read_velocities,
                 'Bonds'     : self.read_bonds,
@@ -93,7 +95,6 @@ class ReadLammpsData(object):
         l = line[0]
         if l == '#': return # catch comment line
         elif l[0] == '#': return # catch comment line
-        
         if is_number(l):
             if len(line) == 2:
                 attribute = header_numbers.get(line[1],False)
@@ -110,6 +111,13 @@ class ReadLammpsData(object):
                     setattr(self,line[2],float(line[0]))
                     setattr(self,line[3],float(line[1]))
                 else: could_not_read(line)
+        elif len(line) == 2:
+            print 'reading '+l+' Coeffs'
+            self.read(datafile)
+            name = line[0].lower()+'_'+line[1].lower()
+            N = getattr(self,Ncoeff.get(l))
+            self.read_coeffs(datafile,name,N)
+
         else: 
             func = main.get(l,False)
             if not func: could_not_read(line)
@@ -179,15 +187,15 @@ class ReadLammpsData(object):
             self.read_data_line(datafile,
                                 self.improper_types,self.impropers)
 
-    def read_pair_coeffs(self,datafile):
-        self.pair_coeffs = {}
-        for i in range(self.Natom_types):
+    def read_coeffs(self,datafile,coeffs,N):
+        setattr(self,coeffs,{})
+        coeffdict = getattr(self,coeffs)
+        for i in range(N):
             line = self.read(datafile)
-            self.pair_coeffs['a'] += [ int(line[0]) ]
-            self.pair_coeffs['e'] += [ float(line[1]) ]
-            self.pair_coeffs['s'] += [ float(line[2]) ]
-
-
+            label = int(line[0])
+            coeffdict[label] = {}
+            for k in range(1, len(line)):
+                coeffdict[label][k] = float(line[k])
 
     def validate(self):
        for attribute in self.attributes:

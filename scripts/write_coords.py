@@ -32,8 +32,8 @@ class Writer(object):
             self.bond_coeffs = sim.bond_coeffs
         if hasattr(sim,'angle_coeffs'): 
             self.angle_coeffs = sim.angle_coeffs
-        if hasattr(sim,'torsion_coeffs'): 
-            self.torsion_coeffs = sim.torsion_coeffs
+        if hasattr(sim,'dihedral_coeffs'): 
+            self.dihedral_coeffs = sim.dihedral_coeffs
         if hasattr(sim,'improper_coeffs'): 
             self.improper_coeffs = sim.improper_coeffs
         if hasattr(sim,'pair_coeffs'): 
@@ -84,55 +84,55 @@ class Writer(object):
                     '\n')
             if hasattr(self,'masses'):
                 outfile.write('\n Masses \n \n')
-                for i in range(len(self.masses['a'])):
+                for i in self.masses:
                     outfile.write(
-                           str(self.masses['a'][i])+'\t'+
-                           str(self.masses['m'][i])+'\n'
+                            str(i)+'\t'+
+                            str(self.masses[i])+'\n'
                                )
             
             if hasattr(self,'pair_coeffs'):    
                 outfile.write('\n Pair Coeffs \n \n')
-                for i in range(len(self.pair_coeffs['a'])):
+                for i in self.pair_coeffs:
                     outfile.write(
-                            str(self.pair_coeffs['a'][i])+'\t'+
-                            str(self.pair_coeffs['e'][i])+'\t'+
-                            str(self.pair_coeffs['s'][i])+'\n'
+                            str(i)+'\t'+
+                            str(self.pair_coeffs[i][1])+'\t'+
+                            str(self.pair_coeffs[i][2])+'\n'
                             )
  
             if hasattr(self,'bond_coeffs'):
                 outfile.write('\n Bond Coeffs \n \n')
-                for i in range(len(self.bond_coeffs['r'])):
+                for i in self.bond_coeffs:
                     outfile.write(
-                            str(self.bond_coeffs['type'][i])+'\t'+
-                            str(self.bond_coeffs['k'][i])+'\t'+
-                            str(self.bond_coeffs['r'][i])+'\n'
+                            str(i)+'\t'+
+                            str(self.bond_coeffs[i][1])+'\t'+
+                            str(self.bond_coeffs[i][2])+'\n'
                             )
             if hasattr(self,'angle_coeffs'):
                 outfile.write('\n Angle Coeffs \n \n')
-                for i in range(len(self.angle_coeffs['r'])):
+                for i in self.angle_coeffs:
                     outfile.write(
-                            str(self.angle_coeffs['type'][i])+'\t'+
-                            str(self.angle_coeffs['k'][i])+'\t'+
-                            str(self.angle_coeffs['r'][i])+'\n'
+                            str(i)+'\t'+
+                            str(self.angle_coeffs[i][1])+'\t'+
+                            str(self.angle_coeffs[i][2])+'\n'
                             )
-            if hasattr(self,'torsion_coeffs'):    
+            if hasattr(self,'dihedral_coeffs'):    
                 outfile.write('\n Dihedral Coeffs \n \n')
-                for i in range(len(self.torsion_coeffs['k1'])):
+                for i in self.dihedral_coeffs:
                     outfile.write(
-                            str(self.torsion_coeffs['type'][i])+'\t'+
-                            str(self.torsion_coeffs['k1'][i])+'\t'+
-                            str(self.torsion_coeffs['k2'][i])+'\t'+
-                            str(self.torsion_coeffs['k3'][i])+'\t'+
-                            str(self.torsion_coeffs['k4'][i])+'\n'
+                            str(i)+'\t'+
+                            str(self.dihedral_coeffs[i][1])+'\t'+
+                            str(self.dihedral_coeffs[i][2])+'\t'+
+                            str(self.dihedral_coeffs[i][3])+'\t'+
+                            str(self.dihedral_coeffs[i][4])+'\n'
                             )
 
             if hasattr(self,'improper_coeffs'):    
                 outfile.write('\n Improper Coeffs \n \n')
-                for i in range(len(self.improper_coeffs['k'])):
+                for i in self.improper_coeffs:
                     outfile.write(
-                            str(self.improper_coeffs['type'][i])+'\t'+
-                            str(self.improper_coeffs['k'][i])+'\t'+
-                            str(self.improper_coeffs['r'][i])+'\n'
+                            str(i)+'\t'+
+                            str(self.improper_coeffs[i][1])+'\t'+
+                            str(self.improper_coeffs[i][2])+'\n'
                             )
 
 

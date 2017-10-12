@@ -1,4 +1,5 @@
 import numpy as np
+import copy
 
 class Combine(object):
     def __init__(self,sim1,sim2):
@@ -7,16 +8,40 @@ class Combine(object):
         natoms1 = len(sim1.coords)
         nmols1 = np.amax(sim1.molecule_labels)
         
-        self.box_dimensions = sim1.box_dimensions
-        self.atom_charges = self.join(sim1.atom_charges,
-                                      sim2.atom_charges)
+       
+        self.pair_coeffs = sim1.pair_coeffs
+        self.masses = sim1.masses
+        for i in sim2.vdw_defs:
+            exists_in_sim1 = 0
+            for j in sim1.vdw_defs:
+                if sim1.vdw_defs[j] == sim2.vdw_defs[i]:
+                    exists_in_sim1 += 1
+                    sim2.atom_labels = self.replace_labels(sim2.atom_labels,i,j)
+            if not exists_in_sim1:
+                new_label = max(self.pair_coeffs.keys()) + 1
+                self.pair_coeffs[new_label] = sim2.pair_coeffs[i]
+                self.masses[new_label] = sim2.masses[i]
+                sim2.atom_labels = self.replace_labels(sim2.atom_labels,i,new_label)
+            elif exists_in_sim1 > 1:
+                raise IndexError(exists_in_sim1)
         
+        self.box_dimensions = sim1.box_dimensions
+ 
+        for thing in ['bond','angle','improper']:
+            coeff = thing+'_coeffs'
+            types = thing+'_types'
+            labels= thing+'_labels'
+#            N     = 'N'+thing+'_types'
+            self.combine_coeff(sim1, sim2, coeff,types,labels)
+        self.combine_coeff(sim1, sim2,'dihedral_coeffs','torsion_types','torsion_labels')
+
+       
         for attr in ['coords','bonds','angles','torsions','impropers']:
             attr1 = getattr(sim1,attr)
             attr2 = getattr(sim2,attr)
             setattr(self,attr,self.stack(attr1,attr2))
         
-        for attr in ['atom_labels','bond_labels','angle_labels',
+        for attr in ['atom_charges','atom_labels','bond_labels','angle_labels',
                      'torsion_labels','improper_labels']:
             attr1 = getattr(sim1,attr)
             attr2 = getattr(sim2,attr)
@@ -25,13 +50,40 @@ class Combine(object):
         self.molecule_labels=self.join(
                 sim1.molecule_labels,
                 list(np.array(sim2.molecule_labels)+nmols1))
+ 
         
-        for coeff in ['pair_coeffs','bond_coeffs','angle_coeffs',
-                      'torsion_coeffs','improper_coeffs','masses']:
-            if hasattr(sim1,coeff):
-                setattr(self,coeff,getattr(sim1,coeff))
-            print coeff
-            print getattr(self,coeff)
+    def combine_coeff(self, sim1, sim2, coeff, types, labels):
+        setattr(self,coeff, getattr(sim1,coeff))
+        new_coeffs = copy.deepcopy(getattr(self, coeff))
+        types1 = getattr(sim1,types)
+        types2 = getattr(sim2,types)
+        for i in range(len(types2)):
+            def2  = [sim2.vdw_defs[a] for a in types2[i]]
+            exists_in_sim1 = 0
+            for j in range(len(types1)):
+                def1 = [sim1.vdw_defs[a] for a in types1[j]]
+                if (def1 == def2) or (def1 == list(reversed(def2))):
+                    print 'matched',coeff,i+1,j+1,def1,def2
+                    exists_in_sim1 += 1
+                    new_labels = self.replace_labels(getattr(sim2,labels),i+1,j+1)
+                    setattr(sim2,labels,new_labels)
+            if not exists_in_sim1:
+                new_label = max(new_coeffs.keys()) + 1
+                new_coeff = getattr(sim2,coeff)[i+1]
+                new_coeffs[new_label] = new_coeff
+                new_labels = self.replace_labels(getattr(sim2,labels),i+1,new_label)
+                setattr(sim2,labels,new_labels)
+            elif exists_in_sim1 > 1:
+                raise IndexError(exists_in_sim1)
+        setattr(self,coeff,new_coeffs)
+
+    def replace_labels(self,labels,a,b):
+        count = 0
+        for label in range(len(labels)):
+            if labels[label] == a:
+                labels[label] = b
+                count +=1
+        return labels
 
     def stack(self,array1,array2):
         return np.vstack((array1,array2))

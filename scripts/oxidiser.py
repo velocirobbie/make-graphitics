@@ -87,6 +87,7 @@ class Oxidiser(object):
 
 
     def generate_connections(self,crystal):
+        """
         crystal.bond_types = [[1,1], # Cg-Cg 1
                       [1,2], # Cg-Hg 2
                       [1,3], # Cg-Ct 3 
@@ -104,8 +105,10 @@ class Oxidiser(object):
                       [3,11], # Ct-Cs 15
                       [11,11] # Cs-Cs 16
                       ]
-
+        """
         connect = Connector()
+        crystal.bond_types = connect.find_bond_types(crystal.atom_labels,
+                                                        crystal.bonds)
         crystal.bond_labels = connect.bond_labels(
                 crystal.atom_labels,crystal.bonds,
                 crystal.bond_types)

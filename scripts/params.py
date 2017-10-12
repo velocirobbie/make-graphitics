@@ -1,11 +1,11 @@
 import yaml
 from opls_reader import OPLS_Reader
-
+from connector import Connector
 class Parameterise(object):
     def __init__(self, crystal, vdw_defs, forcefield = 'OPLS'):
         
         self.vdw_defs = vdw_defs
-        
+        crystal.vdw_defs = vdw_defs 
         if forcefield == 'OPLS':
             paramfile = 'params/oplsaa.prm'
             data = OPLS_Reader(paramfile)
@@ -28,12 +28,43 @@ class Parameterise(object):
         print 'Atom label -> OPLS vdw definitions: \t',  self.vdw_defs
         print 'Atom label -> OPLS type definitions: \t', self.type_defs
 
+        self.generate_connections(crystal)
         crystal.bond_coeffs = self.match_bonds(crystal.bond_types)
         crystal.angle_coeffs = self.match_angles(crystal.angle_types)
-        crystal.torsion_coeffs = self.match_torsions(crystal.torsion_types)
+        crystal.dihedral_coeffs = self.match_torsions(crystal.torsion_types)
         crystal.improper_coeffs = self.match_impropers(crystal.improper_types)
         crystal.pair_coeffs = self.match_pairs()
         crystal.masses = self.match_masses()
+
+    def generate_connections(self,crystal):
+        connect = Connector()
+        crystal.bond_types = connect.find_bond_types(crystal.atom_labels,
+                                                        crystal.bonds)
+        crystal.bond_labels = connect.bond_labels(
+                crystal.atom_labels,crystal.bonds,
+                crystal.bond_types)
+        #
+        crystal.angles = connect.angles(crystal.bonds)
+        crystal.angle_types = connect.find_angle_types(crystal.atom_labels,
+                                                        crystal.angles)
+        crystal.angle_labels = connect.angle_labels(
+                crystal.atom_labels,crystal.angles,
+                crystal.angle_types)
+        #
+        crystal.torsions = connect.torsions(crystal.bonds) 
+        crystal.torsion_types = connect.find_torsion_types(crystal.atom_labels,
+                                                           crystal.torsions)
+        crystal.torsion_labels = connect.torsion_labels(
+                crystal.atom_labels,crystal.torsions,
+                crystal.torsion_types)
+        #
+        crystal.impropers = connect.impropers(crystal.bonds) 
+        crystal.improper_types = connect.find_improper_types(crystal.atom_labels,
+                                                           crystal.impropers)
+        crystal.improper_labels = connect.improper_labels(
+                crystal.atom_labels,crystal.impropers,
+                crystal.improper_types)
+
 
     def match_charges(self):
         charge_data = self.charge_data
@@ -54,15 +85,14 @@ class Parameterise(object):
 
     def match_masses(self):
         mass_data = self.mass_data
-        mass_coeffs = {'a':[], 'm':[]}
+        mass_coeffs = {}
         for label in self.vdw_defs:
             found = 0
             for j in range(len(mass_data['a'])):
                 atom_data = mass_data['a'][j] 
                 if self.vdw_defs[label] == atom_data:
                     found += 1
-                    mass_coeffs['a'] += [label]
-                    mass_coeffs['m']    += [ mass_data['m'][j] ]
+                    mass_coeffs[label] =  mass_data['m'][j]
             if found != 1:
                 raise ValueError('WRONG',label,'\t found ',found,' entries')
         return mass_coeffs
@@ -70,16 +100,16 @@ class Parameterise(object):
         
     def match_pairs(self):
         pair_data = self.pair_data
-        pair_coeffs = {'a':[], 'e':[], 's':[]}
+        pair_coeffs = {}
         for label in self.vdw_defs:
             found = 0
             for j in range(len(pair_data['a'])):
                 atom_data = pair_data['a'][j] 
                 if self.vdw_defs[label] == atom_data:
                     found += 1
-                    pair_coeffs['a'] += [label]
-                    pair_coeffs['e']    += [ pair_data['e'][j] ]
-                    pair_coeffs['s']    += [ pair_data['s'][j] ]
+                    pair_coeffs[label] = {}
+                    pair_coeffs[label][1] = pair_data['e'][j] 
+                    pair_coeffs[label][2] = pair_data['s'][j] 
             if found != 1:
                 raise ValueError('WRONG',label,'\t found ',found,' entries')
         return pair_coeffs
@@ -88,7 +118,7 @@ class Parameterise(object):
 
     def match_bonds(self, bond_types):
         bond_data = self.bond_data
-        bond_coeffs = {'type':[], 'k':[], 'r':[]}
+        bond_coeffs = {}
         for i in range(len(bond_types)):
             a1 = self.type_defs[ bond_types[i][0] ]
             a2 = self.type_defs[ bond_types[i][1] ]
@@ -100,9 +130,9 @@ class Parameterise(object):
                 flag2 = atoms==list(reversed(atom_data))
                 if flag1 or flag2:
                     found += 1
-                    bond_coeffs['type'] += [i+1]
-                    bond_coeffs['k']    += [ bond_data['k'][j] ]
-                    bond_coeffs['r']    += [ bond_data['r'][j] ]
+                    bond_coeffs[i+1] = {}
+                    bond_coeffs[i+1][1] = bond_data['k'][j]
+                    bond_coeffs[i+1][2] = bond_data['r'][j]
             if found != 1:
                 raise ValueError('WRONG',atoms,'\t found ',found,' entries')
         return bond_coeffs
@@ -119,13 +149,13 @@ class Parameterise(object):
                 flag2 = atoms==list(reversed(atom_data))
                 if flag1 or flag2:
                     found += 1
-                    angle_coeffs['type'] += [i+1]
-                    angle_coeffs['k']    += [ angle_data['k'][j] ]
-                    angle_coeffs['r']    += [ angle_data['r'][j] ]
+                    angle_coeffs[i+1] = {}
+                    angle_coeffs[i+1][1] = angle_data['k'][j]
+                    angle_coeffs[i+1][2] = angle_data['r'][j]
             return angle_coeffs, found
 
         angle_data = self.angle_data
-        angle_coeffs = {'type':[], 'k':[], 'r':[]}
+        angle_coeffs = {}
         questionable_substitutions = 0
         for i in range(len(angle_types)):
             a1 = self.type_defs[ angle_types[i][0] ]
@@ -161,12 +191,12 @@ class Parameterise(object):
 
     def match_torsions(self, torsion_types):
         def add_coeff(torsion_data, torsion_coeffs, j):
-            N = len(torsion_coeffs['type'])
-            torsion_coeffs['type'] +=  [N+1]
-            torsion_coeffs['k1']    += [ torsion_data['k1'][j] ]
-            torsion_coeffs['k2']    += [ torsion_data['k2'][j] ]
-            torsion_coeffs['k3']    += [ torsion_data['k3'][j] ]
-            torsion_coeffs['k4']    += [ torsion_data['k4'][j] ]
+            N = len(torsion_coeffs)
+            torsion_coeffs[N+1] = {}
+            torsion_coeffs[N+1][1] = torsion_data['k1'][j]
+            torsion_coeffs[N+1][2] = torsion_data['k2'][j]
+            torsion_coeffs[N+1][3] = torsion_data['k3'][j]
+            torsion_coeffs[N+1][4] = torsion_data['k4'][j]
             return torsion_coeffs
  
         def check_wildcards(atoms, torsion_data, torsion_coeffs):
@@ -219,7 +249,7 @@ class Parameterise(object):
 
 
         torsion_data = self.torsion_data
-        torsion_coeffs = {'type':[], 'k1':[], 'k2':[], 'k3':[], 'k4':[]}
+        torsion_coeffs = {} 
         questionable = 0
         for i in range(len(torsion_types)):
             a1 = self.type_defs[ torsion_types[i][0] ]
@@ -300,13 +330,13 @@ class Parameterise(object):
                 flag3 = data_neighbours == [0,0,0]
                 if flag1 and (flag2 or flag3):
                     found += 1
-                    improper_coeffs['type'] += [i+1]
-                    improper_coeffs['k']    += [ improper_data['k'][j] ]
-                    improper_coeffs['r']    += [ improper_data['r'][j] ]
+                    improper_coeffs[i+1] = {}
+                    improper_coeffs[i+1][1] = improper_data['k'][j]
+                    improper_coeffs[i+1][2] = improper_data['r'][j]
             return improper_coeffs, found
 
         improper_data = self.improper_data
-        improper_coeffs = {'type':[], 'k':[], 'r':[]}
+        improper_coeffs = {}
         questionable_substitutions = 0
         for i in range(len(improper_types)):
             centre = self.type_defs[ improper_types[i][0] ]
