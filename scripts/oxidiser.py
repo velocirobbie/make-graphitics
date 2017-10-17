@@ -25,30 +25,13 @@ class Oxidiser(object):
     9 = Oc, Ketone oxygen
     10 = Oa, alcohol
     5   = Ha, alcohol
-
-    Bond types
-    1 = Cg - Cg
-    2 = Cg - Hg
-    3 = Cg - Ct    
-
-    4 = Ct - Oa
-    5 = Oa - Ha
-
-    6 = Ct - Oe
-    7 = Ct - Ct
-
-    8 = Cg - Oa
-
-    9 = Cg -Cc
-    10 = Cc - Oc
-    11 = Cc - Oa
     """
     
     def __init__(self, crystal, ratio = 2.6,
                  affinity = 0.999,
-                 surface_OHratio = 0.7,
-                 edge_OHratio = 0.3,
-                 edge_carboxyl_ratio = 0.3):
+                 surface_OHratio = 0.5,
+                 edge_OHratio = 0.25,
+                 edge_carboxyl_ratio = 0.25):
         self.crystal = crystal
         self.molecule = crystal.molecule
         
@@ -87,25 +70,6 @@ class Oxidiser(object):
 
 
     def generate_connections(self,crystal):
-        """
-        crystal.bond_types = [[1,1], # Cg-Cg 1
-                      [1,2], # Cg-Hg 2
-                      [1,3], # Cg-Ct 3 
-                      [3,3], # Ct-Ct 4
-                      [3,4], # Ct-Oa 5
-                      [4,5], # Oa-H  6
-                      [3,6], # Ct-Oe 7
-                      [11,7], # Cg-Op 8
-                      [7,5], # Op-H  9
-                      [11,8], # Cg-Cc 10
-                      [8,9], # Cc-Ok 11
-                      [8,10], # Cc-Oc 12
-                      [10,5],  # Oc-H 13
-                      [1,11], # Cg-Cs 14
-                      [3,11], # Ct-Cs 15
-                      [11,11] # Cs-Cs 16
-                      ]
-        """
         connect = Connector()
         crystal.bond_types = connect.find_bond_types(crystal.atom_labels,
                                                         crystal.bonds)
@@ -133,6 +97,76 @@ class Oxidiser(object):
         crystal.improper_labels = connect.improper_labels(
                 crystal.atom_labels,crystal.impropers,
                 crystal.improper_types)
+
+    def find_12_neighbours(self, crystal, i, j):
+        first_neighbours = self.bonded_to(crystal.bonds, i)
+        first_neighbours += self.bonded_to(crystal.bonds, j)
+        first_neighbours = set(first_neighbours) - {i, j}
+        if len(first_neighbours) != 4:
+            raise ValueError ('Not enough first neighbours',i,j, first_neighbours)
+        second_neighbous = {}
+        for n in first_neighbours:
+            second_neighbours  += set(self.bonded_to(crystal.bonds, n))
+        second_neighbours = second_neighbours - first_neighbours
+        if len(second_neighbours) != 8:
+            raise ValueError ('Not enough second neighbours',i,j,second_neighbours)
+
+
+
+    def bonded_to(self, bonds, centre):
+        ibonds = self.find_connections(bonds,centre)
+        bonded_to = []
+        for x in ibonds:
+            bonded_to += [ bonds[x[0]][x[1]-1]]
+        return bonded_to
+        
+
+    def find_connections(self,bonds,centre):
+        connections = np.where(bonds==centre)
+        connections = np.vstack((connections[0],
+                                 connections[1]))
+        return connections.transpose()  
+
+    def neighbour_matrix(self, crystal):
+        Nbonds = len(crystal.bonds)
+        neighbours = np.empty(Nbonds,14)
+        for i in range(Nbonds):
+            c1 = crystal.bonds[i][0]-1
+            c2 = crystal.bonds[i][1]-1
+            label1 = crystal.atom_labels[ c1 ]
+            label2 = crystal.atom_labels[ c2 ]
+
+            if label1 == 1 and label2 == 1:
+                self.find_14_neighbours(crystal.bonds, c1, c2)
+ 
+    def affinity_matrix(self, crystal):
+        Nbonds = len(crystal.bonds)
+        affinity = np.zeros(Nbonds)
+        for i in range(Nbonds):
+            c1 = crystal.bonds[i][0]-1
+            c2 = crystal.bonds[i][1]-1
+            label1 = crystal.atom_labels[ c1 ]
+            label2 = crystal.atom_labels[ c2 ]
+            
+            # if i is a graphitic bond
+            if label1 == 1 and label2 == 1:
+                # is it near oxidised sections
+                bonded_to = (  self.bonded_to(crystal.bonds,c1+1) 
+                             + self.bonded_to(crystal.bonds,c2+1))
+                mc = np.random.random()
+                sp3_C = [3]
+                edge = [2,8]
+                edge_flag =  False
+                for atom in bonded_to:
+                    if crystal.atom_labels[atom -1] in sp3_C:
+                        mc += 0.25
+                    if crystal.atom_labels[atom -1] in edge:
+                        edge_flag = True
+                        break
+                if mc > self.affinity and not edge_flag:
+                    self.add_epoxy(crystal,c1,c2)
+                    searching = False
+        return attempts
 
 
 
@@ -181,8 +215,8 @@ class Oxidiser(object):
         print 'C/O = ',float(self.Ncarbons+carboxyl)/(N+e+o)
         print 'OH/epoxy = ',float(OH_added+o)/(epoxy_added+e)
         print 'Carboxy : OH : epoxy ratio = 1:',\
-              float(OH_added+o)/carboxyl,':',\
-              float(epoxy_added+e)/carboxyl
+              #float(OH_added+o)/carboxyl,':',\
+              #float(epoxy_added+e)/carboxyl
         
     def oxidise_islands(self, crystal):
         removed = 1 # not 0
@@ -220,7 +254,7 @@ class Oxidiser(object):
                     sp3_flag = 0
                     for atom in bonded_to:
                       if crystal.atom_labels[atom -1] in sp3:
-                          sp3_flag += 1
+                           sp3_flag += 1
                     # if bond is surrounded by sp3 carbons
                     if sp3_flag >= 3:
                       self.add_OH(crystal, i)
