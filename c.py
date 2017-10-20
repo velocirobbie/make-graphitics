@@ -6,12 +6,17 @@ from scripts import *
 print '===='
 config = yaml.load(open('config.yaml'))
 forcefield = 'OPLS'
-R=20
+R=50
 motif = Graphene(config,forcefield)
-layer = Crystal(motif,config,forcefield,[10,10,1])
+layer = Crystal(motif,config,forcefield,[30,20,1])
+#motif = Hexagon_Graphene(config,forcefield,R)
+#layer = Crystal(motif,config,forcefield,[1,1,1])
 
 a = Oxidiser(layer)
 
+name = 'test'
+output = Writer(layer,name)
+output.write_xyz(name+'.xyz')
 Parameterise(layer, a.vdw_defs)
 
 layer.coords = layer.coords + np.array(([R+5,R+5,7]))
@@ -22,9 +27,8 @@ layer.coords = layer.coords + np.array(([R+5,R+5,7]))
 #b = Oxidiser(base)
 
 #Parameterise(base, {1:90, 2:91})
-
-name = 'test'
 output = Writer(layer,name)
 output.write_xyz(name+'.xyz')
+
 output.write_lammps(name+'.data')
 

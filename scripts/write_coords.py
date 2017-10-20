@@ -40,8 +40,8 @@ class Writer(object):
             self.pair_coeffs = sim.pair_coeffs
 
 
-    def write_xyz(self,filename='out.xyz'):
-        with open(filename,'w') as outfile:
+    def write_xyz(self,filename='out.xyz',option='w'):
+        with open(filename,option) as outfile:
             outfile.write(str(len(self.coords))+'\n'
                     +self.system_name+'\n')
             for i in range(len(self.coords)):

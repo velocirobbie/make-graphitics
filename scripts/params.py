@@ -1,6 +1,7 @@
 import yaml
 from opls_reader import OPLS_Reader
 from connector import Connector
+
 class Parameterise(object):
     def __init__(self, crystal, vdw_defs, forcefield = 'OPLS'):
         
@@ -183,8 +184,8 @@ class Parameterise(object):
                             print atoms
                             questionable_substitutions +=1
             if found != 1:
-                 #raise ValueError('WRONG',atoms,'\t found ',found,' entries')
-                 print 'WRONG',atoms,'\t found ',found,' entries'
+                 raise ValueError('WRONG',atoms,'\t found ',found,' entries')
+                 #print 'WRONG',atoms,'\t found ',found,' entries'
         if questionable_substitutions != 0:
             print 'made ',questionable_substitutions,' questionable angle subs'
         return angle_coeffs
