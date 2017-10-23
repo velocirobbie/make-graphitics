@@ -156,38 +156,37 @@ class Oxidiser(object):
         hbond = 0
         edge = 0
         for state in first:
-            if state== 1: steric += 0.610318076137
-            elif state == 2: steric += 0.610318076137 * 0.547430432372
+            if state== 1: steric += 1.3328772415604964
+            elif state == 2: steric += 1.3328772415604964 * 0.5
+            if abs(state) == 1: polar += 1.0978889559754457
+            if abs(state) == 2: polar += 1.0978889559754457 * 0.5 
             
-            if abs(state) == 1: polar += 1.97745232158
-            if abs(state) == 2: polar += 1.1950676471
-            
-            #if state == 1: hbond = 
+            if state == 1: hbond = 1.5263058867778692
         
         for state in second:
-            #if state == 1: steric += 1.069365535
-            #if state == 2: steric += 0.839279330626
+            if state == 1: steric += 0.5 * 1.3328772415604964
+            if state == 2: steric += 0.25 * 1.3328772415604964
             
-            #if abs(state) == 1: polar += 4.93880736283
-            #if abs(state) == 2: polar += 0.363145395117
+            if abs(state) == 1: polar += 1.0978889559754457 * 0.5
+            if abs(state) == 2: polar += 1.0978889559754457 * 0.25
 
-            if state == 1: hbond += 1.82536470614
+            if state == 1: hbond += 2.9325361966621455
             
             if state == 3: edge = 1
         
-        steric = (2.14478715768 * steric 
-                 #-3 * steric * steric)
-                 -5.55235671735 * steric * steric)
-        polar  = (9.27970520447 * polar
-                 -0.789013649909 * polar * polar)
-        hbond  = (6.7174359018 * hbond
-                 -1.41659237429 * hbond * hbond) 
+        steric = (0* steric 
+                  -1.199279171333637 * steric * steric)
+        polar  = (11.833310844397628 * polar
+                  -0.85431507225243342 * polar * polar)
+        hbond  = (3.94174500288208 * hbond
+                  -0.71015308819006484 * hbond * hbond) 
 
         if edge:
             rate = 1
             #print n, edge
         else:
             rate = 10 ** (steric + polar + hbond)
+            #rate =  2 ** (steric + polar + hbond)
             #print rate,  n
         return rate
 
@@ -240,7 +239,10 @@ class Oxidiser(object):
         epoxy_attempts = 0 
         while N < Ntotal:
             site, above = self.find_site()
-
+            print site,above
+            print self.CCbonds[site]
+            print self.affinities_above[site]
+            print self.neighbours[site]
             r = np.random.random()
             if r < self.surface_OHratio:
                 r2 = np.random.randint(2)
