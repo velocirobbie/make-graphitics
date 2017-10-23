@@ -82,19 +82,21 @@ class Oxidiser(object):
         expected_first_neighbours = 4
         expected_second_neighbours = 8
 
-        first_neighbours = self.bonded_to(crystal.bonds, i)
-        first_neighbours += self.bonded_to(crystal.bonds, j)
+        first_neighbours = self.bonded_to(crystal.bonds, i-1)
+        first_neighbours += self.bonded_to(crystal.bonds, j-1)
+        first_neighbours = [n+1 for n in first_neighbours]
         first_neighbours = set(first_neighbours) - {i, j}
         if len(first_neighbours) != expected_first_neighbours:
             raise ValueError ('Not enough first neighbours',i,j, first_neighbours)
         
         second_neighbours = set()
         for atom in first_neighbours:
-            if crystal.atom_labels[atom] == 2:
+            if crystal.atom_labels[atom-1] == 2:
                 expected_second_neighbours -= 2
         for n in first_neighbours:
             second_neighbours  = (second_neighbours | 
-                                  set(self.bonded_to(crystal.bonds, n)) )
+                            set(self.bonded_to(crystal.bonds, n-1)) )
+        second_neighbours = {n+1 for n in second_neighbours}
         second_neighbours = second_neighbours - first_neighbours - {i,j}
         if len(second_neighbours) != expected_second_neighbours:
             raise ValueError ('Not enough second neighbours',i,j,second_neighbours)
@@ -109,7 +111,7 @@ class Oxidiser(object):
             first_neighbours = self.neighbours[i][0:4]
             
             for atom in first_neighbours:
-                if crystal.atom_labels[atom] == 2:
+                if crystal.atom_labels[atom-1] == 2:
                     affinities_above[i] = 0
                     affinities_below[i] = 0
         return affinities_above, affinities_below
@@ -118,15 +120,21 @@ class Oxidiser(object):
         Nbonds = len(crystal.bonds)
         CCbonds = []
         neighbours = []
+        n = 0
         for i in range(Nbonds):
-            c1 = crystal.bonds[i][0]-1
-            c2 = crystal.bonds[i][1]-1
-            label1 = crystal.atom_labels[ c1 ]
-            label2 = crystal.atom_labels[ c2 ]
+            c1 = crystal.bonds[i][0]
+            c2 = crystal.bonds[i][1]
+            label1 = crystal.atom_labels[ c1-1 ]
+            label2 = crystal.atom_labels[ c2-1 ]
             
             if label1 == 1 and label2 == 1:
                 CCbonds += [ [c1, c2] ]
                 neighbours += [self.find_12_neighbours(crystal, c1, c2) ]
+            n += 1
+            if n == 1000:
+                print 'wat'
+                print CCbonds[-1]
+                print neighbours[-1]
         return np.array(CCbonds), neighbours
     
     def update_affinity(self, atom):
@@ -239,26 +247,27 @@ class Oxidiser(object):
         epoxy_attempts = 0 
         while N < Ntotal:
             site, above = self.find_site()
-            print site,above
-            print self.CCbonds[site]
-            print self.affinities_above[site]
-            print self.neighbours[site]
+            #print site,above
+            #print self.CCbonds[site]
+            #print self.affinities_above[site]
+            #print self.neighbours[site]
             r = np.random.random()
             if r < self.surface_OHratio:
                 r2 = np.random.randint(2)
-                atom1 = self.CCbonds[site][r2]
+                atom1 = self.CCbonds[site][r2] - 1
                 #atom1 = self.CCbonds[site][1]
                 #atom2 = self.CCbonds[site][0]
                 self.add_OH(crystal, above, atom1)
                 #self.add_OH(crystal, above, atom2)
                 self.atom_states[atom1] = 1 * above
                 #self.atom_states[atom2] = 1 * above
-                self.update_affinity(atom1)
+                self.update_affinity(atom1+1)
                 #self.update_affinity(atom2)
                 OH_added += 2
             else:
                 atom1, atom2 = self.CCbonds[site]
-                self.add_epoxy(crystal, above, *self.CCbonds[site])
+                atom1, atom2 = atom1 -1, atom2-1
+                self.add_epoxy(crystal, above, atom1, atom2)
                 self.atom_states[atom1] = 2 * above
                 self.atom_states[atom2] = 2 * above
                 self.update_affinity(self.CCbonds[site][0])

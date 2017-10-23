@@ -7,10 +7,10 @@ print '===='
 config = yaml.load(open('config.yaml'))
 forcefield = 'OPLS'
 R=50
-motif = Graphene(config,forcefield)
-layer = Crystal(motif,config,forcefield,[25,15,1])
-#motif = Hexagon_Graphene(config,forcefield,R)
-#layer = Crystal(motif,config,forcefield,[1,1,1])
+#motif = Graphene(config,forcefield)
+#layer = Crystal(motif,config,forcefield,[30,20,1])
+motif = Hexagon_Graphene(config,forcefield,R)
+layer = Crystal(motif,config,forcefield,[1,1,1])
 
 a = Oxidiser(layer)
 
