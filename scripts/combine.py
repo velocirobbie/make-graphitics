@@ -8,38 +8,43 @@ class Combine(object):
         natoms1 = len(sim1.coords)
         nmols1 = np.amax(sim1.molecule_labels)
         
-       
-        self.pair_coeffs = sim1.pair_coeffs
-        self.masses = sim1.masses
-        for i in sim2.vdw_defs:
-            exists_in_sim1 = 0
-            for j in sim1.vdw_defs:
-                if sim1.vdw_defs[j] == sim2.vdw_defs[i]:
-                    exists_in_sim1 += 1
-                    sim2.atom_labels = self.replace_labels(sim2.atom_labels,i,j)
-            if not exists_in_sim1:
-                new_label = max(self.pair_coeffs.keys()) + 1
-                self.pair_coeffs[new_label] = sim2.pair_coeffs[i]
-                self.masses[new_label] = sim2.masses[i]
-                sim2.atom_labels = self.replace_labels(sim2.atom_labels,i,new_label)
-            elif exists_in_sim1 > 1:
-                raise IndexError(exists_in_sim1)
+        #self.vdw_defs = copy.deepcopy(sim1.vdw_defs) 
+        #self.pair_coeffs = sim1.pair_coeffs
+        #self.masses = sim1.masses
+        #for i in sim2.vdw_defs:
+        #    exists_in_sim1 = 0
+        #    for j in sim1.vdw_defs:
+        #        if sim1.vdw_defs[j] == sim2.vdw_defs[i]:
+        #            exists_in_sim1 += 1
+        #            sim2.atom_labels = self.replace_labels(sim2.atom_labels,i,j)
+        #    if not exists_in_sim1:
+        #        new_label = max(self.pair_coeffs.keys()) + 1
+        #        self.pair_coeffs[new_label] = sim2.pair_coeffs[i]
+        #        self.masses[new_label] = sim2.masses[i]
+        #        sim2.atom_labels = self.replace_labels(sim2.atom_labels,i,new_label)
+        #        self.vdw_defs[new_label] = sim2.vdw_defs[i]
+
+        #    elif exists_in_sim1 > 1:
+        #        raise Exception(exists_in_sim1)
         
         self.box_dimensions = sim1.box_dimensions
  
-        for thing in ['bond','angle','improper']:
-            coeff = thing+'_coeffs'
-            types = thing+'_types'
-            labels= thing+'_labels'
+        #for thing in ['bond','angle','improper']:
+            #coeff = thing+'_coeffs'
+            #types = thing+'_types'
+            #labels= thing+'_labels'
 #            N     = 'N'+thing+'_types'
-            self.combine_coeff(sim1, sim2, coeff,types,labels)
-        self.combine_coeff(sim1, sim2,'dihedral_coeffs','torsion_types','torsion_labels')
+        #    self.combine_coeff(sim1, sim2, coeff,types,labels)
+        #self.combine_coeff(sim1, sim2,'dihedral_coeffs','torsion_types','torsion_labels')
 
-       
-        for attr in ['coords','bonds','angles','torsions','impropers']:
+        setattr(self,'coords',self.stack(getattr(sim1,'coords'),
+                                         getattr(sim2,'coords')))
+        for attr in ['bonds','angles','torsions','impropers']:
             attr1 = getattr(sim1,attr)
-            attr2 = getattr(sim2,attr)
+            attr2 = getattr(sim2,attr) + len(getattr(sim1,'coords'))
+            #print attr,len(attr1),len(attr2)
             setattr(self,attr,self.stack(attr1,attr2))
+            #print len(getattr(self,attr))
         
         for attr in ['atom_charges','atom_labels','bond_labels','angle_labels',
                      'torsion_labels','improper_labels']:
@@ -53,8 +58,8 @@ class Combine(object):
  
         
     def combine_coeff(self, sim1, sim2, coeff, types, labels):
-        setattr(self,coeff, getattr(sim1,coeff))
-        new_coeffs = copy.deepcopy(getattr(self, coeff))
+        new_types  = copy.deepcopy(getattr(sim1, types))
+        new_coeffs = copy.deepcopy(getattr(sim1, coeff))
         types1 = getattr(sim1,types)
         types2 = getattr(sim2,types)
         for i in range(len(types2)):
@@ -73,9 +78,11 @@ class Combine(object):
                 new_coeffs[new_label] = new_coeff
                 new_labels = self.replace_labels(getattr(sim2,labels),i+1,new_label)
                 setattr(sim2,labels,new_labels)
+                new_types += [ getattr(sim2,types)[i] ]
             elif exists_in_sim1 > 1:
                 raise IndexError(exists_in_sim1)
         setattr(self,coeff,new_coeffs)
+        setattr(self,types,new_types)
 
     def replace_labels(self,labels,a,b):
         count = 0

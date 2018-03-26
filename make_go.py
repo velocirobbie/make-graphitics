@@ -5,7 +5,7 @@ import numpy as np
 
 config = yaml.load(open('config.yaml'))
 forcefield = 'OPLS'
-R=20
+R=30
 motif = Hexagon_Graphene(config,forcefield,R)
 layer = Crystal(motif,config,forcefield,[1,1,1])
 
@@ -14,7 +14,7 @@ layer = Crystal(motif,config,forcefield,[1,1,1])
 
 a = Oxidiser(layer)
 
-p = Parameterise(a.vdw_defs)
+p = Parameterise(layer,a.vdw_defs)
 
 layer.bond_coeffs = p.match_bonds(layer.bond_types)
 layer.angle_coeffs = p.match_angles(layer.angle_types)
@@ -32,6 +32,4 @@ layer.coords = layer.coords + np.array(([R,R,5]))
 name = 'graphene'
 output = Writer(layer,name)
 output.write_xyz(name+'.xyz')
-
-
 output.write_lammps(name+'.data')
