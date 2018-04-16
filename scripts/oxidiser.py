@@ -1,7 +1,7 @@
 import numpy as np
 from connector import Connector
 from write_coords import Writer
-
+from oxidise_rf import init_random_forest
 class Oxidiser(object):
 
     """ 
@@ -34,11 +34,14 @@ class Oxidiser(object):
                  surface_OHratio = 0.5,     # Surface OH/epoxy fraction
                  edge_OHratio = 0.25,       # edge H:OH:carboxyl ratio
                  edge_carboxyl_ratio = 0.25,# edge H:OH:carboxyl ratio
+                 method='empirical',        # which method to calculate a site's affinity 
+                                            #empirical / rf (random forest)
                  video=False):
         self.crystal = crystal
         self.molecule = crystal.molecule
         
         self.affinity = affinity
+        self.method = method
         self.video = video
 
         # C/O ratio 
@@ -60,8 +63,15 @@ class Oxidiser(object):
         for i in range(len(crystal.atom_labels)):
             if crystal.atom_labels[i] == 2:
                 self.atom_states[i] = 3
-
+        
+        self.affinity_order = []
+        if self.method == 'rf':
+            self.rf = init_random_forest()
         self.oxidise(crystal, self.NO)
+        with open('affinity.dat','w') as f:
+            for i in self.affinity_order:
+                f.write(str(i)+'\t'+str(np.log(i))+'\n')
+
         self.generate_connections(crystal)
         self.vdw_defs = {1: 90, # Cg, graphitic (aromatic)
                          2: 91, # Hg, graphitic edge
@@ -105,6 +115,10 @@ class Oxidiser(object):
         epoxy_added = 0
         while N < Ntotal:
             site, above = self.find_site()
+            if above == 0:
+                print 'Could not reach C/O ratio:',self.ratio
+                print N,' oxygens added'
+                break
             r = np.random.random()
             if r < self.surface_OHratio:
                 r2 = np.random.randint(2)
@@ -207,34 +221,52 @@ class Oxidiser(object):
                 self.affinities_below[i] = 0
 
     def calc_affinities(self, site):
+        calc_affinity = getattr(self, 'calc_affinity_' + self.method)
         n = []
         for i in self.neighbours[site]:
             n += [ self.atom_states[i-1] ]
         first = n[0:5]
         second = n [5:]
-        above = self.calc_affinity(first,second) 
+        above = calc_affinity(first,second) 
         self.affinities_above[site] = above
         first = -np.array(first)
         second = -np.array(second)
-        below = self.calc_affinity(first,second)
+        below = calc_affinity(first,second)
         self.affinities_below[site] = below
-        
-    def calc_affinity(self, first, second):
+       
+    def calc_affinity_rf(self, first, second):
+        edge = False
+        X = [0] * 8
+        for state in first:
+            if state == 1: X[0] += 1
+            if state ==-1: X[1] += 1
+            if state == 2: X[2] += 1
+            if state ==-2: X[3] += 1
+        for state in second:
+            if state == 1: X[4] += 1
+            if state ==-1: X[5] += 1
+            if state == 2: X[6] += 1
+            if state ==-2: X[7] += 1
+            if state == 3: edge = True
+        if edge: rate = 1
+        else: 
+            exponent = self.rf.predict([X])
+            rate = 10 ** exponent[0]
+        return rate
+
+    def calc_affinity_empirical(self, first, second):
         steric = 0
         polar = 0
         hbond = 0
         edge = 0
-        p = [ 1.3, 
-              1.7, 
-              1.6]
-        m = [ -5.5, 1,
-              15, -2.2,
-              8.5, -2.2]
+        m = [ -3.867, 0.185,
+              23.169, -5.138,
+              11.648, -4.413]
         for state in first:
-            if state == 1: steric += p[0]
-            elif state == 2: steric += p[0] * 0.5
-            if abs(state) == 1: polar += p[1]
-            if abs(state) == 2: polar += p[1] * 0.5
+            if state == 1: steric += 1
+            elif state == 2: steric += 1
+            if abs(state) == 1: polar += 1
+            if abs(state) == 2: polar += 0.633
             
             #if state == 1: hbond =
         
@@ -245,7 +277,7 @@ class Oxidiser(object):
             #if abs(state) == 1: polar += 1.0978889559754457 * 0.5
             #if abs(state) == 2: polar += 1.0978889559754457 * 0.25
 
-            if state == 1: hbond += p[2]
+            if state == 1: hbond += 1
             
             if state == 3: edge = 1
         
@@ -272,19 +304,19 @@ class Oxidiser(object):
             R += self.affinities_above[i]
             if R > r:
                 above = 1
+                self.affinity_order += [self.affinities_above[i]]
                 break
         if not above:
             for i in range(self.NCCbonds):
                 R += self.affinities_below[i]
                 if R > r:
-                    above = -1
-                    break
-        #c1 = self.crystal.atom_labels[self.CCbonds[i][0]-1]
-        #c2 = self.crystal.atom_labels[self.CCbonds[i][1]-1]
-        #if c1 != 1 or c2 != 1:
-        #   raise Exception(i,c1,c2)
+                 self.affinity_order += [self.affinities_below[i]]
+                 above = -1
+                 break
         if above == 0:
-            raise Exception('Couldnt find a site')
+            #no possible oxidation sites
+            #raise Exception('Couldnt find a site')
+            pass 
             
         return i, above
 
