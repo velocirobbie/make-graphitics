@@ -10,7 +10,7 @@ forcefield = 'OPLS'
 #layer = Crystal(motif,config,forcefield,[1,1,1])
 
 motif = Graphene(config,forcefield)
-layer = Crystal(motif,config,forcefield,[100,58,1])
+layer = Crystal(motif,config,forcefield,[30,17,1])
 
 np.random.seed(42)
 a = Oxidiser(layer, ratio=1, video=100)
