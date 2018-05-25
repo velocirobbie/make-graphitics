@@ -36,12 +36,14 @@ class Oxidiser(object):
                  edge_carboxyl_ratio = 0.25,# edge H:OH:carboxyl ratio
                  method='empirical',        # which method to calculate a site's affinity 
                                             #empirical / rf (random forest)
+                 new_island_freq=0,         # After N additions add a new island
                  video=False):
         self.crystal = crystal
         self.molecule = crystal.molecule
         
         self.affinity = affinity
         self.method = method
+        self.new_island_freq = new_island_freq
         self.video = video
 
         # C/O ratio 
@@ -113,13 +115,34 @@ class Oxidiser(object):
         
         OH_added = 0
         epoxy_added = 0
+        time_elapsed = 0
+        nodes = 0
         while N < Ntotal:
-            site, above = self.find_site()
-            if above == 0:
+            new_island = np.random.poisson(float(time_elapsed) * self.new_island_freq)
+
+            if new_island or (epoxy_added+OH_added == 0):
+                time_elapsed = 0
+                site, above = self.find_new_island()
+                atom1,atom2 = self.CCbonds[site] - 1
+                state1 = self.atom_states[atom1]
+                state2 = self.atom_states[atom2]
+                if state1 or state2:
+                    # already oxidised here
+                    continue
+                    #print N,'new_island failed'
+                nodes += 1
+                #print N,'new_island accepted'
+            else:
+                site, above, time = self.find_site()
+                time_elapsed += time
+                #print N,time,time_elapsed, self.new_island_freq , time_elapsed*self.new_island_freq
+ 
+            if above == 0 or new_island >= 2:
                 print 'Could not reach C/O ratio:',self.ratio
                 print N,' oxygens added'
                 break
-            r = np.random.random()
+
+            r = np.random.random() # between 0,1
             if r < self.surface_OHratio:
                 r2 = np.random.randint(2)
                 atom1 = self.CCbonds[site][r2] - 1
@@ -143,11 +166,12 @@ class Oxidiser(object):
                 print N,'/',Ntotal,'\toxygens added'
         print OH_added,'\tOH were added'
         print epoxy_added,'\tepoxy were added'
+        print nodes,'nodes'
 
 
         e = 0; o = 0
         #o,e = self.oxidise_islands(crystal)
-        print e+o,' island removed, with ',e,' epoxys and ',o,' OH'
+        #print e+o,' island removed, with ',e,' epoxys and ',o,' OH'
         print '=========='
         print 'C/O = ',float(self.Ncarbons+carboxyl)/(N+e+o)
         print 'OH/epoxy = ',float(OH_added+o)/(epoxy_added+e)
@@ -294,7 +318,11 @@ class Oxidiser(object):
             rate = 10 ** (steric + polar + hbond)
         return rate
 
-
+    def find_new_island(self):
+        site = np.random.randint(self.NCCbonds)
+        above = [-1,1][np.random.randint(2)]
+        return site,above
+    
     def find_site(self):
         total = sum(self.affinities_above) + sum(self.affinities_below)
         r = np.random.random() * total
@@ -317,8 +345,8 @@ class Oxidiser(object):
             #no possible oxidation sites
             #raise Exception('Couldnt find a site')
             pass 
-            
-        return i, above
+        time = 1/( total )
+        return i, above, time
 
 
       

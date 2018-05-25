@@ -5,15 +5,15 @@ import numpy as np
 
 config = yaml.load(open('config.yaml'))
 forcefield = 'OPLS'
-#R=30
-#motif = Hexagon_Graphene(config,forcefield,R)
-#layer = Crystal(motif,config,forcefield,[1,1,1])
+R=30
+motif = Hexagon_Graphene(config,forcefield,R)
+layer = Crystal(motif,config,forcefield,[1,1,1])
 
-motif = Graphene(config,forcefield)
-layer = Crystal(motif,config,forcefield,[30,17,1])
+#motif = Graphene(config,forcefield)
+#layer = Crystal(motif,config,forcefield,[30,17,1])
 
 np.random.seed(42)
-a = Oxidiser(layer, ratio=1, video=100)
+a = Oxidiser(layer, ratio=2.5, video=20, new_island_freq=1e16, method='rf')
 """
 p = Parameterise(layer,a.vdw_defs)
 
