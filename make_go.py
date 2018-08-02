@@ -2,6 +2,7 @@ import yaml
 from scripts.molecules import *
 from scripts import *
 import numpy as np
+import json
 
 config = yaml.load(open('config.yaml'))
 forcefield = 'OPLS'
@@ -11,23 +12,20 @@ layer = Crystal(motif,config,forcefield,[1,1,1])
 
 #motif = Graphene(config,forcefield)
 #layer = Crystal(motif,config,forcefield,[30,17,1])
-
-np.random.seed(42)
-a = Oxidiser(layer, ratio=2.5, video=20, new_island_freq=1e16, method='rf')
-"""
+#np.random.seed(12)
+a = Oxidiser(layer, ratio=2.5, video=20, new_island_freq=1e16)#, method='rf')
+json.dump(a.vdw_defs,open('vdw_defs.json','w'))
 p = Parameterise(layer,a.vdw_defs)
+#r = Reducer(layer,a.vdw_defs)
+#offset for polymerisation step
+#qs = ['atom','bond','angle','torsion','improper']
+#off =[24, 24,47, 56, 4]
+#for i,q_i in enumerate(qs):
+#    qlist = q_i+'_labels'
+#    q = np.array(getattr(layer, qlist))
+#    print type(q)
+#    setattr(layer, qlist, q + off[i]) 
 
-layer.bond_coeffs = p.match_bonds(layer.bond_types)
-layer.angle_coeffs = p.match_angles(layer.angle_types)
-layer.torsion_coeffs = p.match_torsions(layer.torsion_types)
-layer.improper_coeffs = p.match_impropers(layer.improper_types)
-layer.pair_coeffs = p.match_pairs()
-layer.masses = p.match_masses()
-print layer.angle_labels
-print layer.masses
-print layer.pair_coeffs
-print layer.bond_coeffs
-"""
 #layer.coords = layer.coords + np.array(([R,R,5]))
 
 name = 'graphene'

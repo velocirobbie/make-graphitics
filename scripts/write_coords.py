@@ -32,8 +32,8 @@ class Writer(object):
             self.bond_coeffs = sim.bond_coeffs
         if hasattr(sim,'angle_coeffs'): 
             self.angle_coeffs = sim.angle_coeffs
-        if hasattr(sim,'dihedral_coeffs'): 
-            self.dihedral_coeffs = sim.dihedral_coeffs
+        if hasattr(sim,'torsion_coeffs'): 
+            self.dihedral_coeffs = sim.torsion_coeffs
         if hasattr(sim,'improper_coeffs'): 
             self.improper_coeffs = sim.improper_coeffs
         if hasattr(sim,'pair_coeffs'): 

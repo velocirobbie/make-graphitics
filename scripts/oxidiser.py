@@ -30,18 +30,16 @@ class Oxidiser(object):
     
     def __init__(self, crystal, 
                  ratio = 2.5,               # Target overall C:O ratio
-                 affinity = 0.999999,       # How often to start new island
                  surface_OHratio = 0.5,     # Surface OH/epoxy fraction
                  edge_OHratio = 0.25,       # edge H:OH:carboxyl ratio
                  edge_carboxyl_ratio = 0.25,# edge H:OH:carboxyl ratio
                  method='empirical',        # which method to calculate a site's affinity 
                                             #empirical / rf (random forest)
-                 new_island_freq=0,         # After N additions add a new island
+                 new_island_freq=0,         # Freq s-1 attempt to add new island 
                  video=False):
         self.crystal = crystal
         self.molecule = crystal.molecule
         
-        self.affinity = affinity
         self.method = method
         self.new_island_freq = new_island_freq
         self.video = video
@@ -67,12 +65,18 @@ class Oxidiser(object):
                 self.atom_states[i] = 3
         
         self.affinity_order = []
+        self.time_order = []
+        self.time_elapsed_list = []
+        self.node_order = []
         if self.method == 'rf':
             self.rf = init_random_forest()
         self.oxidise(crystal, self.NO)
         with open('affinity.dat','w') as f:
-            for i in self.affinity_order:
-                f.write(str(i)+'\t'+str(np.log(i))+'\n')
+            for i,a in enumerate(self.affinity_order):
+                f.write(str(a)+'\t'+str(np.log(a))+'\t'+
+                        str(self.time_order[i])+'\t'+
+                        str(self.time_elapsed_list[i])+'\t'+
+                        str(self.node_order[i])+'\n')
 
         self.generate_connections(crystal)
         self.vdw_defs = {1: 90, # Cg, graphitic (aromatic)
@@ -91,6 +95,7 @@ class Oxidiser(object):
                          10: 211 # Oa, alcohol
                          #5   = Ha, alcohol
                          }
+        crystal.vdw_defs = self.vdw_defs
 
     def oxidise(self, crystal, Ntotal):
         # edges first
@@ -115,10 +120,12 @@ class Oxidiser(object):
         
         OH_added = 0
         epoxy_added = 0
-        time_elapsed = 0
+        time_elapsed = 0 # since last new island
         nodes = 0
         while N < Ntotal:
             new_island = np.random.poisson(float(time_elapsed) * self.new_island_freq)
+            self.node_order += [new_island]
+            self.time_elapsed_list += [time_elapsed]
 
             if new_island or (epoxy_added+OH_added == 0):
                 time_elapsed = 0
@@ -131,7 +138,7 @@ class Oxidiser(object):
                     continue
                     #print N,'new_island failed'
                 nodes += 1
-                #print N,'new_island accepted'
+                print 'new_island accepted,',nodes,'nodes'
             else:
                 site, above, time = self.find_site()
                 time_elapsed += time
@@ -144,6 +151,7 @@ class Oxidiser(object):
 
             r = np.random.random() # between 0,1
             if r < self.surface_OHratio:
+                # add OH
                 r2 = np.random.randint(2)
                 atom1 = self.CCbonds[site][r2] - 1
                 self.add_OH(crystal, above, atom1)
@@ -151,6 +159,7 @@ class Oxidiser(object):
                 self.update_affinity(atom1+1)
                 OH_added += 1
             else:
+                # add epoxy
                 atom1, atom2 = self.CCbonds[site]
                 atom1, atom2 = atom1 -1, atom2-1
                 self.add_epoxy(crystal, above, atom1, atom2)
@@ -163,7 +172,7 @@ class Oxidiser(object):
             if self.video and not N % self.video:
                 out = Writer(crystal)
                 out.write_xyz(option='a')
-                print N,'/',Ntotal,'\toxygens added'
+                print N,'/',Ntotal,'\toxygens added\t',nodes,'nodes'
         print OH_added,'\tOH were added'
         print epoxy_added,'\tepoxy were added'
         print nodes,'nodes'
@@ -345,7 +354,9 @@ class Oxidiser(object):
             #no possible oxidation sites
             #raise Exception('Couldnt find a site')
             pass 
+        
         time = 1/( total )
+        self.time_order += [time]
         return i, above, time
 
 

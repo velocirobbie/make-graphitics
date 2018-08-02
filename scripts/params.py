@@ -32,7 +32,7 @@ class Parameterise(object):
         self.generate_connections(crystal)
         crystal.bond_coeffs = self.match_bonds(crystal.bond_types)
         crystal.angle_coeffs = self.match_angles(crystal.angle_types)
-        crystal.dihedral_coeffs = self.match_torsions(crystal.torsion_types)
+        crystal.torsion_coeffs = self.match_torsions(crystal.torsion_types)
         crystal.improper_coeffs = self.match_impropers(crystal.improper_types)
         crystal.pair_coeffs = self.match_pairs()
         crystal.masses = self.match_masses()
