@@ -178,12 +178,12 @@ class Oxidiser(object):
         print nodes,'nodes'
 
 
-        e = 0; o = 0
-        #o,e = self.oxidise_islands(crystal)
-        #print e+o,' island removed, with ',e,' epoxys and ',o,' OH'
         print '=========='
-        print 'C/O = ',float(self.Ncarbons+carboxyl)/(N+e+o)
-        print 'OH/epoxy = ',float(OH_added+o)/(epoxy_added+e)
+        print 'C/O = ',float(self.Ncarbons+carboxyl)/(N)
+        if epoxy_added != 0:
+            print 'OH/epoxy = ',float(OH_added)/(epoxy_added)
+        else:
+            print 'OH/epoxy = inf'
         #print 'Carboxy : OH : epoxy ratio = 1:'#,\
               #float(OH_added+o)/carboxyl,':',\
               #float(epoxy_added+e)/carboxyl
@@ -221,7 +221,6 @@ class Oxidiser(object):
         affinities_below = np.ones(self.NCCbonds)
         for i in range(self.NCCbonds):
             first_neighbours = self.neighbours[i][0:4]
-            
             for atom in first_neighbours:
                 if crystal.atom_labels[atom-1] == 2:
                     affinities_above[i] = 0
@@ -328,10 +327,29 @@ class Oxidiser(object):
         return rate
 
     def find_new_island(self):
-        site = np.random.randint(self.NCCbonds)
-        above = [-1,1][np.random.randint(2)]
-        return site,above
-    
+        total = ( sum(np.array(self.affinities_above != 0)) 
+                + sum(np.array(self.affinities_below != 0)) )
+        r = np.random.random() * total
+        R = 0
+        above = 0
+        for i in range(self.NCCbonds):
+            R += self.affinities_above[i]
+            if R > r:
+                above = 1
+                break
+        if not above:
+            for i in range(self.NCCbonds):
+                R += self.affinities_below[i]
+                if R > r:
+                 above = -1
+                 break
+        if above == 0:
+            #no possible oxidation sites
+            raise Exception('Couldnt find a new island site')
+            pass 
+        
+        return i, above
+
     def find_site(self):
         total = sum(self.affinities_above) + sum(self.affinities_below)
         r = np.random.random() * total
