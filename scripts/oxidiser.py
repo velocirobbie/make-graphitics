@@ -484,13 +484,13 @@ class Oxidiser(object):
 
         c1c2 = crystal.coords[c2]-crystal.coords[c1]
         if c1c2[0] > 2:
-            c1c2[0] += crystal.box_dimensions[0]
+            c1c2[0] += crystal.box_dimensions[0,1]
         elif c1c2[0] < -2:
-            c1c2[0] += crystal.box_dimensions[0]
+            c1c2[0] += crystal.box_dimensions[0,1]
         if c1c2[1] > 2:
-            c1c2[1] += crystal.box_dimensions[1]
+            c1c2[1] += crystal.box_dimensions[1,1]
         elif c1c2[1] < -2:
-            c1c2[1] += crystal.box_dimensions[1]
+            c1c2[1] += crystal.box_dimensions[1,1]
         CO = 0.9 * above
         o_coord = ( crystal.coords[c1] 
                     + np.array([0,0,CO])

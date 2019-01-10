@@ -8,22 +8,19 @@ class Writer(object):
         # them in different formats for viewing/modelling
         self.coords = sim.coords
         self.atom_labels = sim.atom_labels
-        self.natom_types = len(np.unique(self.atom_labels))
         self.molecule = sim.molecule_labels
         self.charges = sim.atom_charges
+        
         self.bonds = sim.bonds
         self.bond_labels = sim.bond_labels
-        self.nbond_types = len(np.unique(self.bond_labels))
         self.angles = sim.angles
         self.angle_labels = sim.angle_labels
-        self.nangle_types = len(np.unique(self.angle_labels))
         self.dihedrals = sim.dihedrals
         self.dihedral_labels = sim.dihedral_labels
-        self.ndihedral_types = len(np.unique(self.dihedral_labels))
         self.impropers = sim.impropers
         self.improper_labels = sim.improper_labels
-        self.nimproper_types = len(np.unique(self.improper_labels))
-        self.size = sim.box_dimensions
+        
+        self.box_dimensions = sim.box_dimensions
         self.system_name = system_name
 
         if hasattr(sim,'masses'): 
@@ -38,8 +35,20 @@ class Writer(object):
             self.improper_coeffs = sim.improper_coeffs
         if hasattr(sim,'pair_coeffs'): 
             self.pair_coeffs = sim.pair_coeffs
-
-
+        
+        type_lists = {'atom'    : 'pair_coeffs',
+                      'bond'    : 'bond_coeffs',
+                      'angle'   : 'angle_coeffs',
+                      'dihedral': 'dihedral_coeffs',
+                      'improper': 'improper_coeffs'}
+        for type_list in type_lists:
+            maxlabel = max( getattr(self,type_list+'_labels') )
+            coeff = type_lists[type_list]
+            if hasattr(sim,coeff):
+                maxcoeff = max( getattr(self,coeff))
+            else: maxcoeff = 0
+            setattr(self,'n'+type_list+'_types', max(maxcoeff, maxlabel))
+                        
     def write_xyz(self,filename='out.xyz',option='w'):
         with open(filename,option) as outfile:
             outfile.write(str(len(self.coords))+'\n'
@@ -77,10 +86,13 @@ class Writer(object):
                     str(self.nangle_types)+' angle types \n'+
                     str(self.ndihedral_types)+' dihedral types \n'+
                     str(self.nimproper_types)+' improper types \n'+
-                    '\n'
-                    '0.0 \t'+str(self.size[0])+'\t xlo xhi \n'
-                    '0.0 \t'+str(self.size[1])+'\t ylo yhi \n'
-                    '0.0 \t'+str(self.size[2])+'\t zlo zhi \n'
+                    '\n'+
+                    str(self.box_dimensions[0,0])+'\t'+
+                    str(self.box_dimensions[0,1])+'\t xlo xhi \n'+
+                    str(self.box_dimensions[1,0])+'\t'+
+                    str(self.box_dimensions[1,1])+'\t ylo yhi \n'+
+                    str(self.box_dimensions[2,0])+'\t'+
+                    str(self.box_dimensions[2,1])+'\t zlo zhi \n'+
                     '\n')
             if hasattr(self,'masses'):
                 outfile.write('\n Masses \n \n')

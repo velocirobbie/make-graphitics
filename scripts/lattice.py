@@ -43,4 +43,5 @@ class Lattice(object):
 
     def system_size(self,Nlattice_points):
         box_vectors = np.array(Nlattice_points)*np.array(self.cell_dimensions)
-        return box_vectors
+        box_dimensions = np.vstack((np.zeros(3),box_vectors)).transpose()
+        return box_dimensions

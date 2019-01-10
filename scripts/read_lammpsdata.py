@@ -11,14 +11,14 @@ class ReadLammpsData(object):
         ReadLammpsData.__dict__ = obj.__dict__.copy()
         """
         self.filename = filename
-        self.attributes = {'masses', 'coords', 'molecules', 
-                      'charges', 'types',
-                      'xlo', 'xhi', 'ylo', 'yhi', 'zlo', 'zhi',
-                      'bonds', 'bond_types','Nbond_types',
-                      'angles', 'angle_types','Nangle_types',
-                      'dihedrals', 'dihedral_types',
+        self.attributes = {'masses', 'coords', 'molecule_labels', 
+                      'atom_charges', 'atom_labels',
+                      'box_dimensions',
+                      'bonds', 'bond_labels','Nbond_types',
+                      'angles', 'angle_labels','Nangle_types',
+                      'dihedrals', 'dihedral_labels',
                       'Ndihedral_types',
-                      'impropers', 'improper_types',
+                      'impropers', 'improper_labels',
                       'Nimproper_types',
                       'pair_coeffs','bond_coeffs','angle_coeffs',
                       'dihedral_coeffs','improper_coeffs'}
@@ -33,12 +33,13 @@ class ReadLammpsData(object):
             while self.count < number_of_lines:
                 line = self.read(datafile)
                 self.analyse(line,datafile)
-
+        self.box_dimensions = np.array([[self.xlo,self.xhi],
+                                        [self.ylo,self.yhi],
+                                        [self.zlo,self.zhi]])
         self.validate()
         extra_attributes = set(self.__dict__.keys())-self.attributes
         for attribute in extra_attributes:
             delattr(self,attribute)
-            
 
 
     def read(self,datafile):
@@ -127,65 +128,63 @@ class ReadLammpsData(object):
                 func(datafile)
 
     def read_masses(self,datafile):
-        self.masses = np.zeros(self.Natom_types)
+        self.masses = {}
         for i in range(self.Natom_types):
             line = self.read(datafile)
-            index = int(line[0]) - 1
-            atom_type = int(index)
-            atom_mass = float(line[1])
-            self.masses[atom_type] = atom_mass
+            self.masses[int(line[0])] = float(line[1])
 
     def read_atoms(self,datafile):
         self.coords = np.zeros((self.Natoms,3))
-        self.charges = np.zeros(self.Natoms)
-        self.molecules = np.zeros(self.Natoms)
-        self.types = np.zeros(self.Natoms)
+        self.atom_charges = np.zeros(self.Natoms)
+        self.molecule_labels = np.zeros(self.Natoms,dtype=int)
+        self.atom_labels = np.zeros(self.Natoms,dtype=int)
         for i in range(self.Natoms):
             line = self.read(datafile)
             index = int(line[0]) - 1
             self.coords[index] = line[4:7]
-            self.molecules[index] = line[1]
-            self.types[index] = line[2]
-            self.charges[index] = line[3]
+            self.molecule_labels[index] = line[1]
+            self.atom_labels[index] = line[2]
+            self.atom_charges[index] = line[3]
 
     def read_velocities(self,datafile):
         print '--- Ignoring Velocities --- noone cares'
         for i in range(self.Natoms):
             line = self.read(datafile)
 
-    def read_data_line(self,datafile,types,atoms):
+    def read_data_line(self,datafile,atom_labels,atoms):
         line = self.read(datafile)
         index = int(line[0]) - 1 # index line up with numpy array
-        types[index] = line[1]
-        atoms[index] = line[2:]
+        atom_labels[index] = int(line[1])
+        atoms[index] = [int(atom) for atom in line[2:]]
 
     def read_bonds(self,datafile):
-        self.bonds = np.zeros((self.Nbonds,2))
-        self.bond_types = np.zeros((self.Nbonds))
+        self.bonds = np.zeros((self.Nbonds,2),int)
+        self.bond_labels = np.zeros((self.Nbonds),dtype=int)
         for i in range(self.Nbonds):
             self.read_data_line(datafile,
-                                self.bond_types,self.bonds)
+                                self.bond_labels,self.bonds)
+        print self.bond_labels
 
     def read_angles(self,datafile):
-        self.angles = np.zeros((self.Nangles,3))
-        self.angle_types = np.zeros(self.Nangles)
+        self.angles = np.zeros((self.Nangles,3),int)
+        self.angle_labels = np.zeros(self.Nangles,dtype=int)
         for i in range(self.Nangles):
             self.read_data_line(datafile,
-                                self.angle_types,self.angles)
+                                self.angle_labels,self.angles)
 
     def read_dihedrals(self,datafile):
-        self.dihedrals = np.zeros((self.Ndihedrals,4))
-        self.dihedral_types = np.zeros(self.Ndihedrals)
+        self.dihedrals = np.zeros((self.Ndihedrals,4),int)
+        self.dihedral_labels = np.zeros(self.Ndihedrals,dtype=int)
         for i in range(self.Ndihedrals):
             self.read_data_line(datafile,
-                                self.dihedral_types,self.dihedrals)
+                                self.dihedral_labels,self.dihedrals)
 
     def read_impropers(self,datafile):
-        self.impropers = np.zeros((self.Nimpropers,4))
-        self.improper_types = np.zeros(self.Nimpropers)
+        self.impropers = np.zeros((self.Nimpropers,4),int)
+        self.improper_labels = np.zeros(self.Nimpropers,dtype=int)
         for i in range(self.Nimpropers):
             self.read_data_line(datafile,
-                                self.improper_types,self.impropers)
+                                self.improper_labels,self.impropers)
 
     def read_coeffs(self,datafile,coeffs,N):
         setattr(self,coeffs,{})

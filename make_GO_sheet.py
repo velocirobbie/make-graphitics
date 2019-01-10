@@ -7,8 +7,8 @@ from math import pi,cos
 
 config = yaml.load(open('config.yaml'))
 forcefield = 'OPLS'
-x_length = 50 
-y_length = 50
+x_length = 20 
+y_length = 20
 
 # calculate array of unit cells to make sheet
 # unit cell is the orthorombic unit cell of graphene
