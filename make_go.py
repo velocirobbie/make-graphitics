@@ -6,14 +6,15 @@ import json
 
 config = yaml.load(open('config.yaml'))
 forcefield = 'OPLS'
-R=30
-motif = Hexagon_Graphene(config,forcefield,R)
-layer = Crystal(motif,config,forcefield,[1,1,1])
 
-#motif = Graphene(config,forcefield)
-#layer = Crystal(motif,config,forcefield,[30,17,1])
+#R=25
+#motif = Hexagon_Graphene(config,forcefield,R)
+#layer = Crystal(motif,config,forcefield,[1,1,1])
+
+motif = Graphene(config,forcefield)
+layer = Crystal(motif,config,forcefield,[5,9,1])
 #np.random.seed(12)
-a = Oxidiser(layer, ratio=2.5, video=20, new_island_freq=1e16)#, method='rf')
+a = Oxidiser(layer, ratio=2.5, video=20, new_island_freq=1e16, method='rf')
 json.dump(a.vdw_defs,open('vdw_defs.json','w'))
 p = Parameterise(layer,a.vdw_defs)
 #r = Reducer(layer,a.vdw_defs)

@@ -1,5 +1,4 @@
 from read_lammpsdata import ReadLammpsData
-from reduce_params import Reducer
 from params import Parameterise
 from oxidiser import Oxidiser
 from combine import Combine

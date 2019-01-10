@@ -13,7 +13,6 @@ GraFF_77:
     layer_gap: 3.4827
     CH: 1.077
     dq: 0.115
-    
 
 OPLS:
     CC: 1.4148         # OPLS
