@@ -17,9 +17,9 @@ class Writer(object):
         self.angles = sim.angles
         self.angle_labels = sim.angle_labels
         self.nangle_types = len(np.unique(self.angle_labels))
-        self.torsions = sim.torsions
-        self.torsion_labels = sim.torsion_labels
-        self.ntorsion_types = len(np.unique(self.torsion_labels))
+        self.dihedrals = sim.dihedrals
+        self.dihedral_labels = sim.dihedral_labels
+        self.ndihedral_types = len(np.unique(self.dihedral_labels))
         self.impropers = sim.impropers
         self.improper_labels = sim.improper_labels
         self.nimproper_types = len(np.unique(self.improper_labels))
@@ -32,8 +32,8 @@ class Writer(object):
             self.bond_coeffs = sim.bond_coeffs
         if hasattr(sim,'angle_coeffs'): 
             self.angle_coeffs = sim.angle_coeffs
-        if hasattr(sim,'torsion_coeffs'): 
-            self.dihedral_coeffs = sim.torsion_coeffs
+        if hasattr(sim,'dihedral_coeffs'): 
+            self.dihedral_coeffs = sim.dihedral_coeffs
         if hasattr(sim,'improper_coeffs'): 
             self.improper_coeffs = sim.improper_coeffs
         if hasattr(sim,'pair_coeffs'): 
@@ -69,13 +69,13 @@ class Writer(object):
                     str(len(self.coords)) +' atoms \n'+
                     str(len(self.bonds)) +' bonds \n'+
                     str(len(self.angles)) +' angles \n'+
-                    str(len(self.torsions))+' dihedrals \n'+
+                    str(len(self.dihedrals))+' dihedrals \n'+
                     str(len(self.impropers))+' impropers \n'
                     '\n'+
                     str(self.natom_types)+' atom types \n'+
                     str(self.nbond_types)+' bond types \n'+
                     str(self.nangle_types)+' angle types \n'+
-                    str(self.ntorsion_types)+' dihedral types \n'+
+                    str(self.ndihedral_types)+' dihedral types \n'+
                     str(self.nimproper_types)+' improper types \n'+
                     '\n'
                     '0.0 \t'+str(self.size[0])+'\t xlo xhi \n'
@@ -172,16 +172,16 @@ class Writer(object):
                             str(self.angles[i][2])+'\n'
                             )
             
-            if len(self.torsions):
+            if len(self.dihedrals):
                 outfile.write('\n Dihedrals \n \n')
-                for i in range(len(self.torsions)):
+                for i in range(len(self.dihedrals)):
                     outfile.write(
                             str(i+1)+'\t'+
-                            str(self.torsion_labels[i])+' \t'+
-                            str(self.torsions[i][0])+' \t'+
-                            str(self.torsions[i][1])+' \t'+
-                            str(self.torsions[i][2])+' \t'+
-                            str(self.torsions[i][3])+' \n'
+                            str(self.dihedral_labels[i])+' \t'+
+                            str(self.dihedrals[i][0])+' \t'+
+                            str(self.dihedrals[i][1])+' \t'+
+                            str(self.dihedrals[i][2])+' \t'+
+                            str(self.dihedrals[i][3])+' \n'
                             )
             
             if len(self.impropers):

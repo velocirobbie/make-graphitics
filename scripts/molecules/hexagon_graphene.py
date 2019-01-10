@@ -147,9 +147,9 @@ class Hexagon_Graphene(Molecule):
     def connection_types(self):
         bond_types = [[1,1],[1,2]]
         angle_types = [[1,1,1],[1,1,2]]
-        torsion_types = [[1,1,1,1],[1,1,1,2],[2,1,1,2]]
+        dihedral_types = [[1,1,1,1],[1,1,1,2],[2,1,1,2]]
         improper_types = [[1,1,1,1],[1,1,1,2]]
-        return bond_types, angle_types, torsion_types, improper_types
+        return bond_types, angle_types, dihedral_types, improper_types
 
 
 

@@ -7,7 +7,7 @@ class OPLS_Reader(object):
                    'vdw     ': self.add_pair,
                    'bond    ': self.add_bond,
                    'angle   ': self.add_angle,
-                   'torsion ': self.add_torsion,
+                   'torsion ': self.add_dihedral,
                    'charge  ': self.add_charge,
                    'imptors ': self.add_improper}
 
@@ -56,19 +56,19 @@ class OPLS_Reader(object):
         self.angle['k']  += [ float(line[4]) ]
         self.angle['r']  += [ float(line[5]) ]
  
-    def add_torsion(self,line):
+    def add_dihedral(self,line):
         line = line.split()
-        self.torsion['a1'] += [ int(line[1]) ]
-        self.torsion['a2'] += [ int(line[2]) ]
-        self.torsion['a3'] += [ int(line[3]) ]
-        self.torsion['a4'] += [ int(line[4]) ]
-        self.torsion['k1']  += [ float(line[5]) ]
-        self.torsion['k2']  += [ float(line[8]) ]
-        self.torsion['k3']  += [ float(line[11]) ]
+        self.dihedral['a1'] += [ int(line[1]) ]
+        self.dihedral['a2'] += [ int(line[2]) ]
+        self.dihedral['a3'] += [ int(line[3]) ]
+        self.dihedral['a4'] += [ int(line[4]) ]
+        self.dihedral['k1']  += [ float(line[5]) ]
+        self.dihedral['k2']  += [ float(line[8]) ]
+        self.dihedral['k3']  += [ float(line[11]) ]
         if len(line) == 17:
-            self.torsion['k4']  += [ float(line[14]) ]
+            self.dihedral['k4']  += [ float(line[14]) ]
         else:
-            self.torsion['k4']  += [ 0.0 ]
+            self.dihedral['k4']  += [ 0.0 ]
 
     def add_charge(self,line):
         line = line.split()
@@ -89,7 +89,7 @@ class OPLS_Reader(object):
         self.pair = {'a':[], 's':[], 'e':[]}
         self.bond = {'a1':[], 'a2':[], 'k':[], 'r':[]}
         self.angle = {'a1':[], 'a2':[], 'a3':[], 'k':[], 'r':[]}
-        self.torsion = {'a1':[], 'a2':[], 'a3':[], 'a4': [],
+        self.dihedral = {'a1':[], 'a2':[], 'a3':[], 'a4': [],
                         'k1':[], 'k2':[], 'k3':[], 'k4': []}
         self.improper ={'a1':[], 'a2':[], 'centre':[], 'a3':[], 'k':[], 'r':[]}
         self.charge = {'a':[], 'q':[]}

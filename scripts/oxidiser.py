@@ -561,12 +561,12 @@ class Oxidiser(object):
                 crystal.atom_labels,crystal.angles,
                 crystal.angle_types)
         #
-        crystal.torsions = connect.torsions(crystal.bonds) 
-        crystal.torsion_types = connect.find_torsion_types(crystal.atom_labels,
-                                                           crystal.torsions)
-        crystal.torsion_labels = connect.torsion_labels(
-                crystal.atom_labels,crystal.torsions,
-                crystal.torsion_types)
+        crystal.dihedrals = connect.dihedrals(crystal.bonds) 
+        crystal.dihedral_types = connect.find_dihedral_types(crystal.atom_labels,
+                                                           crystal.dihedrals)
+        crystal.dihedral_labels = connect.dihedral_labels(
+                crystal.atom_labels,crystal.dihedrals,
+                crystal.dihedral_types)
         #
         crystal.impropers = connect.impropers(crystal.bonds) 
         crystal.improper_types = connect.find_improper_types(crystal.atom_labels,

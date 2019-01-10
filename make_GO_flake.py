@@ -6,7 +6,7 @@ import json
 
 config = yaml.load(open('config.yaml'))
 forcefield = 'OPLS'
-flake_radius = 25
+flake_radius = 10
 layout = [1,1,1] # make a 1x1x1 array of flakes
 
 motif = Hexagon_Graphene(config,forcefield,flake_radius)

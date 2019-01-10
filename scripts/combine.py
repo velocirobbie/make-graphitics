@@ -35,11 +35,11 @@ class Combine(object):
             #labels= thing+'_labels'
 #            N     = 'N'+thing+'_types'
         #    self.combine_coeff(sim1, sim2, coeff,types,labels)
-        #self.combine_coeff(sim1, sim2,'dihedral_coeffs','torsion_types','torsion_labels')
+        #self.combine_coeff(sim1, sim2,'dihedral_coeffs','dihedral_types','dihedral_labels')
 
         setattr(self,'coords',self.stack(getattr(sim1,'coords'),
                                          getattr(sim2,'coords')))
-        for attr in ['bonds','angles','torsions','impropers']:
+        for attr in ['bonds','angles','dihedrals','impropers']:
             attr1 = getattr(sim1,attr)
             attr2 = getattr(sim2,attr) + len(getattr(sim1,'coords'))
             #print attr,len(attr1),len(attr2)
@@ -47,7 +47,7 @@ class Combine(object):
             #print len(getattr(self,attr))
         
         for attr in ['atom_charges','atom_labels','bond_labels','angle_labels',
-                     'torsion_labels','improper_labels']:
+                     'dihedral_labels','improper_labels']:
             attr1 = getattr(sim1,attr)
             attr2 = getattr(sim2,attr)
             setattr(self,attr,self.join(attr1,attr2))

@@ -47,7 +47,7 @@ class Crystal(object):
 
     def generate_connections(self):
         connect = Connector()
-        bond_types, angle_types, torsion_types, improper_types = self.molecule.connection_types()
+        bond_types, angle_types, dihedral_types, improper_types = self.molecule.connection_types()
         self.bonds = self.molecule.assign_bonds(
                 self.lattice_dimensions)
         self.bond_labels = connect.bond_labels(
@@ -57,9 +57,9 @@ class Crystal(object):
         self.angle_labels = connect.angle_labels(
                 self.atom_labels,self.angles,angle_types)
 
-        self.torsions = connect.torsions(self.bonds)
-        self.torsion_labels = connect.torsion_labels(
-                self.atom_labels,self.torsions,torsion_types)
+        self.dihedrals = connect.dihedrals(self.bonds)
+        self.dihedral_labels = connect.dihedral_labels(
+                self.atom_labels,self.dihedrals,dihedral_types)
 
         self.impropers = connect.impropers(self.bonds)
         self.improper_labels = connect.improper_labels(

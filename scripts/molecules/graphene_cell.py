@@ -99,9 +99,9 @@ class Graphene(Molecule):
     def connection_types(self):
         bond_types = [[1,1]]
         angle_types = [[1,1,1]]
-        torsion_types = [[1,1,1,1]]
+        dihedral_types = [[1,1,1,1]]
         improper_types = [[1,1,1,1]]
-        return bond_types, angle_types, torsion_types, improper_types
+        return bond_types, angle_types, dihedral_types, improper_types
 
 def find_connections(bonds,centre):
     connections = np.where(bonds==centre)

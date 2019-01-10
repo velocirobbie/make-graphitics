@@ -51,8 +51,8 @@ class Connector(object):
             raise ValueError('angle assignment went wrong')
         return angle_labels
 
-    def torsions(self,bonds):
-        torsions = np.empty((0,4),dtype=int)
+    def dihedrals(self,bonds):
+        dihedrals = np.empty((0,4),dtype=int)
         for bond in bonds:
             neighbours1 = self.find_neighbours(bonds,bond[0])
             neighbours1.remove(bond[1])
@@ -61,33 +61,33 @@ class Connector(object):
             if len(neighbours1) and len(neighbours2):
                 for neighbour1 in neighbours1:
                     for neighbour2 in neighbours2:
-                        torsion = [neighbour1,bond[0],
+                        dihedral = [neighbour1,bond[0],
                                    bond[1],neighbour2]
-                        torsions = np.vstack((torsions,torsion))
-        return torsions       
+                        dihedrals = np.vstack((dihedrals,dihedral))
+        return dihedrals       
 
-    def torsion_labels(self,atom_labels,torsions,torsion_types):
-        torsion_labels = []
-        for torsion in torsions:
-            atoms = [atom_labels[torsion[0]-1],
-                     atom_labels[torsion[1]-1],
-                     atom_labels[torsion[2]-1],
-                     atom_labels[torsion[3]-1]]
+    def dihedral_labels(self,atom_labels,dihedrals,dihedral_types):
+        dihedral_labels = []
+        for dihedral in dihedrals:
+            atoms = [atom_labels[dihedral[0]-1],
+                     atom_labels[dihedral[1]-1],
+                     atom_labels[dihedral[2]-1],
+                     atom_labels[dihedral[3]-1]]
             found = False
-            for i in range(len(torsion_types)):
-                flag1 = torsion_types[i]==atoms
-                flag2 = torsion_types[i]==list(reversed(atoms))
+            for i in range(len(dihedral_types)):
+                flag1 = dihedral_types[i]==atoms
+                flag2 = dihedral_types[i]==list(reversed(atoms))
                 if flag1 or flag2: 
-                    torsion_labels.append(i+1)
+                    dihedral_labels.append(i+1)
                     found = True
             if not found:
-#                torsion_types += [atoms]
-                raise TypeError('torsion not found',atoms)
-        if len(torsion_labels) != len(torsions):
-            raise ValueError('torsion assignment went wrong')
-#        print 'types ',len(torsion_types)
-#        print torsion_types
-        return torsion_labels
+#                dihedral_types += [atoms]
+                raise TypeError('dihedral not found',atoms)
+        if len(dihedral_labels) != len(dihedrals):
+            raise ValueError('dihedral assignment went wrong')
+#        print 'types ',len(dihedral_types)
+#        print dihedral_types
+        return dihedral_labels
 
     def impropers(self,bonds):
         impropers = np.empty((0,4),dtype=int)
@@ -132,22 +132,22 @@ class Connector(object):
             neighbours.append(neighbour)
         return neighbours
 
-    def find_torsion_types(self,atom_labels,torsions):
-        torsion_types = []
-        for torsion in torsions:
-            atoms = [atom_labels[torsion[0]-1],
-                     atom_labels[torsion[1]-1],
-                     atom_labels[torsion[2]-1],
-                     atom_labels[torsion[3]-1]]
+    def find_dihedral_types(self,atom_labels,dihedrals):
+        dihedral_types = []
+        for dihedral in dihedrals:
+            atoms = [atom_labels[dihedral[0]-1],
+                     atom_labels[dihedral[1]-1],
+                     atom_labels[dihedral[2]-1],
+                     atom_labels[dihedral[3]-1]]
             found = False
-            for i in range(len(torsion_types)):
-                flag1 = torsion_types[i]==atoms
-                flag2 = torsion_types[i]==list(reversed(atoms))
+            for i in range(len(dihedral_types)):
+                flag1 = dihedral_types[i]==atoms
+                flag2 = dihedral_types[i]==list(reversed(atoms))
                 if flag1 or flag2: 
                     found = True
             if not found:
-                torsion_types += [atoms]
-        return torsion_types
+                dihedral_types += [atoms]
+        return dihedral_types
 
     def find_bond_types(self,atom_labels,bonds):
         bond_types = []
