@@ -6,7 +6,6 @@ import math
 
 config = yaml.load(open('config.yaml'))
 forcefield = 'GraFF_5'
-#config[forcefield]['CC'] = config[forcefield]['CC'] * 0.999
 graphite = Graphite(config,forcefield)
 bulk = Crystal(graphite,config,forcefield,[21,12,1])
 bulk.coords = bulk.coords + np.array((
@@ -23,19 +22,8 @@ flake1.coords = flake1.coords + np.array((
     6 * 3 *config[forcefield]['CC'],
     3*config[forcefield]['layer_gap']))
 
-graphene = Graphene(config,forcefield)
-top = Crystal(graphene,config,forcefield,[21,12,1])
-top.coords = top.coords + np.array((
-    0,
-    0,
-    50))
-for i in range(len(top.atom_labels)):
-    top.atom_labels[i] = 3
-
 sim = Combine(bulk,flake1)
-sim = Combine(sim,top)
-#output = Shifter(sim,'lammps')
-#output.rotate(180,1)
+#sim = Combine(sim,top)
 output = Writer(sim,'flake on graphite')
 output.write_xyz('graphene'+str(1)+'.xyz')
 output.write_lammps('data.flake'+str(1))
