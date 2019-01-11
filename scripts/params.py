@@ -174,15 +174,16 @@ class Parameterise(object):
                         atoms[j] = 46 # Try alkene H
                 angle_coeffs, found = search_angles(angle_data, atoms, 
                                                     angle_coeffs)
-                if found == 0:
-                    if atoms[1] == 47:
-                        if atoms[0] == 13: atoms[0] = 47
-                        elif atoms[2] == 13: atoms[0] = 47
-                        angle_coeffs, found = search_angles(angle_data, atoms, 
-                                                            angle_coeffs)
-                        if found != 0:
-                            print atoms
-                            questionable_substitutions +=1
+                if found == 1:
+                    print found, [a1,a2,a3],atoms,'sub aromatic -> alkene'
+            if found == 0:
+                if atoms[1] == 47:
+                    if atoms[0] == 13: atoms[0] = 47
+                    elif atoms[2] == 13: atoms[0] = 47
+                    angle_coeffs, found = search_angles(angle_data, atoms, 
+                                                        angle_coeffs)
+                    if found == 0:
+                        print found, [a1,a2,a3], atoms, 'made 13 -> 47 sub'
             if found != 1:
                  raise ValueError('WRONG',atoms,'\t found ',found,' entries')
                  #print 'WRONG',atoms,'\t found ',found,' entries'
