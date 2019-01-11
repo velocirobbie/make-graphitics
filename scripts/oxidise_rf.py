@@ -6,7 +6,7 @@ class Reaction(object):
         self.first = first
         self.second = second
 
-with open('oxidise.data','r') as f:
+with open('params/oxidise.data','r') as f:
     count = 0
     for line in f:
         count += 1

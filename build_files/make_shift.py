@@ -16,7 +16,7 @@ motif = Graphite(config,forcefield)
 bulk = Crystal(motif,config,forcefield,[10,6,4])
 
 a = Shifter(bulk)
-a.z_shift(5.0,6.0,2.0)
+a.z_shift(1.0,6.0,2.0)
 
 #name = 'layers_'+str(gap)
 #output = Writer(bulk,name)
