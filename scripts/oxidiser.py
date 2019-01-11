@@ -136,13 +136,11 @@ class Oxidiser(object):
                 if state1 or state2:
                     # already oxidised here
                     continue
-                    #print N,'new_island failed'
                 nodes += 1
                 print 'new_island accepted,',nodes,'nodes'
             else:
                 site, above, time = self.find_site()
                 time_elapsed += time
-                #print N,time,time_elapsed, self.new_island_freq , time_elapsed*self.new_island_freq
  
             if above == 0 or new_island >= 2:
                 print 'Could not reach C/O ratio:',self.ratio
@@ -184,11 +182,6 @@ class Oxidiser(object):
             print 'OH/epoxy = ',float(OH_added)/(epoxy_added)
         else:
             print 'OH/epoxy = inf'
-        #print 'Carboxy : OH : epoxy ratio = 1:'#,\
-              #float(OH_added+o)/carboxyl,':',\
-              #float(epoxy_added+e)/carboxyl
-
-
 
     def find_12_neighbours(self, crystal, i, j):
         expected_first_neighbours = 4
@@ -213,7 +206,6 @@ class Oxidiser(object):
         if len(second_neighbours) != expected_second_neighbours:
             raise ValueError ('Not enough second neighbours',i,j,second_neighbours)
         
-        #print i,j,first_neighbours,second_neighbours
         return list(first_neighbours)+list(second_neighbours)
 
     def affinity_matrix(self, crystal):
@@ -303,14 +295,7 @@ class Oxidiser(object):
             #if state == 1: hbond =
         
         for state in second:
-            #if state == 1: steric += 0.5 * 1.3328772415604964
-            #if state == 2: steric += 0.25 * 1.3328772415604964
-            
-            #if abs(state) == 1: polar += 1.0978889559754457 * 0.5
-            #if abs(state) == 2: polar += 1.0978889559754457 * 0.25
-
             if state == 1: hbond += 1
-            
             if state == 3: edge = 1
         
         steric = (  m[0]    * steric 
@@ -410,10 +395,8 @@ class Oxidiser(object):
         crystal.atom_charges += [0.435]
         crystal.molecule_labels += [molecule]
 
-#        self.change_bond_label(crystal,C_at,O_at,8)
         new_bond = np.array(([O_at+1, H_at+1]))
         self.crystal.bonds = np.vstack((crystal.bonds,new_bond))
-#        crystal.bond_labels += [5]
     
     def add_carboxyl(self, crystal, H_at):
         bonded_to = self.bonded_to(crystal.bonds,H_at)
@@ -464,8 +447,6 @@ class Oxidiser(object):
                               [C1_at+1,O2_at+1],
                               [O2_at+1,H_at+1]))
         crystal.bonds = np.vstack((crystal.bonds,new_bonds))
-#        crystal.bond_labels += [10,11,5]
-#        self.change_bond_label(crystal,C_at,C1_at,9)
     
     def add_OH(self,crystal,above, at):
         crystal.atom_labels[at] = 3 #3 is a C-OH carbon
@@ -487,8 +468,6 @@ class Oxidiser(object):
         new_bonds = np.array(([at+1, oid],
                               [oid, hid]))
         crystal.bonds = np.vstack((crystal.bonds,new_bonds))
-#        crystal.bond_labels += [4,5]
-#        self.remove_graphitic_bonds(crystal, at)
  
 
 
@@ -523,10 +502,6 @@ class Oxidiser(object):
         new_bonds = np.array(([c1+1, oid],
                               [c2+1, oid]))
         crystal.bonds = np.vstack((crystal.bonds,new_bonds))
-#        crystal.bond_labels += [6,6]
-#        self.change_bond_label(crystal, c1, c2, 7)
-#        self.remove_graphitic_bonds(crystal, c1)
-#        self.remove_graphitic_bonds(crystal, c2)
         
     def remove_graphitic_bonds(self, crystal, a):
         connections = self.find_connections(crystal.bonds,a+1)
@@ -534,7 +509,6 @@ class Oxidiser(object):
             bond = connections[i][0]
             if crystal.bond_labels[bond] == 1:
                 crystal.bond_labels[bond] = 3
-#            elif crystal.bond_labels[bond] =
 
     def change_bond_label(self, crystal, a1, a2, label):
         connections = self.find_connections(crystal.bonds,a1+1)
@@ -643,65 +617,4 @@ class Oxidiser(object):
             epoxy_added += epoxy_added_cycle
 
         return OH_added, epoxy_added
-""" 
-    def find_epoxy_site(self, crystal):
-        Nbonds = len(crystal.bonds)
-        searching = True
-        attempts = 0
-        while searching:
-            attempts += 1
-            # pick random atom
-            i = np.random.randint(Nbonds)
-            c1 = crystal.bonds[i][0]-1
-            c2 = crystal.bonds[i][1]-1
-            label1 = crystal.atom_labels[ c1 ]
-            label2 = crystal.atom_labels[ c2 ]
-            # if i is a graphitic bond
-            if label1 == 1 and label2 == 1:
-                # is it near oxidised sections
-                bonded_to = (  self.bonded_to(crystal.bonds,c1) 
-                             + self.bonded_to(crystal.bonds,c2))
-                mc = np.random.random()
-                sp3_C = [3]
-                edge = [2,8]
-                edge_flag =  False
-                for atom in bonded_to:
-                    if crystal.atom_labels[atom] in sp3_C:
-                        mc += 0.25
-                    if crystal.atom_labels[atom] in edge:
-                        edge_flag = True
-                        break
-                if mc > self.affinity and not edge_flag:
-                    self.add_epoxy(crystal,c1,c2)
-                    searching = False
-        return attempts
-
-    def find_OH_site(self, crystal):
-        Natoms = len(crystal.atom_labels)
-        searching = True
-        attempts = 0
-        while searching:
-            attempts += 1
-            # pick random atom
-            i = np.random.randint(Natoms) 
-            # if i is a graphitic carbon
-            if crystal.atom_labels[i] == 1:
-                # what is i bonded to
-                bonded_to = self.bonded_to(crystal.bonds,i)
-
-                mc = np.random.random()
-                sp3_C = [3]
-                edge = [2,8]
-                edge_flag = False
-                for atom in bonded_to:
-                    if crystal.atom_labels[atom] in edge:
-                        edge_flag = True 
-                        break
-                    if crystal.atom_labels[atom] in sp3_C:
-                        mc += 0.34
-                if mc > self.affinity and not edge_flag:
-                    searching = False 
-                    self.add_OH(crystal,i)
-        return attempts
-"""
 
