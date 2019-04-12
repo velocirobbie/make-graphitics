@@ -121,9 +121,10 @@ class Oxidiser(object):
         OH_added = 0
         epoxy_added = 0
         time_elapsed = 0 # since last new island
+	dt = 0
         nodes = 0
         while N < Ntotal:
-            new_island = np.random.poisson(float(time_elapsed) * self.new_island_freq)
+            new_island = np.random.poisson(float(dt) * self.new_island_freq)
             self.node_order += [new_island]
             self.time_elapsed_list += [time_elapsed]
 
@@ -139,8 +140,8 @@ class Oxidiser(object):
                 nodes += 1
                 print 'new_island accepted,',nodes,'nodes'
             else:
-                site, above, time = self.find_site()
-                time_elapsed += time
+                site, above, dt = self.find_site()
+                time_elapsed += dt
  
             if above == 0 or new_island >= 2:
                 print 'Could not reach C/O ratio:',self.ratio
