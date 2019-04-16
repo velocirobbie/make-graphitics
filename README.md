@@ -40,9 +40,9 @@ The Oxidiser takes a graphitic structure and attempts to oxidise it by the proce
 
 1) If hydrogens exist (i.e. edge of a flake), 1/4 are changed to alcohol groups and 1/4 to carboxyl groups (Lerf and Klinowski model). These values can be changed by passing the Oxidiser object the optional arguments: ` edge_OHratio = 0.25, edge_carboxyl_ratio = 0.5`.
 
-2) The reactivity of every possible site is calculated. This is done by using a ransurface_OHratiodom forest approach to extend the data set of GO reactivites given by Yang et al. We do not take into account the reactivity of the edges.
+2) The reactivity of every possible site is calculated. This is done by using a ranodom forest approach to extend the data set of GO reactivites given by Yang et al. We do not take into account the reactivity of the edges.
 
-3) A site is oxidised at random weighted by each sites reactivity. The chance of an oxidisation producing an alcohol or epoxy group on the surface is by default 50:50, but can be specified by passing Oxidiser the optional argument: `surface_OHratio = 0.5`
+3) A site is oxidised at random weighted by each site's reactivity. The chance of an oxidisation producing an alcohol or epoxy group on the surface is by default 50:50, but can be specified by passing Oxidiser the optional argument: `surface_OHratio = 0.5`
 
 4) The time elapsed between oxidations is estimated from the reactivity of the site that has been oxidised.
 
