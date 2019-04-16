@@ -33,7 +33,7 @@ class Oxidiser(object):
                  surface_OHratio = 0.5,     # Surface OH/epoxy fraction
                  edge_OHratio = 0.25,       # edge H:OH:carboxyl ratio
                  edge_carboxyl_ratio = 0.25,# edge H:OH:carboxyl ratio
-                 method='empirical',        # which method to calculate a site's affinity 
+                 method='rf',               # which method to calculate a site's affinity 
                                             #empirical / rf (random forest)
                  new_island_freq=0,         # Freq s-1 attempt to add new island 
                  video=False):
@@ -44,7 +44,6 @@ class Oxidiser(object):
         self.new_island_freq = new_island_freq
         self.video = video
 
-        # C/O ratio 
         self.ratio = ratio
         self.surface_OHratio = surface_OHratio
         self.edge_OHratio = edge_OHratio
@@ -59,24 +58,23 @@ class Oxidiser(object):
         self.NCCbonds = len(self.CCbonds)
         self.affinities_above, self.affinities_below = self.affinity_matrix(
                                                                 self.crystal)
+ 
+        if self.method == 'rf':
+            # Read in data from Yang2014, generate random forest regressor
+            self.rf = init_random_forest()
+
         self.atom_states = np.zeros(len(crystal.atom_labels))
         for i in range(len(crystal.atom_labels)):
             if crystal.atom_labels[i] == 2:
                 self.atom_states[i] = 3
         
+        # lists to record oxidisation process
         self.affinity_order = []
         self.time_order = []
         self.time_elapsed_list = []
         self.node_order = []
-        if self.method == 'rf':
-            self.rf = init_random_forest()
+
         self.oxidise(crystal, self.NO)
-        with open('affinity.dat','w') as f:
-            for i,a in enumerate(self.affinity_order):
-                f.write(str(a)+'\t'+str(np.log(a))+'\t'+
-                        str(self.time_order[i])+'\t'+
-                        str(self.time_elapsed_list[i])+'\t'+
-                        str(self.node_order[i])+'\n')
 
         self.generate_connections(crystal)
         self.vdw_defs = {1: 90, # Cg, graphitic (aromatic)
@@ -84,18 +82,21 @@ class Oxidiser(object):
                          3: 101,# Ct, tertiary C-OH
                          4: 96, # Oa, C-OH
                          5: 97, # Ha, C-OH
-                         # 3 = Ct, epoxy C-O-C 
                          6: 122,# Oe, epoxy 
                          11: 108,# Cb, Benzyl 
                          7: 109,# Oa, C-OH
-                         #5 = Ha, C-OH
-                         #11 = Cb, Benzyl carbon
                          8: 209, # Cc, Carboxylic carbon
                          9: 210, # Oc, Ketone oxygen
                          10: 211 # Oa, alcohol
-                         #5   = Ha, alcohol
-                         }
+                        } # OPLS definitions 
         crystal.vdw_defs = self.vdw_defs
+
+        with open('affinity.dat','w') as f:
+            for i,a in enumerate(self.affinity_order):
+                f.write(str(a)+'\t'+str(np.log(a))+'\t'+
+                        str(self.time_order[i])+'\t'+
+                        str(self.time_elapsed_list[i])+'\t'+
+                        str(self.node_order[i])+'\n')
 
     def oxidise(self, crystal, Ntotal):
         # edges first
