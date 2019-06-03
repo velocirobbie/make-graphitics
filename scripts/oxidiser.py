@@ -141,10 +141,11 @@ class Oxidiser(object):
                 state2 = self.atom_states[atom2]
                 if state1 or state2:
                     # already oxidised here
+                    print 'new_island rejected,',nodes,'nodes (',new_island,')'
                     dt = 0
                     continue
                 nodes += 1
-                print 'new_island accepted,',nodes,'nodes'
+                print 'new_island accepted,',nodes,'nodes (',new_island,')'
             else:
                 site, above, dt = self.find_site()
                 time_elapsed += dt
@@ -325,20 +326,20 @@ class Oxidiser(object):
         return rate
 
     def find_new_island(self):
-        #total = ( sum(np.array(self.affinities_above != 0)) 
-        #        + sum(np.array(self.affinities_below != 0)) )
-        total = self.NCCbonds * 2 # all sites
+        # number of sites that are not CH
+        total = ( sum(np.array(self.affinities_above != 0)) 
+                + sum(np.array(self.affinities_below != 0)) ) 
         r = np.random.random() * total
         R = 0
         above = 0
         for i in range(self.NCCbonds):
-            R += 1
+            R += bool(self.affinities_above[i])
             if R > r:
                 above = 1
                 break
         if not above:
             for i in range(self.NCCbonds):
-                R += 1
+                R += bool(self.affinities_below[i])
                 if R > r:
                  above = -1
                  break
@@ -346,7 +347,7 @@ class Oxidiser(object):
             #no possible oxidation sites
             raise Exception('Couldnt find a new island site')
             pass 
-        
+        print total, r, i, above 
         return i, above
 
     def find_site(self):
