@@ -11,7 +11,6 @@ R=25
 for i in range(5):
     motif = Hexagon_Graphene(config,forcefield,R)
     new_layer = Crystal(motif,config,forcefield,[1,1,1])
-    Parameterise(new_layer,vdw_defs)
 
     new_layer.coords = ( new_layer.coords 
                         + np.array((0, 0, i*config[forcefield]['layer_gap'])))
@@ -19,6 +18,8 @@ for i in range(5):
         sim = new_layer
     else:
         sim = Combine(sim,new_layer)
+
+Parameterise(sim,vdw_defs)
 
 name = 'graphene_stack'
 output = Writer(sim,name)
