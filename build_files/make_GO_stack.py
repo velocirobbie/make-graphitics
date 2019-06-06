@@ -12,7 +12,7 @@ GO_separation = 10 # approx 1 nm in experiment (with water!)
 for i in range(5):
     motif = Hexagon_Graphene(config,forcefield,R)
     new_layer = Crystal(motif,config,forcefield,[1,1,1])
-    Oxidiser(new_layer, ratio=2.5, video=20, new_island_freq=1e16, method='empirical')
+    Oxidiser(new_layer, ratio=2.5, video=20, new_island_freq=1e16, method='rf')
     Parameterise(new_layer,new_layer.vdw_defs)
 
     new_layer.coords = ( new_layer.coords 
