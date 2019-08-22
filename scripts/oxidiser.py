@@ -127,7 +127,9 @@ class Oxidiser(object):
         new_island = 1
         while N < Ntotal:
             if not new_island:
-                new_island = np.random.poisson(float(dt) * self.new_island_freq)
+                new_island = np.random.poisson(  float(dt) 
+                                               * self.new_island_freq
+                                               * self.NCCbonds)
             self.node_order += [new_island]
             self.time_elapsed_list += [time_elapsed]
 
