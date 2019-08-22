@@ -11,7 +11,7 @@ layout = [1,1,1] # make a 1x1x1 array of flakes
 
 motif = Hexagon_Graphene(config,forcefield,flake_radius)
 flake = Crystal(motif,config,forcefield,layout)
-Oxidiser(flake, ratio=2.5, video=20, new_island_freq=1e19, method='rf')
+Oxidiser(flake, ratio=2.5, video=20, new_island_freq=5e14, method='rf')
 name = 'GO_flake'
 output = Writer(flake,name)
 output.write_xyz(name+'.xyz')
