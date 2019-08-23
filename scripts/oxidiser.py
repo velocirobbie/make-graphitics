@@ -76,7 +76,7 @@ class Oxidiser(object):
 
         with open('affinity.dat','w') as f:
             f.write('#affinity, dt, time_since_island,'+ 
-                    'poison, new_islands')
+                    'poison_mean, new_islands, available_CC_bonds\n')
 
         self.oxidise(crystal, self.NO)
 
@@ -123,10 +123,11 @@ class Oxidiser(object):
         nodes = 0
         new_island = 1
         while N < Ntotal:
+            available_CC_bonds = np.sum(np.array(self.affinities_above != 0))
             if not new_island:
                 new_island = np.random.poisson(  float(dt) 
                                                * self.new_island_freq
-                                               * self.NCCbonds)
+                                               * available_CC_bonds)
             self.node_order += [new_island]
             self.time_elapsed_list += [time_elapsed]
 
@@ -139,10 +140,6 @@ class Oxidiser(object):
                 atom1,atom2 = self.CCbonds[site] - 1
                 state1 = self.atom_states[atom1]
                 state2 = self.atom_states[atom2]
-                if state1 or state2:
-                    # already oxidised here
-                    print 'new_island rejected,',nodes,'nodes (',new_island,')'
-                    continue
                 nodes += 1
                 print 'new_island accepted,',nodes,'nodes (',new_island,')'
             else:
@@ -188,7 +185,8 @@ class Oxidiser(object):
                         str(dt)+'\t'+
                         str(time_elapsed)+'\t'+
                         str(dt*self.new_island_freq*self.NCCbonds)+'\t'+
-                        str(self.node_order[-1])+'\n')
+                        str(self.node_order[-1])+'\t'+
+                        str(available_CC_bonds)+'\n')
 
         print OH_added,'\tOH were added'
         print epoxy_added,'\tepoxy were added'
@@ -352,12 +350,9 @@ class Oxidiser(object):
                 if R > r:
                  above = -1
                  break
-        if above == 0:
-            #no possible oxidation sites
-            print "ERROR: ",total, above, r, R
-            raise Exception('Couldnt find a new island site')
-            pass 
-        #print total, r, i, above 
+        if total == 0:
+            print 'Couldnt find a new island site'
+            # returning above=0 tells main loop to stop 
         return i, above
 
     def find_site(self):
