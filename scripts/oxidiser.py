@@ -135,6 +135,7 @@ class Oxidiser(object):
 
             # choose site
             if new_island:
+                dt = 0
                 new_island -= 1 
                 time_elapsed = 0
                 site, above = self.find_new_island()
@@ -144,7 +145,6 @@ class Oxidiser(object):
                 if state1 or state2:
                     # already oxidised here
                     print 'new_island rejected,',nodes,'nodes (',new_island,')'
-                    dt = 0
                     continue
                 nodes += 1
                 print 'new_island accepted,',nodes,'nodes (',new_island,')'
