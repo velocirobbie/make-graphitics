@@ -69,10 +69,14 @@ class Oxidiser(object):
                 self.atom_states[i] = 3
         
         # lists to record oxidisation process
-        self.affinity_order = []
+        self.affinity_order = [0]
         self.time_order = []
         self.time_elapsed_list = []
         self.node_order = []
+
+        with open('affinity.dat','w') as f:
+            f.write('#affinity, dt, time_since_island,'+ 
+                    'poison, new_islands')
 
         self.oxidise(crystal, self.NO)
 
@@ -90,13 +94,6 @@ class Oxidiser(object):
                          10: 211 # Oa, alcohol
                         } # OPLS definitions 
         crystal.vdw_defs = self.vdw_defs
-
-        with open('affinity.dat','w') as f:
-            for i,a in enumerate(self.affinity_order):
-                f.write(str(a)+'\t'+str(np.log(a))+'\t'+
-                        str(self.time_order[i])+'\t'+
-                        str(self.time_elapsed_list[i])+'\t'+
-                        str(self.node_order[i])+'\n')
 
     def oxidise(self, crystal, Ntotal):
         # edges first
@@ -177,12 +174,22 @@ class Oxidiser(object):
                 self.update_affinity(atom2+1)
                 epoxy_added += 1
             N += 1
+            
+            # outputs
+            if not N % 20:
+                print N,'/',Ntotal,'\toxygens added\t',nodes,'nodes'
 
             if self.video and not N % self.video:
                 out = Writer(crystal)
                 out.write_xyz(option='a')
-                print N,'/',Ntotal,'\toxygens added\t',nodes,'nodes'
                 
+            with open('affinity.dat','a') as f:
+                f.write(str(self.affinity_order[-1])+'\t'+
+                        str(dt)+'\t'+
+                        str(time_elapsed)+'\t'+
+                        str(dt*self.new_island_freq*self.NCCbonds)+'\t'+
+                        str(self.node_order[-1])+'\n')
+
         print OH_added,'\tOH were added'
         print epoxy_added,'\tepoxy were added'
         print nodes,'nodes'
@@ -347,9 +354,10 @@ class Oxidiser(object):
                  break
         if above == 0:
             #no possible oxidation sites
+            print "ERROR: ",total, above, r, R
             raise Exception('Couldnt find a new island site')
             pass 
-        print total, r, i, above 
+        #print total, r, i, above 
         return i, above
 
     def find_site(self):
