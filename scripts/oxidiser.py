@@ -33,7 +33,7 @@ class Oxidiser(object):
                  surface_OHratio = 0.5,     # Surface OH/epoxy fraction
                  edge_OHratio = 0.25,       # edge H:OH:carboxyl ratio
                  edge_carboxyl_ratio = 0.25,# edge H:OH:carboxyl ratio
-                 method='empirical',        # which method to calculate a site's affinity 
+                 method='rf',               # which method to calculate a site's affinity 
                                             #empirical / rf (random forest)
                  new_island_freq=0,         # Freq s-1 attempt to add new island 
                  video=False):
@@ -44,7 +44,6 @@ class Oxidiser(object):
         self.new_island_freq = new_island_freq
         self.video = video
 
-        # C/O ratio 
         self.ratio = ratio
         self.surface_OHratio = surface_OHratio
         self.edge_OHratio = edge_OHratio
@@ -59,24 +58,27 @@ class Oxidiser(object):
         self.NCCbonds = len(self.CCbonds)
         self.affinities_above, self.affinities_below = self.affinity_matrix(
                                                                 self.crystal)
+ 
+        if self.method == 'rf':
+            # Read in data from Yang2014, generate random forest regressor
+            self.rf = init_random_forest()
+
         self.atom_states = np.zeros(len(crystal.atom_labels))
         for i in range(len(crystal.atom_labels)):
             if crystal.atom_labels[i] == 2:
                 self.atom_states[i] = 3
         
-        self.affinity_order = []
+        # lists to record oxidisation process
+        self.affinity_order = [0]
         self.time_order = []
         self.time_elapsed_list = []
         self.node_order = []
-        if self.method == 'rf':
-            self.rf = init_random_forest()
-        self.oxidise(crystal, self.NO)
+
         with open('affinity.dat','w') as f:
-            for i,a in enumerate(self.affinity_order):
-                f.write(str(a)+'\t'+str(np.log(a))+'\t'+
-                        str(self.time_order[i])+'\t'+
-                        str(self.time_elapsed_list[i])+'\t'+
-                        str(self.node_order[i])+'\n')
+            f.write('#affinity, dt, time_since_island,'+ 
+                    'poison_mean, new_islands, available_CC_bonds\n')
+
+        self.oxidise(crystal, self.NO)
 
         self.generate_connections(crystal)
         self.vdw_defs = {1: 90, # Cg, graphitic (aromatic)
@@ -84,17 +86,13 @@ class Oxidiser(object):
                          3: 101,# Ct, tertiary C-OH
                          4: 96, # Oa, C-OH
                          5: 97, # Ha, C-OH
-                         # 3 = Ct, epoxy C-O-C 
                          6: 122,# Oe, epoxy 
                          11: 108,# Cb, Benzyl 
                          7: 109,# Oa, C-OH
-                         #5 = Ha, C-OH
-                         #11 = Cb, Benzyl carbon
                          8: 209, # Cc, Carboxylic carbon
                          9: 210, # Oc, Ketone oxygen
                          10: 211 # Oa, alcohol
-                         #5   = Ha, alcohol
-                         }
+                        } # OPLS definitions 
         crystal.vdw_defs = self.vdw_defs
 
     def oxidise(self, crystal, Ntotal):
@@ -123,31 +121,36 @@ class Oxidiser(object):
         time_elapsed = 0 # since last new island
 	dt = 0
         nodes = 0
+        new_island = 1
         while N < Ntotal:
-            new_island = np.random.poisson(float(dt) * self.new_island_freq)
+            available_CC_bonds = np.sum(np.array(self.affinities_above != 0))
+            if not new_island:
+                new_island = np.random.poisson(  float(dt) 
+                                               * self.new_island_freq
+                                               * available_CC_bonds)
             self.node_order += [new_island]
             self.time_elapsed_list += [time_elapsed]
 
-            if new_island or (epoxy_added+OH_added == 0):
+            # choose site
+            if new_island:
+                dt = 0
+                new_island -= 1 
                 time_elapsed = 0
                 site, above = self.find_new_island()
                 atom1,atom2 = self.CCbonds[site] - 1
                 state1 = self.atom_states[atom1]
                 state2 = self.atom_states[atom2]
-                if state1 or state2:
-                    # already oxidised here
-                    continue
                 nodes += 1
-                print 'new_island accepted,',nodes,'nodes'
+                print 'new_island accepted,',nodes,'nodes (',new_island,')'
             else:
                 site, above, dt = self.find_site()
                 time_elapsed += dt
- 
-            if above == 0 or new_island >= 2:
+            if above == 0:
                 print 'Could not reach C/O ratio:',self.ratio
                 print N,' oxygens added'
                 break
 
+            # oxygenate at site,above 
             r = np.random.random() # between 0,1
             if r < self.surface_OHratio:
                 # add OH
@@ -168,14 +171,31 @@ class Oxidiser(object):
                 self.update_affinity(atom2+1)
                 epoxy_added += 1
             N += 1
+            
+            # outputs
+            if not N % 20:
+                print N,'/',Ntotal,'\toxygens added\t',nodes,'nodes'
+
             if self.video and not N % self.video:
                 out = Writer(crystal)
                 out.write_xyz(option='a')
-                print N,'/',Ntotal,'\toxygens added\t',nodes,'nodes'
+                
+            with open('affinity.dat','a') as f:
+                f.write(str(self.affinity_order[-1])+'\t'+
+                        str(dt)+'\t'+
+                        str(time_elapsed)+'\t'+
+                        str(dt*self.new_island_freq*self.NCCbonds)+'\t'+
+                        str(self.node_order[-1])+'\t'+
+                        str(available_CC_bonds)+'\n')
+
         print OH_added,'\tOH were added'
         print epoxy_added,'\tepoxy were added'
         print nodes,'nodes'
 
+        with open('output.dat','w') as f:
+            f.write('Cs \t'     +str(self.Ncarbons)+'\n'+
+                    'Os \t'     +str(N)+'\n'+
+                    'islands \t'+str(nodes)+'\n')
 
         print '=========='
         print 'C/O = ',float(self.Ncarbons+carboxyl)/(N)
@@ -313,19 +333,20 @@ class Oxidiser(object):
         return rate
 
     def find_new_island(self):
+        # number of sites that are not CH
         total = ( sum(np.array(self.affinities_above != 0)) 
-                + sum(np.array(self.affinities_below != 0)) )
+                + sum(np.array(self.affinities_below != 0)) ) 
         r = np.random.random() * total
         R = 0
         above = 0
         for i in range(self.NCCbonds):
-            R += self.affinities_above[i]
+            R += bool(self.affinities_above[i])
             if R > r:
                 above = 1
                 break
         if not above:
             for i in range(self.NCCbonds):
-                R += self.affinities_below[i]
+                R += bool(self.affinities_below[i])
                 if R > r:
                  above = -1
                  break
