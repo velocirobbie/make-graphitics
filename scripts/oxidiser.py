@@ -333,7 +333,10 @@ class Oxidiser(object):
             #no possible oxidation sites
             raise Exception('Couldnt find a new island site')
             pass 
-        
+        first_neighbours = self.neighbours[i][0:4]
+        for atom in first_neighbours:
+            if crystal.atom_labels[atom-1] == 2:
+                raise Exception("i've picked an unallowed oxidation site...")
         return i, above
 
     def find_site(self):
