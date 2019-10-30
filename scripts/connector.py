@@ -21,15 +21,20 @@ class Connector(object):
         return bond_labels
 
     def angles(self,bonds):
-        angles = np.empty((0,3),dtype=int)
         N = int(np.amax(bonds)) # Number of atoms
+        estimate_n_angles = N*3
+        angles = np.empty((estimate_n_angles,3),dtype=int)
         
+        counter = 0
         for centre in range(1,N+1):
             neighbours = self.find_neighbours(bonds,centre)
             for i in range(len(neighbours)):
                 for j in range(i+1,len(neighbours)):
                     angle = [neighbours[i],centre,neighbours[j]]
-                    angles = np.vstack((angles,angle))
+                    angles[counter] = angle
+                    counter += 1
+        # remove excess rows in angle array
+        angles = angles[:counter]
         return angles
     
     def angle_labels(self,atom_labels,angles,angle_types):
@@ -52,7 +57,10 @@ class Connector(object):
         return angle_labels
 
     def dihedrals(self,bonds):
-        dihedrals = np.empty((0,4),dtype=int)
+        estimate_n_dihedrals = len(bonds)*4
+        dihedrals = np.empty((estimate_n_dihedrals,4),dtype=int)
+
+        counter = 0
         for bond in bonds:
             neighbours1 = self.find_neighbours(bonds,bond[0])
             neighbours1.remove(bond[1])
@@ -63,7 +71,10 @@ class Connector(object):
                     for neighbour2 in neighbours2:
                         dihedral = [neighbour1,bond[0],
                                    bond[1],neighbour2]
-                        dihedrals = np.vstack((dihedrals,dihedral))
+                        dihedrals[counter] = dihedral
+                        counter += 1
+        # remove excess rows in dihedral array
+        dihedrals = dihedrals[:counter]
         return dihedrals       
 
     def dihedral_labels(self,atom_labels,dihedrals,dihedral_types):
@@ -90,14 +101,20 @@ class Connector(object):
         return dihedral_labels
 
     def impropers(self,bonds):
-        impropers = np.empty((0,4),dtype=int)
         N = int(np.amax(bonds)) # Number of atoms
+        estimate_n_impropers = N*3
+        impropers = np.empty((estimate_n_impropers,3),dtype=int)
+        
+        counter = 0
         for centre in range(1,N+1):
             neighbours = self.find_neighbours(bonds,centre)
             if len(neighbours) == 3:
                 improper = [centre,neighbours[0],
                             neighbours[1],neighbours[2]]
-                impropers = np.vstack((impropers,improper))
+                impropers[counter] = improper
+                counter += 1
+        # remove excess rows in improper array
+        impropers = improper[:counter]
         return impropers
     
     def improper_labels(self,atom_labels, impropers,improper_types):
