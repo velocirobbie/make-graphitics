@@ -8,9 +8,9 @@ forcefield = 'OPLS'
 
 motif = Rectangle_Graphene(config,forcefield,50,50)
 flake = Crystal(motif,config,forcefield,[1,1,1])
-Oxidiser(flake, ratio=2.5, video=20, new_island_freq=1e15, method='empirical')
+Oxidiser(flake, ratio=2.5, video=20, new_island_freq=3e15, method='rf')
 
-Parameterise(flake,vdw_defs)
+Parameterise(flake,flake.vdw_defs)
 
 name = 'graphene'
 output = Writer(flake,name)
