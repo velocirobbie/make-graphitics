@@ -133,8 +133,9 @@ class Rectangle_Graphene(Molecule):
 
     def assign_bonds(self,lattice_dimensions):
         firstrow = 3 + 4*self.x
-        a = 3 + 3*self.x
-        nbonds = firstrow + a*self.y - 1
+        a = 3 + 3*self.x #even rows
+        b = 2 + 3*self.x #odd rows
+        nbonds = firstrow + a*((self.y-1)/2) + b*((self.y+1)/2)
         bonds = np.empty((nbonds,2),dtype=int)
 
         global bond
@@ -154,10 +155,16 @@ class Rectangle_Graphene(Molecule):
 
         # between rows of carbons
         for row in range(self.y):
-            for atom in range(self.x + 1):
-                atom1 = carbons_per_row*row + atom*2
-                atom2 = carbons_per_row*(row+1) + atom*2
-                add_bond(atom1,atom2)
+            if row % 2:
+                for col in range(self.x):
+                    atom1 = carbons_per_row*row + col*2 + 1
+                    atom2 = carbons_per_row*(row+1) + col*2 + 1
+                    add_bond(atom1,atom2)
+            else:
+                for col in range(self.x + 1):
+                    atom1 = carbons_per_row*row + col*2
+                    atom2 = carbons_per_row*(row+1) + col*2
+                    add_bond(atom1,atom2)
 
         # hydrogen bonds
         # bottom row
