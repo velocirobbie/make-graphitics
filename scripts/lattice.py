@@ -34,11 +34,14 @@ class Lattice(object):
         return lattice_points
 
     def cell_onto_lattice(self,cell_coords,lattice_points):
-        atoms = np.empty([0,3],float)
+        N_atoms = len(cell_coords) * len(lattice_points)
+        atoms = np.empty([N_atoms,3],float)
+        counter = 0
         for lattice_point in lattice_points:
             for atom in cell_coords:
                 new_atom = np.array(atom) + np.array(lattice_point)
-                atoms = np.vstack((atoms,new_atom))
+                atoms[counter] = new_atom
+                counter += 1
         return atoms
 
     def system_size(self,Nlattice_points):
