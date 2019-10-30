@@ -22,7 +22,7 @@ class Connector(object):
 
     def angles(self,bonds,bond_graph):
         N = int(np.amax(bonds)) # Number of atoms
-        estimate_n_angles = N*3
+        estimate_n_angles = N*6
         angles = np.empty((estimate_n_angles,3),dtype=int)
         
         counter = 0
@@ -59,7 +59,7 @@ class Connector(object):
         return angle_labels
 
     def dihedrals(self,bonds, bond_graph):
-        estimate_n_dihedrals = len(bonds)*4
+        estimate_n_dihedrals = len(bonds)*6
         dihedrals = np.empty((estimate_n_dihedrals,4),dtype=int)
 
         counter = 0
@@ -111,7 +111,7 @@ class Connector(object):
 
     def impropers(self,bonds, bond_graph):
         N = int(np.amax(bonds)) # Number of atoms
-        estimate_n_impropers = N*3
+        estimate_n_impropers = N
         impropers = np.empty((estimate_n_impropers,4),dtype=int)
         
         counter = 0
