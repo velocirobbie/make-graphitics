@@ -1,5 +1,6 @@
 from lattice import Lattice
 from connector import Connector
+import numpy as np
 
 class Crystal(object):
     def __init__(self,molecule,config,
@@ -47,20 +48,35 @@ class Crystal(object):
 
     def generate_connections(self):
         connect = Connector()
-        bond_types, angle_types, dihedral_types, improper_types = self.molecule.connection_types()
+        self.bond_types, self.angle_types, self.dihedral_types, self.improper_types = self.molecule.connection_types()
         self.bonds = self.molecule.assign_bonds(
                 self.lattice_dimensions)
         self.bond_labels = connect.bond_labels(
-                self.atom_labels,self.bonds,bond_types)
+                self.atom_labels,self.bonds,self.bond_types)
 
-        self.angles = connect.angles(self.bonds)
+        self.bond_graph = self.generate_bond_graph(self.bonds)
+
+        self.angles = connect.angles(self.bonds, self.bond_graph)
         self.angle_labels = connect.angle_labels(
-                self.atom_labels,self.angles,angle_types)
+                self.atom_labels,self.angles,self.angle_types)
 
-        self.dihedrals = connect.dihedrals(self.bonds)
+        self.dihedrals = connect.dihedrals(self.bonds, self.bond_graph)
         self.dihedral_labels = connect.dihedral_labels(
-                self.atom_labels,self.dihedrals,dihedral_types)
+                self.atom_labels,self.dihedrals,self.dihedral_types)
 
-        self.impropers = connect.impropers(self.bonds)
+        self.impropers = connect.impropers(self.bonds, self.bond_graph)
         self.improper_labels = connect.improper_labels(
-                self.atom_labels,self.impropers,improper_types)
+                self.atom_labels,self.impropers,self.improper_types)
+        
+    def generate_bond_graph(self, bonds):
+        N = int(np.amax(bonds)) # Number of atoms
+        bond_graph = dict()
+        for i in xrange(N):
+            bond_graph[i] = set()
+
+        for bond in bonds:
+            bond_graph[bond[0]-1].add(bond[1]-1)
+            bond_graph[bond[1]-1].add(bond[0]-1)
+        return bond_graph
+            
+

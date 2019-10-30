@@ -29,7 +29,7 @@ class Parameterise(object):
         print 'Atom label -> OPLS vdw definitions: \t',  self.vdw_defs
         print 'Atom label -> OPLS type definitions: \t', self.type_defs
 
-        self.generate_connections(crystal)
+#        self.generate_connections(crystal)
         crystal.bond_coeffs = self.match_bonds(crystal.bond_types)
         crystal.angle_coeffs = self.match_angles(crystal.angle_types)
         crystal.dihedral_coeffs = self.match_dihedrals(crystal.dihedral_types)

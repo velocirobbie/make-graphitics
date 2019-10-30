@@ -20,14 +20,16 @@ class Connector(object):
             raise ValueError('bond assignment went wrong')
         return bond_labels
 
-    def angles(self,bonds):
+    def angles(self,bonds,bond_graph):
         N = int(np.amax(bonds)) # Number of atoms
         estimate_n_angles = N*3
         angles = np.empty((estimate_n_angles,3),dtype=int)
         
         counter = 0
         for centre in range(1,N+1):
-            neighbours = self.find_neighbours(bonds,centre)
+            #neighbours = self.find_neighbours(bonds,centre)
+            neighbours = list(bond_graph[centre-1])
+            neighbours = [x+1 for x in neighbours]
             for i in range(len(neighbours)):
                 for j in range(i+1,len(neighbours)):
                     angle = [neighbours[i],centre,neighbours[j]]
@@ -56,16 +58,23 @@ class Connector(object):
             raise ValueError('angle assignment went wrong')
         return angle_labels
 
-    def dihedrals(self,bonds):
+    def dihedrals(self,bonds, bond_graph):
         estimate_n_dihedrals = len(bonds)*4
         dihedrals = np.empty((estimate_n_dihedrals,4),dtype=int)
 
         counter = 0
         for bond in bonds:
-            neighbours1 = self.find_neighbours(bonds,bond[0])
-            neighbours1.remove(bond[1])
-            neighbours2 = self.find_neighbours(bonds,bond[1])
-            neighbours2.remove(bond[0])
+#            neighbours1 = self.find_neighbours(bonds,bond[0])
+#            neighbours1.remove(bond[1])
+#            neighbours2 = self.find_neighbours(bonds,bond[1])
+#            neighbours2.remove(bond[0])
+            neighbours1 = list(bond_graph[bond[0]-1])
+            neighbours1.remove(bond[1]-1)
+            neighbours1 = [x+1 for x in neighbours1]
+            neighbours2 = list(bond_graph[bond[1]-1])
+            neighbours2.remove(bond[0]-1)
+            neighbours2 = [x+1 for x in neighbours2]
+
             if len(neighbours1) and len(neighbours2):
                 for neighbour1 in neighbours1:
                     for neighbour2 in neighbours2:
@@ -100,14 +109,16 @@ class Connector(object):
 #        print dihedral_types
         return dihedral_labels
 
-    def impropers(self,bonds):
+    def impropers(self,bonds, bond_graph):
         N = int(np.amax(bonds)) # Number of atoms
         estimate_n_impropers = N*3
-        impropers = np.empty((estimate_n_impropers,3),dtype=int)
+        impropers = np.empty((estimate_n_impropers,4),dtype=int)
         
         counter = 0
         for centre in range(1,N+1):
-            neighbours = self.find_neighbours(bonds,centre)
+            #neighbours = self.find_neighbours(bonds,centre)
+            neighbours = list(bond_graph[centre-1])
+            neighbours = [x+1 for x in neighbours]
             if len(neighbours) == 3:
                 improper = [centre,neighbours[0],
                             neighbours[1],neighbours[2]]
