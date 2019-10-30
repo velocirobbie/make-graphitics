@@ -114,7 +114,7 @@ class Connector(object):
                 impropers[counter] = improper
                 counter += 1
         # remove excess rows in improper array
-        impropers = improper[:counter]
+        impropers = impropers[:counter]
         return impropers
     
     def improper_labels(self,atom_labels, impropers,improper_types):
