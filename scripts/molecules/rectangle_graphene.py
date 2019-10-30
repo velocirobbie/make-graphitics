@@ -105,7 +105,7 @@ class Rectangle_Graphene(Molecule):
         atom_labels = np.zeros(self.natoms, dtype=int)
         atom_labels[:self.n_Cs] = 1
         atom_labels[self.n_Cs:] = 2
-        return atom_labels
+        return list(atom_labels)
 
     def assign_atom_charges(self,lattice_dimensions,q):
         atom_charges = np.zeros(self.natoms)
@@ -129,7 +129,7 @@ class Rectangle_Graphene(Molecule):
         # hydrogens
         atom_charges[self.n_Cs:] = q
 
-        return atom_charges
+        return list(atom_charges)
 
     def assign_bonds(self,lattice_dimensions):
         firstrow = 3 + 4*self.x
