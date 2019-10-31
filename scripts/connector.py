@@ -58,7 +58,7 @@ class Connector(object):
         return angle_labels
 
     def dihedrals(self,bonds, bond_graph):
-        estimate_n_dihedrals = len(bonds)*6
+        estimate_n_dihedrals = len(bonds)*9
         dihedrals = np.empty((estimate_n_dihedrals,4),dtype=int)
 
         counter = 0
