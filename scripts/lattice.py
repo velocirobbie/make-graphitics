@@ -36,12 +36,15 @@ class Lattice(object):
     def cell_onto_lattice(self,cell_coords,lattice_points):
         N_atoms = len(cell_coords) * len(lattice_points)
         atoms = np.empty([N_atoms,3],float)
-        counter = 0
-        for lattice_point in lattice_points:
-            for atom in cell_coords:
-                new_atom = np.array(atom) + np.array(lattice_point)
-                atoms[counter] = new_atom
-                counter += 1
+        #counter = 0
+        for i,lattice_point in enumerate(lattice_points):
+            start = i * N_atoms
+            end = (i+1 * N_atoms)
+            atoms[start:end] = np.array(cell_coords) + np.array(lattice_point)
+            #for atom in cell_coords:
+            #    new_atom = np.array(atom) + np.array(lattice_point)
+            #    atoms[counter] = new_atom
+            #    counter += 1
         return atoms
 
     def system_size(self,Nlattice_points):
