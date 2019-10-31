@@ -80,7 +80,6 @@ class Oxidiser(object):
 
         self.oxidise(crystal, self.NO)
 
-        #self.generate_connections(crystal)
         self.crystal.generate_connections()
         self.vdw_defs = {1: 90, # Cg, graphitic (aromatic)
                          2: 91, # Hg, graphitic edge
@@ -563,38 +562,6 @@ class Oxidiser(object):
         connections = np.vstack((connections[0],
                                  connections[1]))
         return connections.transpose()  
-
-    def generate_connections(self,crystal):
-        connect = Connector()
-
-        crystal.bond_graph = crystal.generate_bond_graph(crystal.bonds)
-
-        crystal.bond_types = connect.find_bond_types(crystal.atom_labels,
-                                                        crystal.bonds)
-        crystal.bond_labels = connect.bond_labels(
-                crystal.atom_labels,crystal.bonds,
-                crystal.bond_types)
-        #
-        crystal.angles = connect.angles(crystal.bonds,crystal.bond_graph)
-        crystal.angle_types = connect.find_angle_types(crystal.atom_labels,
-                                                        crystal.angles)
-        crystal.angle_labels = connect.angle_labels(
-                crystal.atom_labels,crystal.angles,
-                crystal.angle_types)
-        #
-        crystal.dihedrals = connect.dihedrals(crystal.bonds,crystal.bond_graph) 
-        crystal.dihedral_types = connect.find_dihedral_types(crystal.atom_labels,
-                                                           crystal.dihedrals)
-        crystal.dihedral_labels = connect.dihedral_labels(
-                crystal.atom_labels,crystal.dihedrals,
-                crystal.dihedral_types)
-        #
-        crystal.impropers = connect.impropers(crystal.bonds,crystal.bond_graph) 
-        crystal.improper_types = connect.find_improper_types(crystal.atom_labels,
-                                                           crystal.impropers)
-        crystal.improper_labels = connect.improper_labels(
-                crystal.atom_labels,crystal.impropers,
-                crystal.improper_types)
 
     def oxidise_islands(self, crystal):
         removed = 1 # not 0

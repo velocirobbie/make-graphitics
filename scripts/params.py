@@ -29,43 +29,12 @@ class Parameterise(object):
         print 'Atom label -> OPLS vdw definitions: \t',  self.vdw_defs
         print 'Atom label -> OPLS type definitions: \t', self.type_defs
 
-#        self.generate_connections(crystal)
         crystal.bond_coeffs = self.match_bonds(crystal.bond_types)
         crystal.angle_coeffs = self.match_angles(crystal.angle_types)
         crystal.dihedral_coeffs = self.match_dihedrals(crystal.dihedral_types)
         crystal.improper_coeffs = self.match_impropers(crystal.improper_types)
         crystal.pair_coeffs = self.match_pairs()
         crystal.masses = self.match_masses()
-
-    def generate_connections(self,crystal):
-        connect = Connector()
-        crystal.bond_types = connect.find_bond_types(crystal.atom_labels,
-                                                        crystal.bonds)
-        crystal.bond_labels = connect.bond_labels(
-                crystal.atom_labels,crystal.bonds,
-                crystal.bond_types)
-        #
-        crystal.angles = connect.angles(crystal.bonds)
-        crystal.angle_types = connect.find_angle_types(crystal.atom_labels,
-                                                        crystal.angles)
-        crystal.angle_labels = connect.angle_labels(
-                crystal.atom_labels,crystal.angles,
-                crystal.angle_types)
-        #
-        crystal.dihedrals = connect.dihedrals(crystal.bonds) 
-        crystal.dihedral_types = connect.find_dihedral_types(crystal.atom_labels,
-                                                           crystal.dihedrals)
-        crystal.dihedral_labels = connect.dihedral_labels(
-                crystal.atom_labels,crystal.dihedrals,
-                crystal.dihedral_types)
-        #
-        crystal.impropers = connect.impropers(crystal.bonds) 
-        crystal.improper_types = connect.find_improper_types(crystal.atom_labels,
-                                                           crystal.impropers)
-        crystal.improper_labels = connect.improper_labels(
-                crystal.atom_labels,crystal.impropers,
-                crystal.improper_types)
-
 
     def match_charges(self):
         charge_data = self.charge_data
