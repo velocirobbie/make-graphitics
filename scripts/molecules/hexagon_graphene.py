@@ -27,46 +27,53 @@ class Hexagon_Graphene(Molecule):
         cos_CC = cos(pi/6.0) * CC
         sin_CC = 0.5 * CC
         
-        def add_atom(array,new):
-            return np.vstack((array,new))
+        atoms_per_section = self.natoms / 6
+        section = np.empty((atoms_per_section,3))
 
-        section = np.empty((0,3))
-        section = add_atom(section,[0,CC,0])
+        global atom
+        atom = 0
+        def add_atom(coord):
+            global atom
+            section[atom] = coord
+            atom += 1
+
+        add_atom([0,CC,0])
         
         for ring in range(1,self.order):
-            section = add_atom(section,
+            add_atom(
                 [-ring * cos_CC,
                  CC + ring * (CC + sin_CC),
                  0])
             for branch in range(ring):
-                section = add_atom(section,
+                add_atom(
                     [-(ring-1) * cos_CC + branch * 2 * cos_CC,
                      sin_CC + ring * (CC + sin_CC),
                      0])
-                section = add_atom(section,
+                add_atom(
                     [-(ring-2) * cos_CC + branch * 2 * cos_CC,
                      CC + ring * (CC + sin_CC),
                      0])
         
         # Add Hydrogens round edge
         for branch in range(self.order):
-            section = add_atom(section,
+            add_atom(
                     [-(self.order-1) * cos_CC + branch * 2 *cos_CC,
                      CC + CH + (self.order-1) * (sin_CC + CC),
                      0])
         
-        def rotate_vector(r,theta):
-            sint= sin(-theta); cost = cos(theta)
-            a = cost * r[0] - sint * r[1]
-            b = sint * r[0] + cost * r[1]
-            c = r[2]
-            return [a,b,c]
+        def rotate_vector(section,theta):
+            sint = sin(-theta); cost = cos(theta)
+            x = cost * section[:,0] - sint * section[:,1]
+            y = sint * section[:,0] + cost * section[:,1]
+            z = section[:,2]
+            return np.array([x,y,z]).T
         
-        coords = np.empty((0,3))
+        coords = np.empty((self.natoms,3))
         for theta in range(6):
-            for atom in section:
-                coord = rotate_vector(atom,theta*pi/3.0)
-                coords = add_atom(coords,coord)
+            rotated_section = rotate_vector(section, theta*pi/3.0)
+            start = theta*atoms_per_section
+            end = (theta+1)*atoms_per_section
+            coords[start:end] = rotated_section
 
         return coords
 
