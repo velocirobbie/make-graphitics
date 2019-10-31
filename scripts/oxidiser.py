@@ -54,7 +54,7 @@ class Oxidiser(object):
 
         self.NO = int(self.Ncarbons / self.ratio)
         
-        self.CCbonds, self.neighbours = self.neighbour_matrix(self.crystal)
+        self.CCbonds, self.neighbours, self.CCbonds_next_to_atom = self.neighbour_matrix(self.crystal)
         self.NCCbonds = len(self.CCbonds)
         self.affinities_above, self.affinities_below = self.affinity_matrix(
                                                                 self.crystal)
@@ -254,16 +254,21 @@ class Oxidiser(object):
             if label1 == 1 and label2 == 1:
                 CCbonds += [ [c1, c2] ]
                 neighbours += [self.find_12_neighbours(crystal, c1, c2) ]
+
+        CCbonds_next_to_atom = {i+1:set() for i in range(len(self.crystal.coords))}
+        for i in range(len(CCbonds)):
+            for atom in neighbours[i]:
+                CCbonds_next_to_atom[atom].add(i)
         
-        return np.array(CCbonds), neighbours
+        return np.array(CCbonds), neighbours, CCbonds_next_to_atom
     
     def update_affinity(self, atom):
-        for i in range(self.NCCbonds):
-            if atom in self.neighbours[i] and self.affinities_above[i] != 0:
-                self.calc_affinities(i)
-            elif atom in self.CCbonds[i]:
-                self.affinities_above[i] = 0
-                self.affinities_below[i] = 0
+        for bond in self.CCbonds_next_to_atom[atom]:
+            if self.affinities_above[bond] != 0:
+                self.calc_affinities(bond)
+            elif atom in self.CCbonds[bond]:
+                self.affinities_above[bond] = 0
+                self.affinities_below[bond] = 0
 
     def calc_affinities(self, site):
         calc_affinity = getattr(self, 'calc_affinity_' + self.method)
