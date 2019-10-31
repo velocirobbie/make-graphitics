@@ -27,7 +27,6 @@ class Connector(object):
         
         counter = 0
         for centre in range(1,N+1):
-            #neighbours = self.find_neighbours(bonds,centre)
             neighbours = list(bond_graph[centre-1])
             neighbours = [x+1 for x in neighbours]
             for i in range(len(neighbours)):
@@ -64,10 +63,6 @@ class Connector(object):
 
         counter = 0
         for bond in bonds:
-#            neighbours1 = self.find_neighbours(bonds,bond[0])
-#            neighbours1.remove(bond[1])
-#            neighbours2 = self.find_neighbours(bonds,bond[1])
-#            neighbours2.remove(bond[0])
             neighbours1 = list(bond_graph[bond[0]-1])
             neighbours1.remove(bond[1]-1)
             neighbours1 = [x+1 for x in neighbours1]
@@ -101,12 +96,9 @@ class Connector(object):
                     dihedral_labels.append(i+1)
                     found = True
             if not found:
-#                dihedral_types += [atoms]
                 raise TypeError('dihedral not found',atoms)
         if len(dihedral_labels) != len(dihedrals):
             raise ValueError('dihedral assignment went wrong')
-#        print 'types ',len(dihedral_types)
-#        print dihedral_types
         return dihedral_labels
 
     def impropers(self,bonds, bond_graph):
@@ -116,7 +108,6 @@ class Connector(object):
         
         counter = 0
         for centre in range(1,N+1):
-            #neighbours = self.find_neighbours(bonds,centre)
             neighbours = list(bond_graph[centre-1])
             neighbours = [x+1 for x in neighbours]
             if len(neighbours) == 3:
@@ -140,7 +131,6 @@ class Connector(object):
                 flag2 = set(improper_types[i][1:])==set(atoms[1:]) 
                 if flag1 and flag2:
                     improper_labels.append(i+1)
-            #print atoms
         if len(improper_labels) != len(impropers):
             print len(improper_labels), len(impropers)
             raise ValueError('improper assignment went wrong',len(improper_labels))
