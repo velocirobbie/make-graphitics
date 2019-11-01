@@ -62,7 +62,7 @@ class Writer(object):
                 elif self.atom_labels[i] in [2,5]: 
                     atom_label = 'H '
                 elif self.atom_labels[i] in [3]: 
-                    atom_label = 'N '
+                    atom_label = 'C '#sp3 carbon
                 elif self.atom_labels[i] in [4,6,7,9,10]: 
                     atom_label = 'O '
                 else: atom_label = str(self.atom_labels[i])+' '
