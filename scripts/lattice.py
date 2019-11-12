@@ -37,7 +37,6 @@ class Lattice(object):
         N_atoms = len(cell_coords) * len(lattice_points)
         atoms = np.empty([N_atoms,3],float)
         #counter = 0
-        print lattice_points
         for i,lattice_point in enumerate(lattice_points):
             start = i * len(cell_coords)
             end = (i+1) * len(cell_coords)
