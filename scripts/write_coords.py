@@ -81,7 +81,7 @@ class Writer(object):
                     '# '+ self.system_name +'\n' +
                     str(len(self.coords)) +' atoms \n'+
                     '\n'+
-                    str(self.natom_types)+' atom types \n'+
+                    str(self.nreax_types)+' atom types \n'+
                     '\n'+
                     str(self.box_dimensions[0,0])+'\t'+
                     str(self.box_dimensions[0,1])+'\t xlo xhi \n'+
