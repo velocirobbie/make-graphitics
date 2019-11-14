@@ -115,7 +115,7 @@ class Rectangle_Graphene(Molecule):
             atom = 1 + 2*col
             atom_charges[atom] = -q
             # top row
-            atom = self.n_Cs - 1 - 2*col
+            atom = self.n_Cs - 2 - 2*col
             atom_charges[atom] = -q
 
         # armchair carbons
