@@ -71,7 +71,7 @@ class Writer(object):
 
     def write_reaxff(
             self,filename='data.lammps'):
-
+        # atom_type charge
         masses = np.unique(self.masses.values())
         self.nreax_types = len(masses)
         reax_types = {mass:i+1 for i,mass in enumerate(masses)}
@@ -97,22 +97,21 @@ class Writer(object):
                             str(reax_types[mass])+'\t'+
                             str(mass)+'\n'
                                )
-            
+
             outfile.write('\n Atoms \n \n')
-            
+
             for i in range(len(self.coords)):
                 atom_type = self.atom_labels[i]
-                rex_type = reax_types[self.masses[atom_type]]
+                reax_type = reax_types[self.masses[atom_type]]
                 outfile.write(
                         str(i+1)+'\t ' +             # atom ID
-                        str(self.molecule[i])+'\t '+ # molecule ID
-                        str(atom_type)+'\t '+#atom type
+                        str(reax_type)+'\t '+#atom type
                         str(self.charges[i])+'\t '+#atomcharg
                         str(self.coords[i][0])+'\t ' +# x
                         str(self.coords[i][1])+'\t ' +# y
                         str(self.coords[i][2])+'\n '  # z
-                        )            
-            
+                        )
+
             print 'Coords written to '+filename
 
 
