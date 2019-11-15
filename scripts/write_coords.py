@@ -69,6 +69,52 @@ class Writer(object):
                 outfile.write(atom_label + xyz + '\n')
             print 'Coords written to '+str(filename)
 
+    def write_reaxff(
+            self,filename='data.lammps'):
+        # atom_type charge
+        masses = np.unique(self.masses.values())
+        self.nreax_types = len(masses)
+        reax_types = {mass:i+1 for i,mass in enumerate(masses)}
+
+        with open(filename,'w') as outfile:
+            outfile.write(
+                    '# '+ self.system_name +'\n' +
+                    str(len(self.coords)) +' atoms \n'+
+                    '\n'+
+                    str(self.nreax_types)+' atom types \n'+
+                    '\n'+
+                    str(self.box_dimensions[0,0])+'\t'+
+                    str(self.box_dimensions[0,1])+'\t xlo xhi \n'+
+                    str(self.box_dimensions[1,0])+'\t'+
+                    str(self.box_dimensions[1,1])+'\t ylo yhi \n'+
+                    str(self.box_dimensions[2,0])+'\t'+
+                    str(self.box_dimensions[2,1])+'\t zlo zhi \n'+
+                    '\n')
+            if hasattr(self,'masses'):
+                outfile.write('\n Masses \n \n')
+                for mass in reax_types:
+                    outfile.write(
+                            str(reax_types[mass])+'\t'+
+                            str(mass)+'\n'
+                               )
+
+            outfile.write('\n Atoms \n \n')
+
+            for i in range(len(self.coords)):
+                atom_type = self.atom_labels[i]
+                reax_type = reax_types[self.masses[atom_type]]
+                outfile.write(
+                        str(i+1)+'\t ' +             # atom ID
+                        str(reax_type)+'\t '+#atom type
+                        str(self.charges[i])+'\t '+#atomcharg
+                        str(self.coords[i][0])+'\t ' +# x
+                        str(self.coords[i][1])+'\t ' +# y
+                        str(self.coords[i][2])+'\n '  # z
+                        )
+
+            print 'Coords written to '+filename
+
+
     def write_lammps(
             self,filename='data.lammps'):
         # atom_type full
