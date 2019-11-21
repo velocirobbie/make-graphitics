@@ -8,4 +8,6 @@ go_data_file = sys.argv[1]
 go = ReadLammpsData(go_data_file)
 
 island_sizes = calc_island_sizes(go)
-print island_sizes
+
+print np.histogram(island_sizes)
+print np.mean(island_sizes)
