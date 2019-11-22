@@ -3,15 +3,27 @@ from opls_reader import OPLS_Reader
 from connector import Connector
 
 class Parameterise(object):
-    def __init__(self, crystal, vdw_defs, forcefield = 'OPLS'):
-        
-        self.vdw_defs = vdw_defs
-        crystal.vdw_defs = vdw_defs 
+    def __init__(self, crystal, vdw_defs=None, forcefield = 'OPLS'):
+
+        if not vdw_defs:
+            try:
+                self.vdw_defs = crystal.vdw_defs
+                crystal.vdw_defs = vdw_defs
+            except AttributeError:
+                raise Exception('The simulation you want to parameterise requires vdw_defs ,'+
+                                'provide as an attribute to the simulation or as a keyword arg')
+        else:
+            self.vdw_defs = vdw_defs
+            crystal.vdw_defs = vdw_defs
+
         if forcefield == 'OPLS':
             paramfile = 'params/oplsaa.prm'
             data = OPLS_Reader(paramfile)
+        elif forcefield == 'ReaxFF':
+            # paramters can be found https://github.com/lammps/lammps/tree/master/potentials
+            raise Exception('No need to generate paramters for this forcefield')
         else:
-            raise TypeError(forcefield,'forcefield not implemented')
+            raise Exception(forcefield,'forcefield not implemented')
         self.vdw_type = data.vdw_type
         self.bond_data = data.bond
         self.angle_data = data.angle
@@ -20,7 +32,7 @@ class Parameterise(object):
         self.pair_data = data.pair
         self.mass_data = data.mass
         self.charge_data = data.charge
-        
+
         self.type_defs = {}
         for label in self.vdw_defs:
             vdw = self.vdw_defs[label]
