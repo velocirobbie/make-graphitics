@@ -4,7 +4,7 @@ from connector import Connector
 
 class Parameterise(object):
     def __init__(self, crystal, vdw_defs=None, forcefield = 'OPLS'):
-
+        # use vdw_defs of atoms to paramterise the bonded and nonbonded coefficients
         if not vdw_defs:
             try:
                 self.vdw_defs = crystal.vdw_defs
@@ -15,22 +15,7 @@ class Parameterise(object):
             self.vdw_defs = vdw_defs
             crystal.vdw_defs = vdw_defs
 
-        if forcefield == 'OPLS':
-            paramfile = 'params/oplsaa.prm'
-            data = OPLS_Reader(paramfile)
-        elif forcefield == 'ReaxFF':
-            # paramters can be found https://github.com/lammps/lammps/tree/master/potentials
-            raise Exception('No need to generate paramters for this forcefield')
-        else:
-            raise Exception(forcefield,'forcefield not implemented')
-        self.vdw_type = data.vdw_type
-        self.bond_data = data.bond
-        self.angle_data = data.angle
-        self.dihedral_data = data.dihedral
-        self.improper_data = data.improper
-        self.pair_data = data.pair
-        self.mass_data = data.mass
-        self.charge_data = data.charge
+        self.retrieve_ff_data(forcefield)
 
         self.type_defs = {}
         for label in self.vdw_defs:
@@ -334,5 +319,23 @@ class Parameterise(object):
                                   'found ',found,' entries')
                  #print 'WRONG',centre,neighbours,'\t found ',found,' entries'
         return improper_coeffs 
+
+    def retrieve_ff_data(self,forcefield):
+        if forcefield == 'OPLS':
+            paramfile = 'params/oplsaa.prm'
+            data = OPLS_Reader(paramfile)
+        elif forcefield == 'ReaxFF':
+            # paramters can be found https://github.com/lammps/lammps/tree/master/potentials
+            raise Exception('No need to generate paramters for this forcefield')
+        else:
+            raise Exception(forcefield,'forcefield not implemented')
+        self.vdw_type = data.vdw_type
+        self.bond_data = data.bond
+        self.angle_data = data.angle
+        self.dihedral_data = data.dihedral
+        self.improper_data = data.improper
+        self.pair_data = data.pair
+        self.mass_data = data.mass
+        self.charge_data = data.charge
 
 
