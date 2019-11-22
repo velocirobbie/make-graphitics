@@ -198,7 +198,7 @@ class Oxidiser(object):
                     'islands \t'+str(nodes)+'\n')
 
         print '=========='
-        print 'C/O = ',float(self.Ncarbons+carboxyl)/(N)
+        print 'C/O = ',self.Ncarbons,'/',N,'=',float(self.Ncarbons+carboxyl)/(N)
         if epoxy_added != 0:
             print 'OH/epoxy = ',float(OH_added)/(epoxy_added)
         else:
