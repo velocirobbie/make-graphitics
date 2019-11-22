@@ -4,7 +4,8 @@ These scripts can create many graphitic structures for use in atomistic modellin
 
 Available structures:
 - Hexagonal graphene flake
-- Rectangular perodic graphene sheet
+- Rectangular graphene flake
+- Rectangular perodic graphene sheet (no edges)
 - Periodic graphite 
 - Graphene and graphite oxide
 
@@ -15,6 +16,7 @@ Output:
 Automatically parameterise by forcefields:
 - OPLS
 - GraFF
+- ReaxFF
 
 ## Examples
 
@@ -59,3 +61,38 @@ Not all the bonded interactions that can occur in graphene oxide are included in
 More examples of building structures with this script are in the `build_files` directory. Files must be copied to the source directory and executed there.
 
 Note that differenct structures can be combined into one simulation object with `Combine`. Also coordinates can be manipulated before writing to a lammps file. An examploe of this is shown in `make_peel.py`.
+
+# Citing
+
+The work contained here has been published in some of my own papers e.g.
+
+Graphene–Graphene Interactions: Friction, Superlubricity, and Exfoliation https://doi.org/10.1002/adma.201705791
+Modeling Nanostructure in Graphene Oxide: Inhomogeneity and the Percolation Threshold https://doi.org/10.1021/acs.jcim.9b00114
+The Role of Graphene in Enhancing the Material Properties of Thermosetting Polymers https://doi.org/10.1002/adts.201800168
+
+I would appreciate a citation if you any of the code in any published work :) You could cite the graphene oxide structure paper, this github page (if the journal allows), or the latest release on the zenodo repository
+
+```
+@article{sinclair2019modelling,
+  title={Modelling nanostructure in graphene oxide: inhomogeneity and the percolation threshold},
+  author={Sinclair, Robert Callum and Coveney, Peter Vivian},
+  journal={Journal of chemical information and modeling},
+  year={2019},
+  publisher={ACS Publications}
+}
+@misc{make-graphitics-github,
+    url = {https://github.com/velocirobbie/make-graphitics},
+    howpublished = {\url{https://github.com/velocirobbie/make-graphitics}},
+    note = {Accessed: \today},
+    author = {Sinclair, Robert C.},
+    year = {2019}
+}
+@misc{make-graphitics_zenodo,
+  author    = {Sinclair, Robert. C. },
+  title     = {make-graphitics},
+  version   = {0.1.0},
+  publisher = {Zenodo},
+  year      = {2019},
+  doi       = {10.5281/zenodo.2548538}
+}
+
