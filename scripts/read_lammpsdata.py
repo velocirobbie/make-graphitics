@@ -163,7 +163,6 @@ class ReadLammpsData(object):
         for i in range(self.Nbonds):
             self.read_data_line(datafile,
                                 self.bond_labels,self.bonds)
-        print self.bond_labels
 
     def read_angles(self,datafile):
         self.angles = np.zeros((self.Nangles,3),int)
