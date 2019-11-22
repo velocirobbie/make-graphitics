@@ -66,9 +66,11 @@ Note that differenct structures can be combined into one simulation object with 
 
 The work contained here has been published in some of my own papers e.g.
 
-Graphene–Graphene Interactions: Friction, Superlubricity, and Exfoliation https://doi.org/10.1002/adma.201705791
-Modeling Nanostructure in Graphene Oxide: Inhomogeneity and the Percolation Threshold https://doi.org/10.1021/acs.jcim.9b00114
-The Role of Graphene in Enhancing the Material Properties of Thermosetting Polymers https://doi.org/10.1002/adts.201800168
+ - Graphene–Graphene Interactions: Friction, Superlubricity, and Exfoliation https://doi.org/10.1002/adma.201705791
+
+ - Modeling Nanostructure in Graphene Oxide: Inhomogeneity and the Percolation Threshold https://doi.org/10.1021/acs.jcim.9b00114
+
+ - The Role of Graphene in Enhancing the Material Properties of Thermosetting Polymers https://doi.org/10.1002/adts.201800168
 
 I would appreciate a citation if you any of the code in any published work :) You could cite the graphene oxide structure paper, this github page (if the journal allows), or the latest release on the zenodo repository
 
@@ -76,9 +78,12 @@ I would appreciate a citation if you any of the code in any published work :) Yo
 @article{sinclair2019modelling,
   title={Modelling nanostructure in graphene oxide: inhomogeneity and the percolation threshold},
   author={Sinclair, Robert Callum and Coveney, Peter Vivian},
-  journal={Journal of chemical information and modeling},
-  year={2019},
-  publisher={ACS Publications}
+  journal = {Journal of Chemical Information and Modeling},
+  volume = {59},
+  number = {6},
+  pages = {2741-2745},
+  year = {2019},
+  doi = {10.1021/acs.jcim.9b00114},
 }
 @misc{make-graphitics-github,
     url = {https://github.com/velocirobbie/make-graphitics},
