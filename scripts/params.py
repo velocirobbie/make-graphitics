@@ -8,7 +8,6 @@ class Parameterise(object):
         if not vdw_defs:
             try:
                 self.vdw_defs = crystal.vdw_defs
-                crystal.vdw_defs = vdw_defs
             except AttributeError:
                 raise Exception('The simulation you want to parameterise requires vdw_defs ,'+
                                 'provide as an attribute to the simulation or as a keyword arg')
