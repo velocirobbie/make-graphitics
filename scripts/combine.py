@@ -8,24 +8,24 @@ class Combine(object):
         natoms1 = len(sim1.coords)
         nmols1 = np.amax(sim1.molecule_labels)
         
-        #self.vdw_defs = copy.deepcopy(sim1.vdw_defs) 
+        self.vdw_defs = copy.deepcopy(sim1.vdw_defs) 
         #self.pair_coeffs = sim1.pair_coeffs
-        #self.masses = sim1.masses
-        #for i in sim2.vdw_defs:
-        #    exists_in_sim1 = 0
-        #    for j in sim1.vdw_defs:
-        #        if sim1.vdw_defs[j] == sim2.vdw_defs[i]:
-        #            exists_in_sim1 += 1
-        #            sim2.atom_labels = self.replace_labels(sim2.atom_labels,i,j)
-        #    if not exists_in_sim1:
-        #        new_label = max(self.pair_coeffs.keys()) + 1
+        self.masses = sim1.masses
+        for i in sim2.vdw_defs:
+            exists_in_sim1 = 0
+            for j in sim1.vdw_defs:
+                if sim1.vdw_defs[j] == sim2.vdw_defs[i]:
+                    exists_in_sim1 += 1
+                    sim2.atom_labels = self.replace_labels(sim2.atom_labels,i,j)
+            if not exists_in_sim1:
+                new_label = max(self.vdw_defs.keys()) + 1
         #        self.pair_coeffs[new_label] = sim2.pair_coeffs[i]
-        #        self.masses[new_label] = sim2.masses[i]
-        #        sim2.atom_labels = self.replace_labels(sim2.atom_labels,i,new_label)
-        #        self.vdw_defs[new_label] = sim2.vdw_defs[i]
+                self.masses[new_label] = sim2.masses[i]
+                sim2.atom_labels = self.replace_labels(sim2.atom_labels,i,new_label)
+                self.vdw_defs[new_label] = sim2.vdw_defs[i]
 
-        #    elif exists_in_sim1 > 1:
-        #        raise Exception(exists_in_sim1)
+            elif exists_in_sim1 > 1:
+                raise Exception(exists_in_sim1)
         
         self.box_dimensions = sim1.box_dimensions
  
