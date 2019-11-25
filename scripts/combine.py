@@ -1,7 +1,8 @@
+from sim import Sim
 import numpy as np
 import copy
 
-class Combine(object):
+class Combine(Sim):
     def __init__(self,sim1,sim2):
         # combine two Crystal objects
         # keep cell size from sim1
@@ -10,7 +11,7 @@ class Combine(object):
         
         self.vdw_defs = copy.deepcopy(sim1.vdw_defs) 
         #self.pair_coeffs = sim1.pair_coeffs
-        self.masses = sim1.masses
+        #self.masses = sim1.masses
         for i in sim2.vdw_defs:
             exists_in_sim1 = 0
             for j in sim1.vdw_defs:
@@ -20,7 +21,7 @@ class Combine(object):
             if not exists_in_sim1:
                 new_label = max(self.vdw_defs.keys()) + 1
         #        self.pair_coeffs[new_label] = sim2.pair_coeffs[i]
-                self.masses[new_label] = sim2.masses[i]
+        #        self.masses[new_label] = sim2.masses[i]
                 sim2.atom_labels = self.replace_labels(sim2.atom_labels,i,new_label)
                 self.vdw_defs[new_label] = sim2.vdw_defs[i]
 
