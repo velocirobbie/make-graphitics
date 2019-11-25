@@ -6,7 +6,7 @@ import json
 
 config = yaml.load(open('config.yaml'))
 forcefield = 'OPLS'
-flake_radius = 250
+flake_radius = 25
 layout = [1,1,1] # make a 1x1x1 array of flakes
 
 motif = Hexagon_Graphene(config,forcefield,flake_radius)
@@ -18,7 +18,6 @@ output.write_xyz(name+'.xyz')
 
 Parameterise(flake,flake.vdw_defs)
 
-name = 'GO_flake'
 output = Writer(flake,name)
 output.write_xyz(name+'.xyz')
 output.write_lammps(name+'.data')

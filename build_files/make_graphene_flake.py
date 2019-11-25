@@ -6,7 +6,7 @@ import numpy as np
 config = yaml.load(open('config.yaml'))
 forcefield = 'OPLS'
 
-R=25
+R=40
 motif = Hexagon_Graphene(config,forcefield,R)
 flake = Crystal(motif,config,forcefield,[1,1,1])
 vdw_defs = {1:90, 2:91}
