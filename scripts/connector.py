@@ -73,10 +73,12 @@ class Connector(object):
             if len(neighbours1) and len(neighbours2):
                 for neighbour1 in neighbours1:
                     for neighbour2 in neighbours2:
-                        dihedral = [neighbour1,bond[0],
-                                   bond[1],neighbour2]
-                        dihedrals[counter] = dihedral
-                        counter += 1
+                        # check it is not a three member ring
+                        if neighbour1 != neighbour2:
+                            dihedral = [neighbour1,bond[0],
+                                       bond[1],neighbour2]
+                            dihedrals[counter] = dihedral
+                            counter += 1
         # remove excess rows in dihedral array
         dihedrals = dihedrals[:counter]
         return dihedrals       
