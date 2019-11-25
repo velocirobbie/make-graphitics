@@ -192,11 +192,6 @@ class Oxidiser(object):
         print epoxy_added,'\tepoxy were added'
         print nodes,'nodes'
 
-        with open('output.dat','w') as f:
-            f.write('Cs \t'     +str(self.Ncarbons)+'\n'+
-                    'Os \t'     +str(N)+'\n'+
-                    'islands \t'+str(nodes)+'\n')
-
         print '=========='
         print 'C/O = ',self.Ncarbons,'/',N,'=',float(self.Ncarbons+carboxyl)/(N)
         if epoxy_added != 0:
