@@ -43,12 +43,7 @@ def build_bond_network(bonds, atom_types):
     return bond_network
 
 def flood_island(index, bond_network, island_labels, atom_types, island_index, coords, x, y):
-    import sys
-    sys.setrecursionlimit(100000)
     island = Island()
-    #island.coords = np.empty((len(coords),3))
-    island.atoms = np.empty(len(coords),dtype=int)
-    ref = [0,0,0]
 
     def unwrap_coord(coord,ref):
         dx = coord[0] - ref[0]
@@ -61,24 +56,24 @@ def flood_island(index, bond_network, island_labels, atom_types, island_index, c
             elif dy > -y/2: coord[1] += y; dy += y
         return coord
 
-    count = 0
-
     q = [index+1]
+    refs = [[0,0,0]]
     while q:
         v = q.pop() # pop removes and returns last element of array
+        ref = refs.pop()
         island_labels[v-1] = island_index
-        island.atoms[count] = v
+        island.atoms += [v]
+        atom_coord = unwrap_coord(coords[v-1],ref)
+        island.coords += [atom_coord]
         neighbours = bond_network[v]['bonded_to']
 
-        count += 1
         for neighbour in neighbours:
             atom_type = atom_types[neighbour-1]
             already_included = island_labels[neighbour-1]
             if (atom_type==1) and (not already_included):
                 q.append(neighbour)
+                refs.append(atom_coord)
 
-    island.atoms = island.atoms[:count]
-    #island.coords = island.coords[:count]
     return island, island_labels
 
 def find_islands_by_flood(sim):
@@ -212,7 +207,7 @@ def calc_island_sizes(sim):
     islands = strip_small_islands(islands,6)
 
     map(lambda island: island.calc_boundary(3), islands)
-    map(lambda island: island.calc_area('simple'), islands)
+    map(lambda island: island.calc_area('boundary'), islands)
     write_islands_xyz(islands)
     write_gnuplot(islands)
 
