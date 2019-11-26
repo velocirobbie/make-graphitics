@@ -17,8 +17,25 @@ class Island(object):
     def calc_boundary(self,alpha):
         self.boundary = outer_polygon(self.coords[:,0:2], alpha)
 
-    def calc_polygon_area(self):
-        self.area = self.boundary.area
+    def calc_area(self,method):
+        #if method == 'boundary':
+            area1 = self.boundary.area
+        #elif method == 'simple':
+            area2 = simple_area(self.coords)
+            print area1,area2
+            self.area = area2
+
+    def unwrap_periodic(self,x,y,bond_network):
+        ref = [0,0]
+        for i in range(self.natoms()):
+            dx = self.coords[i][0] - ref[0]
+            dy = self.coords[i][1] - ref[1]
+            if   dx >  x/2: self.coords[i][0] -= x
+            elif dx < -x/2: self.coords[i][0] += x
+            if   dy >  y/2: self.coords[i][1] -= y
+            elif dy > -y/2: self.coords[i][1] += y
+
+            ref = self.coords[i][0:2]
 
     def com(self):
         return self.coords[:,0:2].mean(0)
@@ -37,27 +54,48 @@ def build_bond_network(bonds, atom_types):
         bond_network[bond[1]]['bonded_to'] += [bond[0]]
     return bond_network
 
-def flood_island(index, bond_network, island_labels, atom_types, island_index):
+def flood_island(index, bond_network, island_labels, atom_types, island_index, coords, x, y):
     import sys
-    sys.setrecursionlimit(10000)
+    sys.setrecursionlimit(100000)
     island = Island()
 
-    def add_neighbours(atom):
+    ref = [0,0,0]
+
+    def unwrap_coord(coord,ref):
+        dx = coord[0] - ref[0]
+        while (dx > x/2) or (dx < -x/2):
+            if   dx >  x/2: coord[0] -= x; dx -= x
+            elif dx < -x/2: coord[0] += x; dx += x
+        dy = coord[1] - ref[1]
+        while (dy > y/2) or (dy < -y/2):
+            if   dy >  y/2: coord[1] -= y; dy -= y
+            elif dy > -y/2: coord[1] += y; dy += y
+        return coord
+
+    def add_neighbours(atom,ref):
         island.atoms += [atom]
+
+        atom_coord = unwrap_coord(coords[atom-1],ref)
+        island.coords += [atom_coord]
+
         island_labels[atom-1] = island_index
         neighbours = bond_network[atom]['bonded_to']
         for neighbour in neighbours:
             atom_type = atom_types[neighbour-1]
             already_included = island_labels[neighbour-1]
             if (atom_type==1) and (not already_included):
-                add_neighbours(neighbour)
-    add_neighbours(index+1)
+                add_neighbours(neighbour,atom_coord)
+
+    add_neighbours(index+1,ref)
 
     return island, island_labels
 
 def find_islands_by_flood(sim):
     bonds = sim.bonds #2xN array
     atom_types = sim.atom_labels
+
+    x, y = [sim.box_dimensions[0,1] - sim.box_dimensions[0,0],
+            sim.box_dimensions[1,1] - sim.box_dimensions[1,0]]
 
     N = len(atom_types)
     bond_network = build_bond_network(bonds, atom_types)
@@ -72,7 +110,8 @@ def find_islands_by_flood(sim):
         if (island_labels[i] == 0) and (atom_types[i] == 1) :
             # found new island
             island_index = len(islands)+1
-            island, island_labels = flood_island(i, bond_network, island_labels,atom_types, island_index)
+            island, island_labels = flood_island(i, bond_network, island_labels,
+                                                 atom_types, island_index, sim.coords, x, y)
             islands += [island]
 
     map(lambda island: island.populate_coords(sim.coords), islands)
@@ -130,7 +169,8 @@ def outer_polygon(coords,alpha):
 
 def simple_area(coords):
     bond_length = 1.42 # Angstroms, in graphene
-    atom_area = pi * (1.42/2)**2
+    atom_area = 1.414**2 * 3 * np.sqrt(3)/4 # 2.60, number density of graphene atoms
+    #atom_area = pi * (1.42/2)**2
     return len(coords) * atom_area
 
 def strip_small_islands(islands,min_atoms):
@@ -179,10 +219,10 @@ def write_gnuplot(islands):
 def calc_island_sizes(sim):
     islands = find_islands_by_flood(sim)
     islands = strip_small_islands(islands,6)
-    write_islands_xyz(islands)
 
     map(lambda island: island.calc_boundary(3), islands)
-    map(lambda island: island.calc_polygon_area(), islands)
+    map(lambda island: island.calc_area('boundary'), islands)
+    write_islands_xyz(islands)
     write_gnuplot(islands)
 
     sizes = [island.diameter() for island in islands]
