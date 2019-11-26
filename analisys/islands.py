@@ -5,8 +5,8 @@ class Island(object):
     def __init__(self):
         self.atoms = []
         self.coords = []
-        self.area = None
-        self.boundary = None
+        self.area_boundary = None
+        self.area_simple = None
 
     def populate_coords(self,all_coords):
         N = len(self.atoms)
@@ -17,13 +17,9 @@ class Island(object):
     def calc_boundary(self,alpha):
         self.boundary = outer_polygon(self.coords[:,0:2], alpha)
 
-    def calc_area(self,method):
-        #if method == 'boundary':
-            area1 = self.boundary.area
-        #elif method == 'simple':
-            area2 = simple_area(self.coords)
-            print area1,area2
-            self.area = area2
+    def calc_area(self):
+        self.area_boundary = self.boundary.area
+        self.area_simple = simple_area(self.coords)
 
     def com(self):
         return self.coords[:,0:2].mean(0)
@@ -31,8 +27,8 @@ class Island(object):
     def natoms(self):
         return len(self.atoms)
 
-    def diameter(self):
-        return 2 * np.sqrt(self.area/pi)
+    def diameter(self,method):
+        return 2 * np.sqrt(getattr(self,method)/pi)
 
 def build_bond_network(bonds, atom_types):
     N = len(atom_types)
@@ -154,12 +150,11 @@ def outer_polygon(coords,alpha):
         return concave_hull
 
 def simple_area(coords):
-    bond_length = 1.42 # Angstroms, in graphene
     atom_area = 1.414**2 * 3 * np.sqrt(3)/4 # 2.60, number density of graphene atoms
-    #atom_area = pi * (1.42/2)**2
     return len(coords) * atom_area
 
 def strip_small_islands(islands,min_atoms):
+    # min_atmos in island to be worth counting
     new_islands = []
     for island in islands:
         if island.natoms() >= min_atoms:
@@ -197,7 +192,9 @@ def write_gnuplot(islands):
     # draw circles of an island's approximate area
     with open('island_area_circle.dat','w') as f:
         for island in islands:
-            f.write(str(island.com()[0])+"\t "+str(island.com()[1])+"\t "+str(island.diameter()/2)+"\n")
+            f.write(str(island.com()[0])+"\t "+str(island.com()[1])+"\t "+
+                    str(island.diameter('area_simple')/2)+"\t"+
+                    str(island.diameter('area_boundary')/2)+"\n")
     # plot with:
     # gnuplot> load 'island_objects.sh'
     # gnuplot> pl 'island_coords.dat' ,'island_area_circle.dat' w circ
@@ -207,10 +204,10 @@ def calc_island_sizes(sim):
     islands = strip_small_islands(islands,6)
 
     map(lambda island: island.calc_boundary(3), islands)
-    map(lambda island: island.calc_area('boundary'), islands)
+    map(lambda island: island.calc_area(), islands)
     write_islands_xyz(islands)
     write_gnuplot(islands)
 
-    sizes = [island.diameter() for island in islands]
+    sizes = [island.diameter("area_boundary") for island in islands]
     return sizes
 
