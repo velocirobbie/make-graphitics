@@ -25,18 +25,6 @@ class Island(object):
             print area1,area2
             self.area = area2
 
-    def unwrap_periodic(self,x,y,bond_network):
-        ref = [0,0]
-        for i in range(self.natoms()):
-            dx = self.coords[i][0] - ref[0]
-            dy = self.coords[i][1] - ref[1]
-            if   dx >  x/2: self.coords[i][0] -= x
-            elif dx < -x/2: self.coords[i][0] += x
-            if   dy >  y/2: self.coords[i][1] -= y
-            elif dy > -y/2: self.coords[i][1] += y
-
-            ref = self.coords[i][0:2]
-
     def com(self):
         return self.coords[:,0:2].mean(0)
 
@@ -58,7 +46,8 @@ def flood_island(index, bond_network, island_labels, atom_types, island_index, c
     import sys
     sys.setrecursionlimit(100000)
     island = Island()
-
+    #island.coords = np.empty((len(coords),3))
+    island.atoms = np.empty(len(coords),dtype=int)
     ref = [0,0,0]
 
     def unwrap_coord(coord,ref):
@@ -72,22 +61,24 @@ def flood_island(index, bond_network, island_labels, atom_types, island_index, c
             elif dy > -y/2: coord[1] += y; dy += y
         return coord
 
-    def add_neighbours(atom,ref):
-        island.atoms += [atom]
+    count = 0
 
-        atom_coord = unwrap_coord(coords[atom-1],ref)
-        island.coords += [atom_coord]
+    q = [index+1]
+    while q:
+        v = q.pop() # pop removes and returns last element of array
+        island_labels[v-1] = island_index
+        island.atoms[count] = v
+        neighbours = bond_network[v]['bonded_to']
 
-        island_labels[atom-1] = island_index
-        neighbours = bond_network[atom]['bonded_to']
+        count += 1
         for neighbour in neighbours:
             atom_type = atom_types[neighbour-1]
             already_included = island_labels[neighbour-1]
             if (atom_type==1) and (not already_included):
-                add_neighbours(neighbour,atom_coord)
+                q.append(neighbour)
 
-    add_neighbours(index+1,ref)
-
+    island.atoms = island.atoms[:count]
+    #island.coords = island.coords[:count]
     return island, island_labels
 
 def find_islands_by_flood(sim):
@@ -221,7 +212,7 @@ def calc_island_sizes(sim):
     islands = strip_small_islands(islands,6)
 
     map(lambda island: island.calc_boundary(3), islands)
-    map(lambda island: island.calc_area('boundary'), islands)
+    map(lambda island: island.calc_area('simple'), islands)
     write_islands_xyz(islands)
     write_gnuplot(islands)
 
