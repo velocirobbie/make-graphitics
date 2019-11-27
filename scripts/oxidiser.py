@@ -71,7 +71,7 @@ class Oxidiser(object):
                 self.atom_states[i] = 3
         
         # lists to record oxidisation process
-        self.affinity_order = [0]
+        #self.affinity_order = [0]
         self.time_order = []
         self.time_elapsed_list = []
         self.node_order = []
@@ -182,13 +182,13 @@ class Oxidiser(object):
                 out = Writer(crystal)
                 out.write_xyz(option='a')
                 
-            with open('affinity.dat','a') as f:
-                f.write(str(self.affinity_order[-1])+'\t'+
-                        str(dt)+'\t'+
-                        str(time_elapsed)+'\t'+
-                        str(dt*self.new_island_freq*self.NCCbonds)+'\t'+
-                        str(self.node_order[-1])+'\t'+
-                        str(available_CC_bonds)+'\n')
+            #with open('affinity.dat','a') as f:
+            #    f.write(str(self.affinity_order[-1])+'\t'+
+            #            str(dt)+'\t'+
+            #            str(time_elapsed)+'\t'+
+            #            str(dt*self.new_island_freq*self.NCCbonds)+'\t'+
+            #            str(self.node_order[-1])+'\t'+
+            #            str(available_CC_bonds)+'\n')
 
         print OH_added,'\tOH were added'
         print epoxy_added,'\tepoxy were added'
@@ -371,22 +371,22 @@ class Oxidiser(object):
         r = np.random.random() * total
         R = 0
         above = 0
-        for i in xrange(self.NCCbonds):
-            R += self.affinities_above[i]
+        for i,affinity in enumerate(self.affinities_above):
+            R += affinity
             if R > r:
                 above = 1
-                self.affinity_order += [self.affinities_above[i]]
+                #self.affinity_order += [self.affinities_above[i]]
                 break
         if not above:
-            for i in xrange(self.NCCbonds):
-                R += self.affinities_below[i]
+            for i,affinity in enumerate(self.affinities_below):
+                R += affinity
                 if R > r:
-                 self.affinity_order += [self.affinities_below[i]]
+                 #self.affinity_order += [self.affinities_below[i]]
                  above = -1
                  break
         if above == 0:
-            #no possible oxidation sites
-            #raise Exception('Couldnt find a site')
+            no possible oxidation sites
+            raise Exception('Couldnt find a site')
             pass 
         
         time = 1/( total )
