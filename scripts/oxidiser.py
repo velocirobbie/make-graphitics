@@ -54,6 +54,8 @@ class Oxidiser(object):
 
         self.NO = int(self.Ncarbons / self.ratio)
         
+        self.bond_graph = crystal.generate_bond_graph(crystal.bonds)
+    
         self.CCbonds, self.neighbours, self.CCbonds_next_to_atom = self.neighbour_matrix(self.crystal)
         self.NCCbonds = len(self.CCbonds)
         self.affinities_above, self.affinities_below = self.affinity_matrix(
@@ -554,11 +556,12 @@ class Oxidiser(object):
         return N
 
     def bonded_to(self, bonds, centre):
-        ibonds = self.find_connections(bonds,centre+1)
-        bonded_to = []
-        for x in ibonds:
-            bonded_to += [ bonds[x[0]][x[1]-1] - 1]
-        return bonded_to
+        #ibonds = self.find_connections(bonds,centre+1)
+        #bonded_to = []
+        #for x in ibonds:
+        #    bonded_to += [ bonds[x[0]][x[1]-1] - 1]
+        #return bonded_to
+        return list(self.bond_graph[centre])
         
 
     def find_connections(self,bonds,centre):
