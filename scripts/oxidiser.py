@@ -367,18 +367,18 @@ class Oxidiser(object):
         return i, above
 
     def find_site(self):
-        total = sum(self.affinities_above) + sum(self.affinities_below)
+        total = np.sum(self.affinities_above) + np.sum(self.affinities_below)
         r = np.random.random() * total
         R = 0
         above = 0
-        for i in range(self.NCCbonds):
+        for i in xrange(self.NCCbonds):
             R += self.affinities_above[i]
             if R > r:
                 above = 1
                 self.affinity_order += [self.affinities_above[i]]
                 break
         if not above:
-            for i in range(self.NCCbonds):
+            for i in xrange(self.NCCbonds):
                 R += self.affinities_below[i]
                 if R > r:
                  self.affinity_order += [self.affinities_below[i]]
