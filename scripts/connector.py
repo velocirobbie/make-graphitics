@@ -7,15 +7,13 @@ class Connector(object):
         for bond in bonds:
             atoms = [atom_labels[bond[0]-1],
                      atom_labels[bond[1]-1]]
-            found = False
             for i in range(len(bond_types)):
-                flag1 = bond_types[i]==atoms
-                flag2 = bond_types[i]==list(reversed(atoms)) 
-                if flag1 or flag2: 
+                if bond_types[i]==atoms:
                     bond_labels.append(i+1)
-                    found = True
-            if not found:
-                raise TypeError('bond not found',atoms)
+                    break
+                if bond_types[i]==list(reversed(atoms)):
+                    bond_labels.append(i+1)
+                    break
         if len(bond_labels) != len(bonds):
             raise ValueError('bond assignment went wrong')
         return bond_labels
@@ -44,15 +42,13 @@ class Connector(object):
             atoms = [atom_labels[angle[0]-1],
                      atom_labels[angle[1]-1],
                      atom_labels[angle[2]-1]]
-            found = False
             for i in range(len(angle_types)):
-                flag1 = angle_types[i]==atoms
-                flag2 = angle_types[i]==list(reversed(atoms))
-                if flag1 or flag2: 
+                if angle_types[i]==atoms:
                     angle_labels.append(i+1)
-                    found = True
-            if not found:
-                raise TypeError('angle not found',atoms)
+                    break
+                if angle_types[i]==list(reversed(atoms)):
+                    angle_labels.append(i+1)
+                    break
         if len(angle_labels) != len(angles):
             raise ValueError('angle assignment went wrong')
         return angle_labels
@@ -90,15 +86,13 @@ class Connector(object):
                      atom_labels[dihedral[1]-1],
                      atom_labels[dihedral[2]-1],
                      atom_labels[dihedral[3]-1]]
-            found = False
             for i in range(len(dihedral_types)):
-                flag1 = dihedral_types[i]==atoms
-                flag2 = dihedral_types[i]==list(reversed(atoms))
-                if flag1 or flag2: 
+                if dihedral_types[i]==atoms:
                     dihedral_labels.append(i+1)
-                    found = True
-            if not found:
-                raise TypeError('dihedral not found',atoms)
+                    break
+                if dihedral_types[i]==list(reversed(atoms)):
+                    dihedral_labels.append(i+1)
+                    break
         if len(dihedral_labels) != len(dihedrals):
             raise ValueError('dihedral assignment went wrong')
         return dihedral_labels
@@ -161,10 +155,10 @@ class Connector(object):
                      atom_labels[dihedral[3]-1]]
             found = False
             for i in range(len(dihedral_types)):
-                flag1 = dihedral_types[i]==atoms
-                flag2 = dihedral_types[i]==list(reversed(atoms))
-                if flag1 or flag2: 
-                    found = True
+                if dihedral_types[i]==atoms:
+                    found = True; break
+                if dihedral_types[i]==list(reversed(atoms)):
+                    found = True; break
             if not found:
                 dihedral_types += [atoms]
         return dihedral_types
@@ -176,10 +170,12 @@ class Connector(object):
                      atom_labels[bond[1]-1]]
             found = False
             for i in range(len(bond_types)):
-                flag1 = bond_types[i]==atoms
-                flag2 = bond_types[i]==list(reversed(atoms))
-                if flag1 or flag2: 
+                if bond_types[i]==atoms:
                     found = True
+                    break
+                if bond_types[i]==list(reversed(atoms)):
+                    found = True
+                    break
             if not found:
                 bond_types += [atoms]
         return bond_types
@@ -194,10 +190,12 @@ class Connector(object):
                      atom_labels[angle[2]-1]]
             found = False
             for i in range(len(angle_types)):
-                flag1 = angle_types[i]==atoms
-                flag2 = angle_types[i]==list(reversed(atoms))
-                if flag1 or flag2: 
+                if angle_types[i]==atoms:
                     found = True
+                    break
+                if angle_types[i]==list(reversed(atoms)):
+                    found = True
+                    break
             if not found:
                 angle_types += [atoms]
         return angle_types
@@ -215,6 +213,7 @@ class Connector(object):
                 flag2 = set(atoms[1:4]) == set(improper_type[1:4])
                 if flag1 and flag2: 
                     found = True
+                    break
             if not found:
                 improper_types += [atoms]
         return improper_types
