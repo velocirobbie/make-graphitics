@@ -67,7 +67,7 @@ def flood_island(index, bond_network, island_labels, atom_types, island_index, c
         return check
 
     q = [index+1]
-    refs = [[0,0,0]]
+    refs = [ coords.mean(0) ]
     check = True
     while q:
         v = q.pop() # pop removes and returns last element of array
