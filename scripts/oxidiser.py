@@ -2,6 +2,7 @@ import numpy as np
 from connector import Connector
 from write_coords import Writer
 from oxidise_rf import init_random_forest
+from params import Parameterise
 class Oxidiser(object):
 
     """ 
@@ -179,8 +180,26 @@ class Oxidiser(object):
                 print N,'/',Ntotal,'\toxygens added\t',nodes,'nodes'
 
             if self.video and not N % self.video:
+
+                crystal.generate_connections()
+                crystal.vdw_defs = {1: 90, # Cg, graphitic (aromatic)
+                         2: 91, # Hg, graphitic edge
+                         3: 101,# Ct, tertiary C-OH
+                         4: 96, # Oa, C-OH
+                         5: 97, # Ha, C-OH
+                         6: 122,# Oe, epoxy 
+                         11: 108,# Cb, Benzyl 
+                         7: 109,# Oa, C-OH
+                         8: 209, # Cc, Carboxylic carbon
+                         9: 210, # Oc, Ketone oxygen
+                         10: 211 # Oa, alcohol
+                        } # OPLS definitions 
+
+                Parameterise(crystal)
+
                 out = Writer(crystal)
                 out.write_xyz(option='a')
+                out.write_lammps(str(N)+'.data')
                 
             #with open('affinity.dat','a') as f:
             #    f.write(str(self.affinity_order[-1])+'\t'+
