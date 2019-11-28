@@ -45,7 +45,7 @@ for ri,r in enumerate(reactions):
 
 def init_random_forest():
     from sklearn.ensemble import RandomForestRegressor
-    rf_reg = RandomForestRegressor(n_estimators=500, max_depth = 4)
+    rf_reg = RandomForestRegressor(n_estimators=10, max_depth = 4)
     rf_reg.fit(X,Y)
     return rf_reg
 
