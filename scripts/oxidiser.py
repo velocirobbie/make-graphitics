@@ -385,7 +385,7 @@ class Oxidiser(object):
                  above = -1
                  break
         if above == 0:
-            no possible oxidation sites
+            #no possible oxidation sites
             raise Exception('Couldnt find a site')
             pass 
         
