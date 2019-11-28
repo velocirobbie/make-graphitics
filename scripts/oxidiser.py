@@ -205,8 +205,8 @@ class Oxidiser(object):
         expected_first_neighbours = 4
         expected_second_neighbours = 8
 
-        first_neighbours = self.bonded_to(crystal.bonds, i-1)
-        first_neighbours += self.bonded_to(crystal.bonds, j-1)
+        first_neighbours = self.bonded_to(i-1)
+        first_neighbours += self.bonded_to(j-1)
         first_neighbours = [n+1 for n in first_neighbours]
         first_neighbours = set(first_neighbours) - {i, j}
         if len(first_neighbours) != expected_first_neighbours:
@@ -218,7 +218,7 @@ class Oxidiser(object):
                 expected_second_neighbours -= 2
         for n in first_neighbours:
             second_neighbours  = (second_neighbours | 
-                            set(self.bonded_to(crystal.bonds, n-1)) )
+                            set(self.bonded_to(n-1)) )
         second_neighbours = {n+1 for n in second_neighbours}
         second_neighbours = second_neighbours - first_neighbours - {i,j}
         if len(second_neighbours) != expected_second_neighbours:
@@ -340,19 +340,21 @@ class Oxidiser(object):
 
     def find_new_island(self):
         # number of sites that are not CH
-        total = ( sum(np.array(self.affinities_above != 0)) 
-                + sum(np.array(self.affinities_below != 0)) ) 
+        bool_affinity = np.array(self.affinities_above != 0)
+        #total = ( np.sum(np.array(self.affinities_above != 0))
+        #        + np.sum(np.array(self.affinities_below != 0)) )
+        total = np.sum(bool_affinity) * 2
         r = np.random.random() * total
         R = 0
         above = 0
-        for i in range(self.NCCbonds):
-            R += bool(self.affinities_above[i])
+        for i,affinity in enumerate(bool_affinity):
+            R += affinity
             if R > r:
                 above = 1
                 break
         if not above:
-            for i in range(self.NCCbonds):
-                R += bool(self.affinities_below[i])
+            for i,affinity in enumerate(bool_affinity):
+                R += affinity
                 if R > r:
                  above = -1
                  break
@@ -396,7 +398,7 @@ class Oxidiser(object):
 
       
     def add_edge_OH(self,crystal, H_at):
-        bonded_to = self.bonded_to(crystal.bonds,H_at)
+        bonded_to = self.bonded_to(H_at)
         C_at = bonded_to[0] 
         if len(bonded_to) != 1: raise ValueError
         
@@ -430,7 +432,7 @@ class Oxidiser(object):
         self.crystal.bonds = np.vstack((crystal.bonds,new_bond))
     
     def add_carboxyl(self, crystal, H_at):
-        bonded_to = self.bonded_to(crystal.bonds,H_at)
+        bonded_to = self.bonded_to(H_at)
         C_at = bonded_to[0] 
         if len(bonded_to) != 1: raise ValueError
         
@@ -555,7 +557,7 @@ class Oxidiser(object):
                 N += 1
         return N
 
-    def bonded_to(self, bonds, centre):
+    def bonded_to(self, centre):
         #ibonds = self.find_connections(bonds,centre+1)
         #bonded_to = []
         #for x in ibonds:
@@ -587,8 +589,8 @@ class Oxidiser(object):
                 # if i is a graphitic bond
                 if label1 == 1 and label2 == 1:
                   # is it near oxidised sections
-                  bonded_to = ( self.bonded_to(crystal.bonds,c1) 
-                               +self.bonded_to(crystal.bonds,c2))
+                  bonded_to = ( self.bonded_to(c1) 
+                               +self.bonded_to(c2))
                   sp3_flag = 0
                   for atom in bonded_to:
                       if crystal.atom_labels[atom] in sp3:
@@ -602,7 +604,7 @@ class Oxidiser(object):
         
             for i in range(len(crystal.atom_labels)):
                 if crystal.atom_labels[i] == 1:
-                    bonded_to = self.bonded_to(crystal.bonds,i)
+                    bonded_to = self.bonded_to(i)
                     sp3_flag = 0
                     for atom in bonded_to:
                       if crystal.atom_labels[atom] in sp3:
