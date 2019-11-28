@@ -49,17 +49,34 @@ def flood_island(index, bond_network, island_labels, atom_types, island_index, c
         dy = coord[1] - ref[1]
         while (dy > y/2) or (dy < -y/2):
             if   dy >  y/2: coord[1] -= y; dy -= y
-            elif dy > -y/2: coord[1] += y; dy += y
+            elif dy < -y/2: coord[1] += y; dy += y
         return coord
+
+    x_min = 0
+    x_max = 0
+    y_min = 0
+    y_max = 0
+    def check_island_range(coord, x_min, x_max, y_min, y_max):
+        if coord[0] < x_min: x_min = coord[0]
+        if coord[0] > x_max: x_max = coord[0]
+        if coord[1] < y_min: y_min = coord[1]
+        if coord[1] > y_min: y_max = coord[1]
+        check = True
+        if (x_max - x_min > 5 * x) or (y_max - y_min > 5 * y):
+            check = False
+        return check
 
     q = [index+1]
     refs = [[0,0,0]]
+    check = True
     while q:
         v = q.pop() # pop removes and returns last element of array
         ref = refs.pop()
         island_labels[v-1] = island_index
         island.atoms += [v]
         atom_coord = unwrap_coord(coords[v-1],ref)
+        check = check_island_range(atom_coord, x_min, x_max, y_min, y_max)
+        if not check: raise Exception('GO is below percolation threshold')
         island.coords += [atom_coord]
         neighbours = bond_network[v]['bonded_to']
 
@@ -69,7 +86,7 @@ def flood_island(index, bond_network, island_labels, atom_types, island_index, c
             if (atom_type==1) and (not already_included):
                 q.append(neighbour)
                 refs.append(atom_coord)
-
+    island.is_an_island = check
     return island, island_labels
 
 def find_islands_by_flood(sim):
@@ -178,6 +195,7 @@ def write_gnuplot(islands):
     # write object file for polygons
     with open('island_objects.sh','w') as f:
         for i,island in enumerate(islands):
+            if not island.is_an_island: break
             f.write("set object "+str(i+1)+" polygon from \\\n")
             coords = list(island.boundary.exterior.coords)
             for point in coords:
