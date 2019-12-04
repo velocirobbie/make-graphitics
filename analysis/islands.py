@@ -226,6 +226,7 @@ def calc_island_sizes(sim):
     write_islands_xyz(islands)
     write_gnuplot(islands)
 
-    sizes = [island.diameter("area_boundary") for island in islands]
-    return sizes
+    sizes_b = [island.diameter("area_boundary") for island in islands]
+    sizes_s = [island.diameter("area_simple")   for island in islands]
+    return sizes_b, sizes_s
 
