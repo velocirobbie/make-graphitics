@@ -12,7 +12,7 @@ class ReadLammpsData(object):
         """
         self.filename = filename
         self.attributes = {'masses', 'coords', 'molecule_labels', 
-                      'atom_charges', 'atom_labels',
+                      'atom_charges', 'atom_labels','atom_ids',
                       'box_dimensions',
                       'bonds', 'bond_labels','Nbond_types',
                       'angles', 'angle_labels','Nangle_types',
@@ -134,17 +134,18 @@ class ReadLammpsData(object):
             self.masses[int(line[0])] = float(line[1])
 
     def read_atoms(self,datafile):
+        self.atom_ids = np.empty(self.Natoms,dtype=int)
         self.coords = np.zeros((self.Natoms,3))
         self.atom_charges = np.zeros(self.Natoms)
         self.molecule_labels = np.zeros(self.Natoms,dtype=int)
         self.atom_labels = np.zeros(self.Natoms,dtype=int)
         for i in range(self.Natoms):
             line = self.read(datafile)
-            index = int(line[0]) - 1
-            self.coords[index] = line[4:7]
-            self.molecule_labels[index] = line[1]
-            self.atom_labels[index] = line[2]
-            self.atom_charges[index] = line[3]
+            self.atom_ids[i] = line[0]
+            self.coords[i] = line[4:7]
+            self.molecule_labels[i] = line[1]
+            self.atom_labels[i] = line[2]
+            self.atom_charges[i] = line[3]
 
     def read_velocities(self,datafile):
         print '--- Ignoring Velocities --- noone cares'
