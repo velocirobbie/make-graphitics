@@ -57,13 +57,14 @@ class Writer(object):
                 xyz=(str(self.coords[i][0])+' '+
                      str(self.coords[i][1])+' '+
                      str(self.coords[i][2]))
-                if   self.atom_labels[i] in [1,8,11]: 
+                mass = self.masses[self.atom_labels[i]]
+                if   abs(mass - 12.0) < 0.5:
                     atom_label = 'C '
-                elif self.atom_labels[i] in [2,5]: 
+                elif abs(mass - 1.0) < 0.5:
                     atom_label = 'H '
-                elif self.atom_labels[i] in [3]: 
-                    atom_label = 'C '#sp3 carbon
-                elif self.atom_labels[i] in [4,6,7,9,10]: 
+                elif  abs(mass - 14.0) < 0.5:
+                    atom_label = 'N '
+                elif abs(mass - 16.0) < 0.5:
                     atom_label = 'O '
                 else: atom_label = str(self.atom_labels[i])+' '
                 outfile.write(atom_label + xyz + '\n')
@@ -73,15 +74,16 @@ class Writer(object):
             self,filename='data.lammps'):
         # atom_type charge
         masses = np.unique(self.masses.values())
-        self.nreax_types = len(masses)
-        reax_types = {mass:i+1 for i,mass in enumerate(masses)}
-
+        nreax_types = len(masses)
+        #reax_types = {mass:i+1 for i,mass in enumerate(masses)}
+        reax_types = {12.011: 1, 1.008: 2, 15.999: 3}
+        print reax_types
         with open(filename,'w') as outfile:
             outfile.write(
                     '# '+ self.system_name +'\n' +
                     str(len(self.coords)) +' atoms \n'+
                     '\n'+
-                    str(self.nreax_types)+' atom types \n'+
+                    str(nreax_types)+' atom types \n'+
                     '\n'+
                     str(self.box_dimensions[0,0])+'\t'+
                     str(self.box_dimensions[0,1])+'\t xlo xhi \n'+
