@@ -7,6 +7,14 @@ import json
 config = yaml.load(open('config.yaml'))
 forcefield = 'OPLS'
 
+# simple xyz hexagon
+flake_radius = 10
+motif = Hexagon_Graphene(config,forcefield,flake_radius)
+flake = Crystal(motif,config,forcefield,[1,1,1])
+name = 'test'
+output = Writer(flake,name)
+output.write_xyz(name)
+
 # GO
 flake_radius = 10
 motif = Hexagon_Graphene(config,forcefield,flake_radius)
