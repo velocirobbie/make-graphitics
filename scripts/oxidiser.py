@@ -389,9 +389,14 @@ class Oxidiser(object):
 
     def find_site(self):
         total = np.sum(self.affinities_above) + np.sum(self.affinities_below)
+        if total == 0:
+            # no reactions possible
+            return 0,0,0
+
         r = np.random.random() * total
         R = 0
         above = 0
+
         for i,affinity in enumerate(self.affinities_above):
             R += affinity
             if R > r:
@@ -408,8 +413,8 @@ class Oxidiser(object):
         if above == 0:
             #no possible oxidation sites
             raise Exception('Couldnt find a site')
-            pass 
-        
+            pass
+
         time = 1/( total )
         self.time_order += [time]
         return i, above, time
