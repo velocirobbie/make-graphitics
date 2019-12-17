@@ -358,11 +358,13 @@ class Oxidiser(object):
         return rate
 
     def find_new_island(self):
-        # number of sites that are not CH
+        # number of sites that are not CH and can react
         bool_affinity = np.array(self.affinities_above != 0)
-        #total = ( np.sum(np.array(self.affinities_above != 0))
-        #        + np.sum(np.array(self.affinities_below != 0)) )
         total = np.sum(bool_affinity) * 2
+        if total == 0:
+            # no reactions possible
+            return 0,0
+
         r = np.random.random() * total
         R = 0
         above = 0
@@ -380,7 +382,7 @@ class Oxidiser(object):
         if above == 0:
             #no possible oxidation sites
             raise Exception('Couldnt find a new island site')
-            pass 
+            pass
         first_neighbours = self.neighbours[i][0:4]
         for atom in first_neighbours:
             if self.crystal.atom_labels[atom-1] == 2:
