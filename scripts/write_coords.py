@@ -10,7 +10,7 @@ class Writer(object):
         self.atom_labels = sim.atom_labels
         self.molecule = sim.molecule_labels
         self.charges = sim.atom_charges
-        
+
         self.bonds = sim.bonds
         self.bond_labels = sim.bond_labels
         self.angles = sim.angles
@@ -19,23 +19,23 @@ class Writer(object):
         self.dihedral_labels = sim.dihedral_labels
         self.impropers = sim.impropers
         self.improper_labels = sim.improper_labels
-        
+
         self.box_dimensions = sim.box_dimensions
         self.system_name = system_name
 
-        if hasattr(sim,'masses'): 
+        if hasattr(sim,'masses'):
             self.masses = sim.masses
-        if hasattr(sim,'bond_coeffs'): 
+        if hasattr(sim,'bond_coeffs'):
             self.bond_coeffs = sim.bond_coeffs
-        if hasattr(sim,'angle_coeffs'): 
+        if hasattr(sim,'angle_coeffs'):
             self.angle_coeffs = sim.angle_coeffs
-        if hasattr(sim,'dihedral_coeffs'): 
+        if hasattr(sim,'dihedral_coeffs'):
             self.dihedral_coeffs = sim.dihedral_coeffs
-        if hasattr(sim,'improper_coeffs'): 
+        if hasattr(sim,'improper_coeffs'):
             self.improper_coeffs = sim.improper_coeffs
-        if hasattr(sim,'pair_coeffs'): 
+        if hasattr(sim,'pair_coeffs'):
             self.pair_coeffs = sim.pair_coeffs
-        
+
         type_lists = {'atom'    : 'pair_coeffs',
                       'bond'    : 'bond_coeffs',
                       'angle'   : 'angle_coeffs',
@@ -48,7 +48,7 @@ class Writer(object):
                 maxcoeff = max( getattr(self,coeff))
             else: maxcoeff = 0
             setattr(self,'n'+type_list+'_types', max(maxcoeff, maxlabel))
-                        
+
     def write_xyz(self,filename='out.xyz',option='w'):
         with open(filename,option) as outfile:
             outfile.write(str(len(self.coords))+'\n'
@@ -57,16 +57,20 @@ class Writer(object):
                 xyz=(str(self.coords[i][0])+' '+
                      str(self.coords[i][1])+' '+
                      str(self.coords[i][2]))
-                mass = self.masses[self.atom_labels[i]]
-                if   abs(mass - 12.0) < 0.5:
-                    atom_label = 'C '
-                elif abs(mass - 1.0) < 0.5:
-                    atom_label = 'H '
-                elif  abs(mass - 14.0) < 0.5:
-                    atom_label = 'N '
-                elif abs(mass - 16.0) < 0.5:
-                    atom_label = 'O '
-                else: atom_label = str(self.atom_labels[i])+' '
+                if hasattr(self,'masses'):
+                    mass = self.masses[self.atom_labels[i]]
+                    if   abs(mass - 12.0) < 0.5:
+                        atom_label = 'C '
+                    elif abs(mass - 1.0) < 0.5:
+                        atom_label = 'H '
+                    elif  abs(mass - 14.0) < 0.5:
+                        atom_label = 'N '
+                    elif abs(mass - 16.0) < 0.5:
+                        atom_label = 'O '
+                    else: atom_label = str(self.atom_labels[i])+' '
+                else:
+                    atom_label = str(self.atom_labels[i])+' '
+
                 outfile.write(atom_label + xyz + '\n')
             print 'Coords written to '+str(filename)
 
@@ -149,8 +153,8 @@ class Writer(object):
                             str(i)+'\t'+
                             str(self.masses[i])+'\n'
                                )
-            
-            if hasattr(self,'pair_coeffs'):    
+
+            if hasattr(self,'pair_coeffs'):
                 outfile.write('\n Pair Coeffs \n \n')
                 for i in self.pair_coeffs:
                     outfile.write(
@@ -158,7 +162,7 @@ class Writer(object):
                             str(self.pair_coeffs[i][1])+'\t'+
                             str(self.pair_coeffs[i][2])+'\n'
                             )
- 
+
             if hasattr(self,'bond_coeffs'):
                 outfile.write('\n Bond Coeffs \n \n')
                 for i in self.bond_coeffs:
@@ -175,7 +179,7 @@ class Writer(object):
                             str(self.angle_coeffs[i][1])+'\t'+
                             str(self.angle_coeffs[i][2])+'\n'
                             )
-            if hasattr(self,'dihedral_coeffs'):    
+            if hasattr(self,'dihedral_coeffs'):
                 outfile.write('\n Dihedral Coeffs \n \n')
                 for i in self.dihedral_coeffs:
                     outfile.write(
@@ -186,7 +190,7 @@ class Writer(object):
                             str(self.dihedral_coeffs[i][4])+'\n'
                             )
 
-            if hasattr(self,'improper_coeffs'):    
+            if hasattr(self,'improper_coeffs'):
                 outfile.write('\n Improper Coeffs \n \n')
                 for i in self.improper_coeffs:
                     outfile.write(
@@ -195,11 +199,8 @@ class Writer(object):
                             str(self.improper_coeffs[i][2])+'\n'
                             )
 
-
-
-                
             outfile.write('\n Atoms \n \n')
-            
+
             for i in range(len(self.coords)):
                 outfile.write(
                         str(i+1)+'\t ' +             # atom ID
@@ -209,8 +210,8 @@ class Writer(object):
                         str(self.coords[i][0])+'\t ' +# x
                         str(self.coords[i][1])+'\t ' +# y
                         str(self.coords[i][2])+'\n '  # z
-                        )            
-            
+                        )
+
             if len(self.bonds):
                 outfile.write('\n Bonds \n \n')
                 for i in range(len(self.bonds)):
@@ -220,7 +221,7 @@ class Writer(object):
                             str(self.bonds[i][0])+'\t '+# atom 1
                             str(self.bonds[i][1])+'\n'# atom 2
                             )
-             
+
             if len(self.angles):
                 outfile.write('\n Angles \n \n')
                 for i in range(len(self.angles)):
@@ -231,7 +232,7 @@ class Writer(object):
                             str(self.angles[i][1])+'\t '+
                             str(self.angles[i][2])+'\n'
                             )
-            
+
             if len(self.dihedrals):
                 outfile.write('\n Dihedrals \n \n')
                 for i in range(len(self.dihedrals)):
@@ -243,7 +244,7 @@ class Writer(object):
                             str(self.dihedrals[i][2])+' \t'+
                             str(self.dihedrals[i][3])+' \n'
                             )
-            
+
             if len(self.impropers):
                 outfile.write('\n Impropers \n \n')
                 for i in range(len(self.impropers)):
