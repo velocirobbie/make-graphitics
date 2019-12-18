@@ -53,6 +53,7 @@ class Oxidiser(object):
 
     def react(self, sim):
         sim.bond_graph = sim.generate_bond_graph(sim.bonds)
+        self.bond_graph = sim.bond_graph
 
         self.Ncarbons = self.calc_Ncarbons(sim)
         self.Nhydrogens = len(sim.atom_labels) - self.Ncarbons
@@ -79,7 +80,7 @@ class Oxidiser(object):
 
         self.oxidise(sim, self.NO)
 
-        self.sim.generate_connections()
+        sim.generate_connections()
         sim.vdw_defs = {1: 90, # Cg, graphitic (aromatic)
                         2: 91, # Hg, graphitic edge
                         3: 101,# Ct, tertiary C-OH
@@ -136,14 +137,14 @@ class Oxidiser(object):
                 dt = 0
                 new_island -= 1
                 time_elapsed = 0
-                site, above, dt = self.find_site(new_island=True)
+                site, above, dt = self.find_site(crystal, new_island=True)
                 atom1,atom2 = self.CCbonds[site] - 1
                 state1 = self.atom_states[atom1]
                 state2 = self.atom_states[atom2]
                 nodes += 1
                 print 'new_island accepted,',nodes,'nodes (',new_island,')'
             else:
-                site, above, dt = self.find_site()
+                site, above, dt = self.find_site(crystal)
                 time_elapsed += dt
             if above == 0:
                 print 'Could not reach C/O ratio:',self.ratio
@@ -382,7 +383,7 @@ class Oxidiser(object):
 
         return i, above
 
-    def find_site(self, new_island=False):
+    def find_site(self, sim, new_island=False):
         reactivities = np.append(self.affinities_above,
                                  self.affinities_below)
         if new_island:
@@ -407,7 +408,7 @@ class Oxidiser(object):
 
         first_neighbours = self.neighbours[i][0:4]
         for atom in first_neighbours:
-            if self.crystal.atom_labels[atom-1] == 2:
+            if sim.atom_labels[atom-1] == 2:
                 raise Exception("i've picked an unallowed oxidation site...")
         if new_island: time = 0
         else: time = 1/( total )
@@ -446,7 +447,7 @@ class Oxidiser(object):
         crystal.molecule_labels += [molecule]
 
         new_bond = np.array(([O_at+1, H_at+1]))
-        self.crystal.bonds = np.vstack((crystal.bonds,new_bond))
+        crystal.bonds = np.vstack((crystal.bonds,new_bond))
     
     def add_carboxyl(self, crystal, H_at):
         bonded_to = self.bonded_to(H_at)
