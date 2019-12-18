@@ -1,8 +1,7 @@
 import numpy as np
-from connector import Connector
-from write_coords import Writer
+#from write_coords import Writer
 from oxidise_rf import init_random_forest
-from params import Parameterise
+#from params import Parameterise
 class Oxidiser(object):
 
     """ 
