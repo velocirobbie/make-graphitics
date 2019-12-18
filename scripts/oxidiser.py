@@ -413,8 +413,8 @@ class Oxidiser(object):
         for atom in first_neighbours:
             if self.crystal.atom_labels[atom-1] == 2:
                 raise Exception("i've picked an unallowed oxidation site...")
-
-        time = 1/( total )
+        if new_island: time = 0
+        else: time = 1/( total )
         self.time_order += [time]
         return i, above, time
 
