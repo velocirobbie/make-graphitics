@@ -387,36 +387,28 @@ class Oxidiser(object):
         return i, above
 
     def find_site(self, new_island=False):
+        reactivities = np.append(self.affinities_above,
+                                 self.affinities_below)
         if new_island:
-            reactivity_above = np.array(self.affinities_above != 0)
-            reactivity_below = np.array(self.affinities_below != 0)
-        else:
-            reactivity_above = self.affinities_above
-            reactivity_below = self.affinities_below
-        total = np.sum(reactivity_above) + np.sum(reactivity_below)
+            reactivities = np.array(reactivities != 0, dtype=float)
 
+        total = np.sum(reactivities)
         if total == 0:
             # no reactions possible
             return 0,0,0
+        reactivities = reactivities / total
 
-        r = np.random.random() * total
-        R = 0
-        above = 0
+        i = int( np.random.choice(xrange(self.NCCbonds*2), 1, p=reactivities) )
 
-        for i,affinity in enumerate(reactivity_above):
-            R += affinity
-            if R > r:
-                above = 1
-                break
-        if not above:
-            for i,affinity in enumerate(reactivity_below):
-                R += affinity
-                if R > r:
-                 above = -1
-                 break
-        if above == 0:
+        if 0 <= i < self.NCCbonds:
+            above = 1
+        elif self.NCCbonds <= i < self.NCCbonds*2:
+            above = -1
+            i -= self.NCCbonds
+        else:
             #no possible oxidation sites
             raise Exception('Couldnt find a site')
+
         first_neighbours = self.neighbours[i][0:4]
         for atom in first_neighbours:
             if self.crystal.atom_labels[atom-1] == 2:
