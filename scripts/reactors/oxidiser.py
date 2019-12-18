@@ -1,7 +1,6 @@
 import numpy as np
-#from write_coords import Writer
 from oxidise_rf import init_random_forest
-#from params import Parameterise
+
 class Oxidiser(object):
 
     """ 
