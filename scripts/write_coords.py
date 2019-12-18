@@ -58,7 +58,10 @@ class Writer(object):
                      str(self.coords[i][1])+' '+
                      str(self.coords[i][2]))
                 if hasattr(self,'masses'):
-                    mass = self.masses[self.atom_labels[i]]
+                    try:
+                        mass = self.masses[self.atom_labels[i]]
+                    except KeyError:
+                        mass = 100
                     if   abs(mass - 12.0) < 0.5:
                         atom_label = 'C '
                     elif abs(mass - 1.0) < 0.5:
