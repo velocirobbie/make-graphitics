@@ -27,7 +27,7 @@ class Oxidiser(object):
     5   = Ha, alcohol
     """
     
-    def __init__(self, crystal, 
+    def __init__(self,
                  ratio = 2.5,               # Target overall C:O ratio
                  surface_OHratio = 0.5,     # Surface OH/epoxy fraction
                  edge_OHratio = 0.25,       # edge H:OH:carboxyl ratio
@@ -37,65 +37,63 @@ class Oxidiser(object):
                  new_island_freq=0,         # Freq s-1 attempt to add new island 
                  find_site_partition=False, # speed up for flakes > 100 nm
                  video=False):
-        self.crystal = crystal
-        self.molecule = crystal.molecule
-        
+
         self.method = method
         self.new_island_freq = new_island_freq
         self.video = video
-
         self.ratio = ratio
         self.surface_OHratio = surface_OHratio
         self.edge_OHratio = edge_OHratio
         self.edge_carboxyl_ratio = edge_carboxyl_ratio
-        
-        self.Ncarbons = self.calc_Ncarbons(crystal)
-        self.Nhydrogens = len(crystal.atom_labels) - self.Ncarbons
 
-        self.NO = int(self.Ncarbons / self.ratio)
-        
-        self.bond_graph = crystal.generate_bond_graph(crystal.bonds)
-    
-        self.CCbonds, self.neighbours, self.CCbonds_next_to_atom = self.neighbour_matrix(self.crystal)
-        self.NCCbonds = len(self.CCbonds)
-        self.affinities_above, self.affinities_below = self.affinity_matrix(
-                                                                self.crystal)
- 
         if self.method == 'rf':
             # Read in data from Yang2014, generate random forest regressor
             self.rf = init_random_forest()
 
-        self.atom_states = np.zeros(len(crystal.atom_labels))
-        for i in range(len(crystal.atom_labels)):
-            if crystal.atom_labels[i] == 2:
+
+    def react(self, sim):
+        sim.bond_graph = sim.generate_bond_graph(sim.bonds)
+
+        self.Ncarbons = self.calc_Ncarbons(sim)
+        self.Nhydrogens = len(sim.atom_labels) - self.Ncarbons
+        self.NO = int( round( self.Ncarbons / self.ratio) )
+
+        self.CCbonds, self.neighbours, self.CCbonds_next_to_atom = self.neighbour_matrix(sim)
+        self.NCCbonds = len(self.CCbonds)
+        self.affinities_above, self.affinities_below = self.affinity_matrix(sim)
+
+        self.atom_states = np.zeros(len(sim.atom_labels))
+        for i in range(len(sim.atom_labels)):
+            if sim.atom_labels[i] == 2:
                 self.atom_states[i] = 3
-        
+
         # lists to record oxidisation process
         #self.affinity_order = [0]
         self.time_order = []
         self.time_elapsed_list = []
         self.node_order = []
 
-        with open('affinity.dat','w') as f:
-            f.write('#affinity, dt, time_since_island,'+ 
-                    'poison_mean, new_islands, available_CC_bonds\n')
+        #with open('affinity.dat','w') as f:
+        #    f.write('#affinity, dt, time_since_island,'+
+        #            'poison_mean, new_islands, available_CC_bonds\n')
 
-        self.oxidise(crystal, self.NO)
+        self.oxidise(sim, self.NO)
 
-        self.crystal.generate_connections()
-        self.vdw_defs = {1: 90, # Cg, graphitic (aromatic)
-                         2: 91, # Hg, graphitic edge
-                         3: 101,# Ct, tertiary C-OH
-                         4: 96, # Oa, C-OH
-                         5: 97, # Ha, C-OH
-                         6: 122,# Oe, epoxy 
-                         11: 108,# Cb, Benzyl 
-                         7: 109,# Oa, C-OH
-                         8: 209, # Cc, Carboxylic carbon
-                         9: 210, # Oc, Ketone oxygen
-                         10: 211 # Oa, alcohol
-                        } # OPLS definitions 
-        crystal.vdw_defs = self.vdw_defs
+        self.sim.generate_connections()
+        sim.vdw_defs = {1: 90, # Cg, graphitic (aromatic)
+                        2: 91, # Hg, graphitic edge
+                        3: 101,# Ct, tertiary C-OH
+                        4: 96, # Oa, C-OH
+                        5: 97, # Ha, C-OH
+                        6: 122,# Oe, epoxy
+                        11: 108,# Cb, Benzyl
+                        7: 109,# Oa, C-OH
+                        8: 209, # Cc, Carboxylic carbon
+                        9: 210, # Oc, Ketone oxygen
+                        0: 211 # Oa, alcohol
+                       } # OPLS definitions
+
+        return sim
 
     def oxidise(self, crystal, Ntotal):
         # edges first
@@ -259,7 +257,7 @@ class Oxidiser(object):
         Nbonds = len(crystal.bonds)
         CCbonds = []
         neighbours = []
-        CCbonds_next_to_atom = {i+1:set() for i in range(len(self.crystal.coords))}
+        CCbonds_next_to_atom = {i+1:set() for i in range(len(crystal.coords))}
 
         count = 0
         for i in range(Nbonds):
