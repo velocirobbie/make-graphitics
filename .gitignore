@@ -7,3 +7,8 @@ data.*
 *.data
 *.swp
 *.lammpstrj
+*.c
+*.so
+*.png
+*.tga
+build/
