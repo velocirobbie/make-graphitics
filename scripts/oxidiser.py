@@ -37,6 +37,7 @@ class Oxidiser(object):
                  method='rf',               # which method to calculate a site's affinity 
                                             #empirical / rf (random forest)
                  new_island_freq=0,         # Freq s-1 attempt to add new island 
+                 find_site_partition=False, # speed up for flakes > 100 nm
                  video=False):
         self.crystal = crystal
         self.molecule = crystal.molecule
@@ -137,9 +138,9 @@ class Oxidiser(object):
             # choose site
             if new_island:
                 dt = 0
-                new_island -= 1 
+                new_island -= 1
                 time_elapsed = 0
-                site, above = self.find_new_island()
+                site, above, dt = self.find_site(new_island=True)
                 atom1,atom2 = self.CCbonds[site] - 1
                 state1 = self.atom_states[atom1]
                 state2 = self.atom_states[atom2]
@@ -382,15 +383,18 @@ class Oxidiser(object):
         if above == 0:
             #no possible oxidation sites
             raise Exception('Couldnt find a new island site')
-            pass
-        first_neighbours = self.neighbours[i][0:4]
-        for atom in first_neighbours:
-            if self.crystal.atom_labels[atom-1] == 2:
-                raise Exception("i've picked an unallowed oxidation site...")
+
         return i, above
 
-    def find_site(self):
-        total = np.sum(self.affinities_above) + np.sum(self.affinities_below)
+    def find_site(self, new_island=False):
+        if new_island:
+            reactivity_above = np.array(self.affinities_above != 0)
+            reactivity_below = np.array(self.affinities_below != 0)
+        else:
+            reactivity_above = self.affinities_above
+            reactivity_below = self.affinities_below
+        total = np.sum(reactivity_above) + np.sum(reactivity_below)
+
         if total == 0:
             # no reactions possible
             return 0,0,0
@@ -399,30 +403,29 @@ class Oxidiser(object):
         R = 0
         above = 0
 
-        for i,affinity in enumerate(self.affinities_above):
+        for i,affinity in enumerate(reactivity_above):
             R += affinity
             if R > r:
                 above = 1
-                #self.affinity_order += [self.affinities_above[i]]
                 break
         if not above:
-            for i,affinity in enumerate(self.affinities_below):
+            for i,affinity in enumerate(reactivity_below):
                 R += affinity
                 if R > r:
-                 #self.affinity_order += [self.affinities_below[i]]
                  above = -1
                  break
         if above == 0:
             #no possible oxidation sites
             raise Exception('Couldnt find a site')
-            pass
+        first_neighbours = self.neighbours[i][0:4]
+        for atom in first_neighbours:
+            if self.crystal.atom_labels[atom-1] == 2:
+                raise Exception("i've picked an unallowed oxidation site...")
 
         time = 1/( total )
         self.time_order += [time]
         return i, above, time
 
-
-      
     def add_edge_OH(self,crystal, H_at):
         bonded_to = self.bonded_to(H_at)
         C_at = bonded_to[0] 
