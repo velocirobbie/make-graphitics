@@ -52,9 +52,9 @@ class Oxidiser(object):
 
     def react(self, sim):
         sim.bond_graph = sim.generate_bond_graph(sim.bonds)
-        self.bond_graph = sim.bond_graph
 
-        self.Ncarbons = self.calc_Ncarbons(sim)
+        self.Ncarbons = np.sum( np.array(sim.atom_labels) == 1 )
+
         self.Nhydrogens = len(sim.atom_labels) - self.Ncarbons
         self.NO = int( round( self.Ncarbons / self.ratio) )
 
@@ -566,13 +566,6 @@ class Oxidiser(object):
             bond = connections[i][0]
             if a2+1 in crystal.bonds[bond]:
                 crystal.bond_labels[bond] = label
-
-    def calc_Ncarbons(self,crystal):
-        N = 0
-        for atom_type in crystal.atom_labels:
-            if atom_type == 1:
-                N += 1
-        return N
 
     def find_connections(self,bonds,centre):
         connections = np.where(bonds==centre)
