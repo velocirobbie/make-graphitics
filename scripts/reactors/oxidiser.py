@@ -50,7 +50,6 @@ class Oxidiser(object):
             # Read in data from Yang2014, generate random forest regressor
             self.rf = init_random_forest()
 
-
     def react(self, sim):
         sim.bond_graph = sim.generate_bond_graph(sim.bonds)
         self.bond_graph = sim.bond_graph
@@ -222,8 +221,8 @@ class Oxidiser(object):
         expected_first_neighbours = 4
         expected_second_neighbours = 8
 
-        first_neighbours = self.bonded_to(i-1)
-        first_neighbours += self.bonded_to(j-1)
+        first_neighbours = crystal.bonded_to(i-1)
+        first_neighbours += crystal.bonded_to(j-1)
         first_neighbours = [n+1 for n in first_neighbours]
         first_neighbours = set(first_neighbours) - {i, j}
         if len(first_neighbours) != expected_first_neighbours:
@@ -235,7 +234,7 @@ class Oxidiser(object):
                 expected_second_neighbours -= 2
         for n in first_neighbours:
             second_neighbours  = (second_neighbours | 
-                            set(self.bonded_to(n-1)) )
+                            set(crystal.bonded_to(n-1)) )
         second_neighbours = {n+1 for n in second_neighbours}
         second_neighbours = second_neighbours - first_neighbours - {i,j}
         if len(second_neighbours) != expected_second_neighbours:
@@ -416,7 +415,7 @@ class Oxidiser(object):
         return i, above, time
 
     def add_edge_OH(self,crystal, H_at):
-        bonded_to = self.bonded_to(H_at)
+        bonded_to = crystal.bonded_to(H_at)
         C_at = bonded_to[0] 
         if len(bonded_to) != 1: raise ValueError
         
@@ -450,7 +449,7 @@ class Oxidiser(object):
         crystal.bonds = np.vstack((crystal.bonds,new_bond))
     
     def add_carboxyl(self, crystal, H_at):
-        bonded_to = self.bonded_to(H_at)
+        bonded_to = crystal.bonded_to(H_at)
         C_at = bonded_to[0] 
         if len(bonded_to) != 1: raise ValueError
         
@@ -575,15 +574,6 @@ class Oxidiser(object):
                 N += 1
         return N
 
-    def bonded_to(self, centre):
-        #ibonds = self.find_connections(bonds,centre+1)
-        #bonded_to = []
-        #for x in ibonds:
-        #    bonded_to += [ bonds[x[0]][x[1]-1] - 1]
-        #return bonded_to
-        return list(self.bond_graph[centre])
-        
-
     def find_connections(self,bonds,centre):
         connections = np.where(bonds==centre)
         connections = np.vstack((connections[0],
@@ -607,8 +597,8 @@ class Oxidiser(object):
                 # if i is a graphitic bond
                 if label1 == 1 and label2 == 1:
                   # is it near oxidised sections
-                  bonded_to = ( self.bonded_to(c1) 
-                               +self.bonded_to(c2))
+                  bonded_to = ( crystal.bonded_to(c1) 
+                               +crystal.bonded_to(c2))
                   sp3_flag = 0
                   for atom in bonded_to:
                       if crystal.atom_labels[atom] in sp3:
@@ -622,7 +612,7 @@ class Oxidiser(object):
         
             for i in range(len(crystal.atom_labels)):
                 if crystal.atom_labels[i] == 1:
-                    bonded_to = self.bonded_to(i)
+                    bonded_to = crystal.bonded_to(i)
                     sp3_flag = 0
                     for atom in bonded_to:
                       if crystal.atom_labels[atom] in sp3:

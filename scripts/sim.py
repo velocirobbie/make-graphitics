@@ -43,4 +43,5 @@ class Sim(object):
             bond_graph[bond[1]-1].add(bond[0]-1)
         return bond_graph
 
-
+    def bonded_to(self, centre):
+        return list(self.bond_graph[centre])
