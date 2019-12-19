@@ -34,7 +34,7 @@ There are several tunable parameters in `make_GO_flake.py` including
 - flake radius
 - C/O target ratio, `ratio`
 - Rate at which new nodes are added, `new_island_freq`
-- output snapshots of the oxidation process every N steps with `video=N`. Viewed in VMD with `topo readvarxyz out.xyz`
+- output snapshots of the oxidation process every N steps with `video_xyz=N`. Viewed in VMD with `topo readvarxyz out.xyz`
 
 ## Notes on the Oxidiser 
 
