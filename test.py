@@ -18,8 +18,9 @@ output.write_xyz(name)
 # GO
 flake_radius = 10
 motif = Hexagon_Graphene(config,forcefield,flake_radius)
-go_flake = Crystal(motif,config,forcefield,[1,1,1])
-Oxidiser(go_flake, ratio=2.5, video=False, new_island_freq=1e15, method='rf')
+flake = Crystal(motif,config,forcefield,[1,1,1])
+oxidiser = Oxidiser(ratio=2.5, video=False, new_island_freq=1e15, method='rf')
+go_flake = oxidiser.react(flake)
 Parameterise(go_flake)
 name = 'test'
 output = Writer(go_flake,name)
@@ -43,9 +44,10 @@ output.write_xyz(name)
 # sheet
 motif = Graphene(config,forcefield)
 sheet = Crystal(motif,config,forcefield,[4,4,1])
-Oxidiser(sheet, ratio=1, video=False, new_island_freq=1e15, method='rf')
-Parameterise(sheet,sheet.vdw_defs)
-output = Writer(sheet,name)
+oxidiser = Oxidiser(ratio=1, video=False, new_island_freq=1e15, method='rf')
+go_sheet = oxidiser.react(sheet)
+Parameterise(go_sheet,sheet.vdw_defs)
+output = Writer(go_sheet,name)
 output.write_lammps(name)
 
 # graphite
