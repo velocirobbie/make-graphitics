@@ -91,7 +91,7 @@ class Oxidiser(object):
                         7: 109,# Oa, C-OH
                         8: 209, # Cc, Carboxylic carbon
                         9: 210, # Oc, Ketone oxygen
-                        0: 211 # Oa, alcohol
+                        10: 211 # Oa, alcohol
                        } # OPLS definitions
 
         return sim
