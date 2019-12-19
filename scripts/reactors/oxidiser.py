@@ -1,6 +1,8 @@
 import numpy as np
 from oxidise_rf import init_random_forest
 from base import Reactor
+from .. import Writer
+from .. import Parameterise
 
 class Oxidiser(Reactor):
 
@@ -13,7 +15,12 @@ class Oxidiser(Reactor):
                                             #empirical / rf (random forest)
                  new_island_freq=0,         # Freq s-1 attempt to add new island
                  find_site_partition=False, # speed up for flakes > 100 nm
-                 video=False):
+                 video_xyz=False,
+                 video_lammps=False,
+                 stats=False):
+
+        assert type(ratio) in [int, float] and ratio > 0
+        self.target_ratio = ratio
 
         assert method in ['rf','empirical']
         self.method = method
@@ -24,11 +31,12 @@ class Oxidiser(Reactor):
         assert type(new_island_freq) in [int, float]
         self.new_island_freq = new_island_freq
 
-        assert video == False or (type(video) == int and video > 0)
-        self.video = video
-
-        assert type(ratio) in [int, float] and ratio > 0
-        self.target_ratio = ratio
+        assert video_xyz == False or (type(video_xyz) == int and video_xyz > 0)
+        self.video_xyz = video_xyz
+        assert video_lammps == False or (type(video_lammps) == int and video_lammps > 0)
+        self.video_lammps = video_lammps
+        assert type(stats) == bool
+        self.stats = stats
 
         assert 0 <= surface_OHratio <= 1
         assert 0 <= edge_OHratio <= 1
@@ -166,13 +174,14 @@ class Oxidiser(Reactor):
             if not self.Noxygens % 20:
                 oxygens_to_add = int(self.Ncarbons / self.target_ratio)
                 print self.Noxygens,'/',oxygens_to_add,'\toxygens added\t',nodes,'nodes'
-
-            if self.video and not self.Noxygens % self.video:
+            if self.video_xyz and not self.Noxygens % self.video_xyz:
+                out = Writer(crystal)
+                out.write_xyz(option='a')
+            if self.video_lammps and not self.Noxygens % self.video_lammps:
                 crystal.generate_connections()
                 Parameterise(crystal)
                 out = Writer(crystal)
-                out.write_xyz(option='a')
-                out.write_lammps(str(N)+'.data')
+                out.write_lammps(str(self.Noxygens)+'.data')
 
         print OH_added,'\tOH were added'
         print epoxy_added,'\tepoxy were added'

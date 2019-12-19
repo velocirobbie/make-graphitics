@@ -6,13 +6,13 @@ import json
 
 config = yaml.load(open('config.yaml'))
 forcefield = 'OPLS'
-flake_radius = 15
+flake_radius = 40
 layout = [1,1,1] # make a 1x1x1 array of flakes
 
 motif = Hexagon_Graphene(config,forcefield,flake_radius)
 flake = Crystal(motif,config,forcefield,layout)
 
-oxidise = Oxidiser(ratio=2.5, video=False, new_island_freq=1e14, method='rf')
+oxidise = Oxidiser(ratio=2.5, video_xyz=20, new_island_freq=1e14, method='rf')
 flake = oxidise.react(flake)
 
 name = 'GO_flake'
