@@ -51,32 +51,15 @@ class Oxidiser(object):
             self.rf = init_random_forest()
 
     def react(self, sim):
-        sim.bond_graph = sim.generate_bond_graph(sim.bonds)
+        # initialise data structures and reactivity information
+        self.prepare_system(sim)
 
         # Check that this sim has only graphitic carbons and hydrogens
         assert set(np.unique(sim.atom_labels)).issubset({1,2})
         self.Ncarbons = np.sum( np.array(sim.atom_labels) == 1 )
-        self.Nhydrogens = len(sim.atom_labels) - self.Ncarbons
+        self.n_oxygen_to_add = int( round( self.Ncarbons / self.ratio) )
 
-        self.NO = int( round( self.Ncarbons / self.ratio) )
-
-        self.CCbonds, self.neighbours, self.CCbonds_next_to_atom = self.neighbour_matrix(sim)
-        self.NCCbonds = len(self.CCbonds)
-        self.affinities_above, self.affinities_below = self.init_affinity_matrix(sim)
-
-        self.atom_states = self.init_atom_states(sim)
-
-        # lists to record oxidisation process
-        #self.affinity_order = [0]
-        self.time_order = []
-        self.time_elapsed_list = []
-        self.node_order = []
-
-        #with open('affinity.dat','w') as f:
-        #    f.write('#affinity, dt, time_since_island,'+
-        #            'poison_mean, new_islands, available_CC_bonds\n')
-
-        self.oxidise(sim, self.NO)
+        self.oxidise(sim, self.n_oxygen_to_add)
 
         sim.generate_connections()
         sim.vdw_defs = {1: 90, # Cg, graphitic (aromatic)
@@ -93,6 +76,25 @@ class Oxidiser(object):
                        } # OPLS definitions
 
         return sim
+
+    def prepare_system(self, sim):
+        sim.bond_graph = sim.generate_bond_graph(sim.bonds)
+
+        self.CCbonds, self.neighbours, self.CCbonds_next_to_atom = self.neighbour_matrix(sim)
+        self.NCCbonds = len(self.CCbonds)
+
+        self.affinities_above, self.affinities_below = self.init_affinity_matrix(sim)
+        self.atom_states = self.init_atom_states(sim)
+
+        # lists to record oxidisation process
+        #self.affinity_order = [0]
+        self.time_order = []
+        self.time_elapsed_list = []
+        self.node_order = []
+
+        #with open('affinity.dat','w') as f:
+        #    f.write('#affinity, dt, time_since_island,'+
+        #            'poison_mean, new_islands, available_CC_bonds\n')
 
     def oxidise(self, crystal, Ntotal):
         # edges first
