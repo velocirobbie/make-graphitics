@@ -58,9 +58,14 @@ class Oxidiser(object):
         self.prepare_system(sim)
 
         self.Ncarbons = np.sum( np.array(sim.atom_labels) == 1 )
+        self.Nhydrogens = np.sum( np.array(sim.atom_labels) == 2 )
         self.n_oxygen_to_add = int( round( self.Ncarbons / self.ratio) )
 
-        self.oxidise(sim, self.n_oxygen_to_add)
+        oxygens_added = 0
+        if self.Nhydrogens:
+            oxygens_added += self.oxidise_edges(sim)
+        
+        self.oxidise(sim, self.n_oxygen_to_add - oxygens_added)
 
         sim.generate_connections()
         sim.vdw_defs = {1: 90, # Cg, graphitic (aromatic)
@@ -101,34 +106,35 @@ class Oxidiser(object):
         #    f.write('#affinity, dt, time_since_island,'+
         #            'poison_mean, new_islands, available_CC_bonds\n')
 
-    def oxidise(self, crystal, Ntotal):
-        # edges first
+    def oxidise_edges(self, sim):
         N = 0
         edge_OH = 0
         carboxyl = 0
-        for i in range(len(crystal.atom_labels)):
-            if crystal.atom_labels[i] == 2:
+        for i in range(len(sim.atom_labels)):
+            if sim.atom_labels[i] == 2:
                 r = np.random.random()
                 if r < self.edge_OHratio:
-                    self.add_edge_OH(crystal,i)
+                    self.add_edge_OH(sim,i)
                     N += 1
                     edge_OH += 1
                 elif r > 1 - self.edge_carboxyl_ratio:
-                    self.add_carboxyl(crystal,i)
+                    self.add_carboxyl(sim,i)
                     N += 2
                     carboxyl += 1
                 else:
                     pass # leave as H
-
         print 'added ',edge_OH,' OH and ',carboxyl,' COOH at edges'
+        return N
         
+    def oxidise(self, crystal, oxygen_to_add):
+        N = 0
         OH_added = 0
         epoxy_added = 0
         time_elapsed = 0 # since last new island
     	dt = 0
         nodes = 0
         new_island = 1
-        while N < Ntotal:
+        while N < oxygen_to_add:
             available_CC_bonds = np.sum(np.array(self.affinities_above != 0))
             if not new_island:
                 new_island = np.random.poisson(  float(dt) 
@@ -177,7 +183,7 @@ class Oxidiser(object):
             
             # outputs
             if not N % 20:
-                print N,'/',Ntotal,'\toxygens added\t',nodes,'nodes'
+                print N,'/',oxygen_to_add,'\toxygens added\t',nodes,'nodes'
 
             if self.video and not N % self.video:
 
@@ -214,7 +220,7 @@ class Oxidiser(object):
         print nodes,'nodes'
 
         print '=========='
-        print 'C/O = ',self.Ncarbons,'/',N,'=',float(self.Ncarbons+carboxyl)/(N)
+        #print 'C/O = ',self.Ncarbons,'/',N,'=',float(self.Ncarbons+carboxyl)/(N)
         if epoxy_added != 0:
             print 'OH/epoxy = ',float(OH_added)/(epoxy_added)
         else:
