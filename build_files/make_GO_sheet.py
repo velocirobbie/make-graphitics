@@ -21,7 +21,9 @@ layout = [x_cells,y_cells,1] # make an array of unit cells with this dimension
 motif = Graphene(config,forcefield)
 sheet = Crystal(motif,config,forcefield,layout)
 
-Oxidiser(sheet, ratio=2.5, video=20, new_island_freq=1e15, method='rf')
+oxidiser = Oxidiser(ratio=2.5, video_xyz=20, new_island_freq=1e14, method='rf')
+sheet = oxidiser.react(sheet)
+
 Parameterise(sheet,sheet.vdw_defs)
 
 name = 'GO_sheet'
