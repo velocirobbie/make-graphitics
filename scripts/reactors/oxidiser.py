@@ -57,7 +57,6 @@ class Oxidiser(object):
         # initialise data structures and reactivity information
         self.prepare_system(sim)
 
-
         self.Ncarbons = np.sum( np.array(sim.atom_labels) == 1 )
         self.n_oxygen_to_add = int( round( self.Ncarbons / self.ratio) )
 
@@ -126,7 +125,7 @@ class Oxidiser(object):
         OH_added = 0
         epoxy_added = 0
         time_elapsed = 0 # since last new island
-	dt = 0
+    	dt = 0
         nodes = 0
         new_island = 1
         while N < Ntotal:
