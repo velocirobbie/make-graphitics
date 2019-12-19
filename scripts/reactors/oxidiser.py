@@ -1,7 +1,8 @@
 import numpy as np
 from oxidise_rf import init_random_forest
+from base import Reactor
 
-class Oxidiser(object):
+class Oxidiser(Reactor):
 
     """ 
     Atom types
