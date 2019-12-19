@@ -41,7 +41,7 @@ class Oxidiser(object):
         self.method = method
         self.new_island_freq = new_island_freq
         self.video = video
-        self.ratio = ratio
+        self.target_ratio = ratio
         self.surface_OHratio = surface_OHratio
         self.edge_OHratio = edge_OHratio
         self.edge_carboxyl_ratio = edge_carboxyl_ratio
@@ -59,13 +59,12 @@ class Oxidiser(object):
 
         self.Ncarbons = np.sum( np.array(sim.atom_labels) == 1 )
         self.Nhydrogens = np.sum( np.array(sim.atom_labels) == 2 )
-        self.n_oxygen_to_add = int( round( self.Ncarbons / self.ratio) )
+        self.Noxygens = 0
 
-        oxygens_added = 0
         if self.Nhydrogens:
-            oxygens_added += self.oxidise_edges(sim)
-        
-        self.oxidise(sim, self.n_oxygen_to_add - oxygens_added)
+            self.oxidise_edges(sim)
+
+        self.oxidise(sim)
 
         sim.generate_connections()
         sim.vdw_defs = {1: 90, # Cg, graphitic (aromatic)
@@ -107,7 +106,6 @@ class Oxidiser(object):
         #            'poison_mean, new_islands, available_CC_bonds\n')
 
     def oxidise_edges(self, sim):
-        N = 0
         edge_OH = 0
         carboxyl = 0
         for i in range(len(sim.atom_labels)):
@@ -115,30 +113,29 @@ class Oxidiser(object):
                 r = np.random.random()
                 if r < self.edge_OHratio:
                     self.add_edge_OH(sim,i)
-                    N += 1
+                    self.Noxygens += 1
                     edge_OH += 1
                 elif r > 1 - self.edge_carboxyl_ratio:
                     self.add_carboxyl(sim,i)
-                    N += 2
+                    self.Noxygens += 2
                     self.Ncarbons += 1
                     carboxyl += 1
                 else:
                     pass # leave as H
         print 'added ',edge_OH,' OH and ',carboxyl,' COOH at edges'
-        return N
+        return edge_OH, carboxyl
 
-    def oxidise(self, crystal, oxygen_to_add):
-        N = 0
+    def oxidise(self, crystal):
         OH_added = 0
         epoxy_added = 0
         time_elapsed = 0 # since last new island
     	dt = 0
         nodes = 0
         new_island = 1
-        while N < oxygen_to_add:
+        while self.ratio() > self.target_ratio:
             available_CC_bonds = np.sum(np.array(self.affinities_above != 0))
             if not new_island:
-                new_island = np.random.poisson(  float(dt) 
+                new_island = np.random.poisson(  float(dt)
                                                * self.new_island_freq
                                                * available_CC_bonds)
             self.node_order += [new_island]
@@ -156,8 +153,7 @@ class Oxidiser(object):
                 site, above, dt = self.find_site(crystal)
                 time_elapsed += dt
             if above == 0:
-                print 'Could not reach C/O ratio:',self.ratio
-                print N,' oxygens added'
+                print 'Could not reach C/O ratio:',self.target_ratio
                 break
 
             # oxygenate at site,above 
@@ -180,13 +176,14 @@ class Oxidiser(object):
                 self.update_affinity(atom1+1)
                 self.update_affinity(atom2+1)
                 epoxy_added += 1
-            N += 1
+            self.Noxygens += 1
             
             # outputs
-            if not N % 20:
-                print N,'/',oxygen_to_add,'\toxygens added\t',nodes,'nodes'
+            if not self.Noxygens % 20:
+                oxygens_to_add = int(self.Ncarbons / self.target_ratio)
+                print self.Noxygens,'/',oxygens_to_add,'\toxygens added\t',nodes,'nodes'
 
-            if self.video and not N % self.video:
+            if self.video and not self.Noxygens % self.video:
 
                 crystal.generate_connections()
                 crystal.vdw_defs = {1: 90, # Cg, graphitic (aromatic)
@@ -221,11 +218,18 @@ class Oxidiser(object):
         print nodes,'nodes'
 
         print '=========='
-        #print 'C/O = ',self.Ncarbons,'/',N,'=',float(self.Ncarbons+carboxyl)/(N)
+        print 'C/O = ',self.Ncarbons,'/',self.Noxygens,'=',self.ratio()
         if epoxy_added != 0:
             print 'OH/epoxy = ',float(OH_added)/(epoxy_added)
         else:
             print 'OH/epoxy = inf'
+
+    def ratio(self):
+        if self.Noxygens == 0:
+            ratio = float("inf")
+        else:
+            ratio = float(self.Ncarbons) / self.Noxygens
+        return ratio
 
     def find_12_neighbours(self, crystal, i, j):
         expected_first_neighbours = 4
