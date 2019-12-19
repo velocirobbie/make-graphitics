@@ -4,30 +4,6 @@ from base import Reactor
 
 class Oxidiser(Reactor):
 
-    """ 
-    Atom types
-    1 = Cg, graphitic (aromatic)
-    2 = Hg, graphitic edge
-
-    3 = Ct, tertiary C-OH
-    4 = Oa, C-OH
-    5 = Ha, C-OH
-
-    3 = Ct, epoxy C-O-C 
-    6 = Oe, epoxy 
-    
-        Edges
-    11 = Cb, Benzyl 
-    7 = Oa, C-OH
-    5 = Ha, C-OH
-
-    11 = Cb, Benzyl carbon
-    8 = Cc, Carboxylic carbon
-    9 = Oc, Ketone oxygen
-    10 = Oa, alcohol
-    5   = Ha, alcohol
-    """
-
     def __init__(self,
                  ratio = 2.5,               # Target overall C/O ratio
                  surface_OHratio = 0.5,     # Surface OH/epoxy fraction
