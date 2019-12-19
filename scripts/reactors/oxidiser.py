@@ -26,29 +26,40 @@ class Oxidiser(object):
     10 = Oa, alcohol
     5   = Ha, alcohol
     """
-    
+
     def __init__(self,
-                 ratio = 2.5,               # Target overall C:O ratio
+                 ratio = 2.5,               # Target overall C/O ratio
                  surface_OHratio = 0.5,     # Surface OH/epoxy fraction
                  edge_OHratio = 0.25,       # edge H:OH:carboxyl ratio
                  edge_carboxyl_ratio = 0.25,# edge H:OH:carboxyl ratio
-                 method='rf',               # which method to calculate a site's affinity 
+                 method='rf',               # which method to calculate a site's affinity
                                             #empirical / rf (random forest)
-                 new_island_freq=0,         # Freq s-1 attempt to add new island 
+                 new_island_freq=0,         # Freq s-1 attempt to add new island
                  find_site_partition=False, # speed up for flakes > 100 nm
                  video=False):
 
+        assert method in ['rf','empirical']
         self.method = method
-        self.new_island_freq = new_island_freq
-        self.video = video
-        self.target_ratio = ratio
-        self.surface_OHratio = surface_OHratio
-        self.edge_OHratio = edge_OHratio
-        self.edge_carboxyl_ratio = edge_carboxyl_ratio
-
         if self.method == 'rf':
             # Read in data from Yang2014, generate random forest regressor
             self.rf = init_random_forest()
+
+        assert type(new_island_freq) in [int, float]
+        self.new_island_freq = new_island_freq
+
+        assert video == False or (type(video) == int and video > 0)
+        self.video = video
+
+        assert type(ratio) in [int, float] and ratio > 0
+        self.target_ratio = ratio
+
+        assert 0 <= surface_OHratio <= 1
+        assert 0 <= edge_OHratio <= 1
+        assert 0 <= edge_carboxyl_ratio <= 1
+        assert edge_OHratio + edge_carboxyl_ratio <= 1
+        self.surface_OHratio = surface_OHratio
+        self.edge_OHratio = edge_OHratio
+        self.edge_carboxyl_ratio = edge_carboxyl_ratio
 
     def react(self, sim):
         # check sim is suitible for oxidation reaction implemented here
@@ -67,19 +78,6 @@ class Oxidiser(object):
         self.oxidise(sim)
 
         sim.generate_connections()
-        sim.vdw_defs = {1: 90, # Cg, graphitic (aromatic)
-                        2: 91, # Hg, graphitic edge
-                        3: 101,# Ct, tertiary C-OH
-                        4: 96, # Oa, C-OH
-                        5: 97, # Ha, C-OH
-                        6: 122,# Oe, epoxy
-                        11: 108,# Cb, Benzyl
-                        7: 109,# Oa, C-OH
-                        8: 209, # Cc, Carboxylic carbon
-                        9: 210, # Oc, Ketone oxygen
-                        10: 211 # Oa, alcohol
-                       } # OPLS definitions
-
         return sim
 
     def validate_system(self, sim):
@@ -99,6 +97,20 @@ class Oxidiser(object):
         self.time_order = []
         self.time_elapsed_list = []
         self.node_order = []
+
+        # all OPLS atom types that are introduced by oxidation
+        sim.vdw_defs = {1: 90, # Cg, graphitic (aromatic)
+                        2: 91, # Hg, graphitic edge
+                        3: 101,# Ct, tertiary C-OH
+                        4: 96, # Oa, C-OH
+                        5: 97, # Ha, C-OH
+                        6: 122,# Oe, epoxy
+                        11: 108,# Cb, Benzyl
+                        7: 109,# Oa, C-OH
+                        8: 209, # Cc, Carboxylic carbon
+                        9: 210, # Oc, Ketone oxygen
+                        10: 211 # Oa, alcohol
+                       } # OPLS definitions
 
     def oxidise_edges(self, sim):
         edge_OH = 0
@@ -179,23 +191,8 @@ class Oxidiser(object):
                 print self.Noxygens,'/',oxygens_to_add,'\toxygens added\t',nodes,'nodes'
 
             if self.video and not self.Noxygens % self.video:
-
                 crystal.generate_connections()
-                crystal.vdw_defs = {1: 90, # Cg, graphitic (aromatic)
-                         2: 91, # Hg, graphitic edge
-                         3: 101,# Ct, tertiary C-OH
-                         4: 96, # Oa, C-OH
-                         5: 97, # Ha, C-OH
-                         6: 122,# Oe, epoxy 
-                         11: 108,# Cb, Benzyl 
-                         7: 109,# Oa, C-OH
-                         8: 209, # Cc, Carboxylic carbon
-                         9: 210, # Oc, Ketone oxygen
-                         10: 211 # Oa, alcohol
-                        } # OPLS definitions 
-
                 Parameterise(crystal)
-
                 out = Writer(crystal)
                 out.write_xyz(option='a')
                 out.write_lammps(str(N)+'.data')
