@@ -120,12 +120,13 @@ class Oxidiser(object):
                 elif r > 1 - self.edge_carboxyl_ratio:
                     self.add_carboxyl(sim,i)
                     N += 2
+                    self.Ncarbons += 1
                     carboxyl += 1
                 else:
                     pass # leave as H
         print 'added ',edge_OH,' OH and ',carboxyl,' COOH at edges'
         return N
-        
+
     def oxidise(self, crystal, oxygen_to_add):
         N = 0
         OH_added = 0
