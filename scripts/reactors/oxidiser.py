@@ -139,9 +139,6 @@ class Oxidiser(object):
                 new_island -= 1
                 time_elapsed = 0
                 site, above, dt = self.find_site(crystal, new_island=True)
-                atom1,atom2 = self.CCbonds[site] - 1
-                state1 = self.atom_states[atom1]
-                state2 = self.atom_states[atom2]
                 nodes += 1
                 print 'new_island accepted,',nodes,'nodes (',new_island,')'
             else:
