@@ -53,9 +53,11 @@ class Oxidiser(object):
     def react(self, sim):
         sim.bond_graph = sim.generate_bond_graph(sim.bonds)
 
+        # Check that this sim has only graphitic carbons and hydrogens
+        assert set(np.unique(sim.atom_labels)).issubset({1,2})
         self.Ncarbons = np.sum( np.array(sim.atom_labels) == 1 )
-
         self.Nhydrogens = len(sim.atom_labels) - self.Ncarbons
+
         self.NO = int( round( self.Ncarbons / self.ratio) )
 
         self.CCbonds, self.neighbours, self.CCbonds_next_to_atom = self.neighbour_matrix(sim)
