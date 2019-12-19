@@ -1,8 +1,6 @@
 import numpy as np
 from oxidise_rf import init_random_forest
 from base import Reactor
-from .. import Writer
-from .. import Parameterise
 
 class Oxidiser(Reactor):
 
@@ -175,13 +173,9 @@ class Oxidiser(Reactor):
                 oxygens_to_add = int(self.Ncarbons / self.target_ratio)
                 print self.Noxygens,'/',oxygens_to_add,'\toxygens added\t',nodes,'nodes'
             if self.video_xyz and not self.Noxygens % self.video_xyz:
-                out = Writer(crystal)
-                out.write_xyz(option='a')
+                self.output_snapshot(crystal)
             if self.video_lammps and not self.Noxygens % self.video_lammps:
-                crystal.generate_connections()
-                Parameterise(crystal)
-                out = Writer(crystal)
-                out.write_lammps(str(self.Noxygens)+'.data')
+                self.output_snapshot(crystal, format_='lammps',filename=str(self.Noxygens))
 
         print OH_added,'\tOH were added'
         print epoxy_added,'\tepoxy were added'

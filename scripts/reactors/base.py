@@ -1,3 +1,5 @@
+from .. import Writer
+from .. import Parameterise
 
 class Reactor(object):
     """
@@ -9,3 +11,16 @@ class Reactor(object):
         Perform reaction on sim, return with changes
         """
         raise NotImplementedError
+
+    def output_snapshot(self, sim, format_='xyz', filename='out'):
+        if format_ == 'xyz':
+            out = Writer(sim)
+            out.write_xyz(filename=filename+'.xyz', option='a')
+        elif format_ == 'lammps':
+            sim.generate_connections()
+            Parameterise(sim)
+            out = Writer(sim)
+            out.write_lammps(filename=filename+'.data')
+        else:
+            raise NotImplementedError
+
