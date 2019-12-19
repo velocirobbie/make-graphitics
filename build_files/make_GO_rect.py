@@ -9,7 +9,7 @@ forcefield = 'OPLS'
 motif = Rectangle_Graphene(config,forcefield,50,50)
 flake = Crystal(motif,config,forcefield,[1,1,1])
 
-oxidiser = Oxidiser(flake, ratio=2.5, video_xyz=20, new_island_freq=1e14, method='rf')
+oxidiser = Oxidiser(ratio=2.5, video_xyz=20, new_island_freq=1e14, method='rf')
 flake = oxidiser.react(flake)
 
 Parameterise(flake,flake.vdw_defs)

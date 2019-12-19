@@ -13,13 +13,13 @@ motif = Hexagon_Graphene(config,forcefield,flake_radius)
 flake = Crystal(motif,config,forcefield,layout)
 
 oxidiser = Oxidiser(ratio=2.5, video_xyz=20, new_island_freq=1e14, method='rf')
-flake = oxidiser.react(flake
+flake = oxidiser.react(flake)
 
 name = 'GO_flake'
 output = Writer(flake,name)
 output.write_xyz(name+'.xyz')
 
-Parameterise(flake,flake.vdw_defs)
+Parameterise(flake)
 
 output = Writer(flake,name)
 output.write_xyz(name+'.xyz')
