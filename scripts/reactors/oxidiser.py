@@ -51,11 +51,13 @@ class Oxidiser(object):
             self.rf = init_random_forest()
 
     def react(self, sim):
+        # check sim is suitible for oxidation reaction implemented here
+        self.validate_system(sim)
+
         # initialise data structures and reactivity information
         self.prepare_system(sim)
 
-        # Check that this sim has only graphitic carbons and hydrogens
-        assert set(np.unique(sim.atom_labels)).issubset({1,2})
+
         self.Ncarbons = np.sum( np.array(sim.atom_labels) == 1 )
         self.n_oxygen_to_add = int( round( self.Ncarbons / self.ratio) )
 
@@ -76,6 +78,10 @@ class Oxidiser(object):
                        } # OPLS definitions
 
         return sim
+
+    def validate_system(self, sim):
+        # Check that this sim has only graphitic carbons and hydrogens
+        assert set(np.unique(sim.atom_labels)).issubset({1,2})
 
     def prepare_system(self, sim):
         sim.bond_graph = sim.generate_bond_graph(sim.bonds)
