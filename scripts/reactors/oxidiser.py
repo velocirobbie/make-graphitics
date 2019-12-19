@@ -96,14 +96,9 @@ class Oxidiser(object):
         self.atom_states = self.init_atom_states(sim)
 
         # lists to record oxidisation process
-        #self.affinity_order = [0]
         self.time_order = []
         self.time_elapsed_list = []
         self.node_order = []
-
-        #with open('affinity.dat','w') as f:
-        #    f.write('#affinity, dt, time_since_island,'+
-        #            'poison_mean, new_islands, available_CC_bonds\n')
 
     def oxidise_edges(self, sim):
         edge_OH = 0
@@ -133,8 +128,8 @@ class Oxidiser(object):
         nodes = 0
         new_island = 1
         while self.ratio() > self.target_ratio:
-            available_CC_bonds = np.sum(np.array(self.affinities_above != 0))
             if not new_island:
+                available_CC_bonds = np.sum(np.array(self.affinities_above != 0))
                 new_island = np.random.poisson(  float(dt)
                                                * self.new_island_freq
                                                * available_CC_bonds)
@@ -156,7 +151,7 @@ class Oxidiser(object):
                 print 'Could not reach C/O ratio:',self.target_ratio
                 break
 
-            # oxygenate at site,above 
+            # oxygenate at site,above
             r = np.random.random() # between 0,1
             if r < self.surface_OHratio:
                 # add OH
@@ -177,7 +172,7 @@ class Oxidiser(object):
                 self.update_affinity(atom2+1)
                 epoxy_added += 1
             self.Noxygens += 1
-            
+
             # outputs
             if not self.Noxygens % 20:
                 oxygens_to_add = int(self.Ncarbons / self.target_ratio)
@@ -204,25 +199,16 @@ class Oxidiser(object):
                 out = Writer(crystal)
                 out.write_xyz(option='a')
                 out.write_lammps(str(N)+'.data')
-                
-            #with open('affinity.dat','a') as f:
-            #    f.write(str(self.affinity_order[-1])+'\t'+
-            #            str(dt)+'\t'+
-            #            str(time_elapsed)+'\t'+
-            #            str(dt*self.new_island_freq*self.NCCbonds)+'\t'+
-            #            str(self.node_order[-1])+'\t'+
-            #            str(available_CC_bonds)+'\n')
 
         print OH_added,'\tOH were added'
         print epoxy_added,'\tepoxy were added'
-        print nodes,'nodes'
-
-        print '=========='
-        print 'C/O = ',self.Ncarbons,'/',self.Noxygens,'=',self.ratio()
         if epoxy_added != 0:
             print 'OH/epoxy = ',float(OH_added)/(epoxy_added)
         else:
             print 'OH/epoxy = inf'
+        print nodes,'nodes'
+        print '=========='
+        print 'C/O = ',self.Ncarbons,'/',self.Noxygens,'=',self.ratio()
 
     def ratio(self):
         if self.Noxygens == 0:
