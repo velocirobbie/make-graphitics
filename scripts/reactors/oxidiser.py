@@ -62,12 +62,9 @@ class Oxidiser(object):
 
         self.CCbonds, self.neighbours, self.CCbonds_next_to_atom = self.neighbour_matrix(sim)
         self.NCCbonds = len(self.CCbonds)
-        self.affinities_above, self.affinities_below = self.affinity_matrix(sim)
+        self.affinities_above, self.affinities_below = self.init_affinity_matrix(sim)
 
-        self.atom_states = np.zeros(len(sim.atom_labels))
-        for i in range(len(sim.atom_labels)):
-            if sim.atom_labels[i] == 2:
-                self.atom_states[i] = 3
+        self.atom_states = self.init_atom_states(sim)
 
         # lists to record oxidisation process
         #self.affinity_order = [0]
@@ -241,7 +238,7 @@ class Oxidiser(object):
         
         return list(first_neighbours)+list(second_neighbours)
 
-    def affinity_matrix(self, crystal):
+    def init_affinity_matrix(self, crystal):
         affinities_above = np.ones(self.NCCbonds) 
         affinities_below = np.ones(self.NCCbonds)
         for i in range(self.NCCbonds):
@@ -623,3 +620,7 @@ class Oxidiser(object):
 
         return OH_added, epoxy_added
 
+    def init_atom_states(self, sim):
+        atom_states = np.zeros(len(sim.atom_labels))
+        atom_states[atom_states==2] = 3
+        return atom_states
