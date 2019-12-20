@@ -4,45 +4,43 @@ from scripts import *
 import numpy as np
 import json
 
-config = yaml.load(open('config.yaml'))
-forcefield = 'OPLS'
+config = yaml.load(open("config.yaml"))
+forcefield = "OPLS"
 
 # GO
 flake_radius = 10
-motif = Hexagon_Graphene(config,forcefield,flake_radius)
-go_flake = Crystal(motif,config,forcefield,[1,1,1])
-Oxidiser(go_flake, ratio=2.5, video=False, new_island_freq=1e15, method='rf')
-Parameterise(go_flake,go_flake.vdw_defs)
-name = 'test'
-output = Writer(go_flake,name)
+motif = Hexagon_Graphene(config, forcefield, flake_radius)
+go_flake = Crystal(motif, config, forcefield, [1, 1, 1])
+Oxidiser(go_flake, ratio=2.5, video=False, new_island_freq=1e15, method="rf")
+Parameterise(go_flake, go_flake.vdw_defs)
+name = "test"
+output = Writer(go_flake, name)
 output.write_xyz(name)
 output.write_lammps(name)
 output.write_reaxff(name)
 
 # rectangle
-motif = Rectangle_Graphene(config,forcefield,10,10)
-rect_flake = Crystal(motif,config,forcefield,[1,1,1])
-vdw_defs = {1:90, 2:91}
-Parameterise(rect_flake,vdw_defs)
+motif = Rectangle_Graphene(config, forcefield, 10, 10)
+rect_flake = Crystal(motif, config, forcefield, [1, 1, 1])
+vdw_defs = {1: 90, 2: 91}
+Parameterise(rect_flake, vdw_defs)
 
 # combine
-sim = Combine(rect_flake,go_flake)
-output = Writer(sim,name)
+sim = Combine(rect_flake, go_flake)
+output = Writer(sim, name)
 output.write_xyz(name)
 
 # sheet
-motif = Graphene(config,forcefield)
-sheet = Crystal(motif,config,forcefield,[4,4,1])
-Oxidiser(sheet, ratio=1, video=False, new_island_freq=1e15, method='rf')
-Parameterise(sheet,sheet.vdw_defs)
-output = Writer(sheet,name)
+motif = Graphene(config, forcefield)
+sheet = Crystal(motif, config, forcefield, [4, 4, 1])
+Oxidiser(sheet, ratio=1, video=False, new_island_freq=1e15, method="rf")
+Parameterise(sheet, sheet.vdw_defs)
+output = Writer(sheet, name)
 output.write_lammps(name)
 
 # graphite
-motif = Graphite(config,forcefield)
-graphite = Crystal(motif,config,forcefield,[4,4,2])
-vdw_defs = {1:90}
-Parameterise(graphite,vdw_defs)
+motif = Graphite(config, forcefield)
+graphite = Crystal(motif, config, forcefield, [4, 4, 2])
+vdw_defs = {1: 90}
+Parameterise(graphite, vdw_defs)
 output.write_reaxff(name)
-
-

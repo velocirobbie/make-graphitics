@@ -2,27 +2,29 @@ import numpy as np
 from oxidise_rf import init_random_forest
 from base import Reactor
 
-class Oxidiser(Reactor):
 
-    def __init__(self,
-                 ratio = 2.5,               # Target overall C/O ratio
-                 surface_OHratio = 0.5,     # Surface OH/epoxy fraction
-                 edge_OHratio = 0.25,       # edge H:OH:carboxyl ratio
-                 edge_carboxyl_ratio = 0.25,# edge H:OH:carboxyl ratio
-                 method='rf',               # which method to calculate a site's affinity
-                                            #empirical / rf (random forest)
-                 new_island_freq=0,         # Freq s-1 attempt to add new island
-                 find_site_partition=False, # speed up for flakes > 100 nm
-                 video_xyz=False,
-                 video_lammps=False,
-                 stats=False):
+class Oxidiser(Reactor):
+    def __init__(
+        self,
+        ratio=2.5,  # Target overall C/O ratio
+        surface_OHratio=0.5,  # Surface OH/epoxy fraction
+        edge_OHratio=0.25,  # edge H:OH:carboxyl ratio
+        edge_carboxyl_ratio=0.25,  # edge H:OH:carboxyl ratio
+        method="rf",  # which method to calculate a site's affinity
+        # empirical / rf (random forest)
+        new_island_freq=0,  # Freq s-1 attempt to add new island
+        find_site_partition=False,  # speed up for flakes > 100 nm
+        video_xyz=False,
+        video_lammps=False,
+        stats=False,
+    ):
 
         assert type(ratio) in [int, float] and ratio > 0
         self.target_ratio = ratio
 
-        assert method in ['rf','empirical']
+        assert method in ["rf", "empirical"]
         self.method = method
-        if self.method == 'rf':
+        if self.method == "rf":
             # Read in data from Yang2014, generate random forest regressor
             self.rf = init_random_forest()
 
@@ -51,8 +53,8 @@ class Oxidiser(Reactor):
         # initialise data structures and reactivity information
         self.prepare_system(sim)
 
-        self.Ncarbons = np.sum( np.array(sim.atom_labels) == 1 )
-        self.Nhydrogens = np.sum( np.array(sim.atom_labels) == 2 )
+        self.Ncarbons = np.sum(np.array(sim.atom_labels) == 1)
+        self.Nhydrogens = np.sum(np.array(sim.atom_labels) == 2)
         self.Noxygens = 0
 
         if self.Nhydrogens:
@@ -65,12 +67,16 @@ class Oxidiser(Reactor):
 
     def validate_system(self, sim):
         # Check that this sim has only graphitic carbons and hydrogens
-        assert set(np.unique(sim.atom_labels)).issubset({1,2})
+        assert set(np.unique(sim.atom_labels)).issubset({1, 2})
 
     def prepare_system(self, sim):
         sim.bond_graph = sim.generate_bond_graph(sim.bonds)
 
-        self.CCbonds, self.neighbours, self.CCbonds_next_to_atom = self.neighbour_matrix(sim)
+        (
+            self.CCbonds,
+            self.neighbours,
+            self.CCbonds_next_to_atom,
+        ) = self.neighbour_matrix(sim)
         self.NCCbonds = len(self.CCbonds)
 
         self.affinities_above, self.affinities_below = self.init_affinity_matrix(sim)
@@ -82,18 +88,19 @@ class Oxidiser(Reactor):
         self.node_order = []
 
         # all OPLS atom types that are introduced by oxidation
-        sim.vdw_defs = {1: 90, # Cg, graphitic (aromatic)
-                        2: 91, # Hg, graphitic edge
-                        3: 101,# Ct, tertiary C-OH
-                        4: 96, # Oa, C-OH
-                        5: 97, # Ha, C-OH
-                        6: 122,# Oe, epoxy
-                        11: 108,# Cb, Benzyl
-                        7: 109,# Oa, C-OH
-                        8: 209, # Cc, Carboxylic carbon
-                        9: 210, # Oc, Ketone oxygen
-                        10: 211 # Oa, alcohol
-                       } # OPLS definitions
+        sim.vdw_defs = {
+            1: 90,  # Cg, graphitic (aromatic)
+            2: 91,  # Hg, graphitic edge
+            3: 101,  # Ct, tertiary C-OH
+            4: 96,  # Oa, C-OH
+            5: 97,  # Ha, C-OH
+            6: 122,  # Oe, epoxy
+            11: 108,  # Cb, Benzyl
+            7: 109,  # Oa, C-OH
+            8: 209,  # Cc, Carboxylic carbon
+            9: 210,  # Oc, Ketone oxygen
+            10: 211,  # Oa, alcohol
+        }  # OPLS definitions
 
     def oxidise_edges(self, sim):
         edge_OH = 0
@@ -102,32 +109,32 @@ class Oxidiser(Reactor):
             if sim.atom_labels[i] == 2:
                 r = np.random.random()
                 if r < self.edge_OHratio:
-                    self.add_edge_OH(sim,i)
+                    self.add_edge_OH(sim, i)
                     self.Noxygens += 1
                     edge_OH += 1
                 elif r > 1 - self.edge_carboxyl_ratio:
-                    self.add_carboxyl(sim,i)
+                    self.add_carboxyl(sim, i)
                     self.Noxygens += 2
                     self.Ncarbons += 1
                     carboxyl += 1
                 else:
-                    pass # leave as H
-        print 'added ',edge_OH,' OH and ',carboxyl,' COOH at edges'
+                    pass  # leave as H
+        print "added ", edge_OH, " OH and ", carboxyl, " COOH at edges"
         return edge_OH, carboxyl
 
     def oxidise(self, crystal):
         OH_added = 0
         epoxy_added = 0
-        time_elapsed = 0 # since last new island
-    	dt = 0
+        time_elapsed = 0  # since last new island
+        dt = 0
         nodes = 0
         new_island = 1
         while self.ratio() > self.target_ratio:
             if not new_island:
                 available_CC_bonds = np.sum(np.array(self.affinities_above != 0))
-                new_island = np.random.poisson(  float(dt)
-                                               * self.new_island_freq
-                                               * available_CC_bonds)
+                new_island = np.random.poisson(
+                    float(dt) * self.new_island_freq * available_CC_bonds
+                )
             self.node_order += [new_island]
             self.time_elapsed_list += [time_elapsed]
 
@@ -138,54 +145,56 @@ class Oxidiser(Reactor):
                 time_elapsed = 0
                 site, above, dt = self.find_site(crystal, new_island=True)
                 nodes += 1
-                print 'new_island accepted,',nodes,'nodes (',new_island,')'
+                print "new_island accepted,", nodes, "nodes (", new_island, ")"
             else:
                 site, above, dt = self.find_site(crystal)
                 time_elapsed += dt
             if above == 0:
-                print 'Could not reach C/O ratio:',self.target_ratio
+                print "Could not reach C/O ratio:", self.target_ratio
                 break
 
             # oxygenate at site,above
-            r = np.random.random() # between 0,1
+            r = np.random.random()  # between 0,1
             if r < self.surface_OHratio:
                 # add OH
                 r2 = np.random.randint(2)
                 atom1 = self.CCbonds[site][r2] - 1
                 self.add_OH(crystal, above, atom1)
                 self.atom_states[atom1] = 1 * above
-                self.update_affinity(atom1+1)
+                self.update_affinity(atom1 + 1)
                 OH_added += 1
             else:
                 # add epoxy
                 atom1, atom2 = self.CCbonds[site]
-                atom1, atom2 = atom1 -1, atom2-1
+                atom1, atom2 = atom1 - 1, atom2 - 1
                 self.add_epoxy(crystal, above, atom1, atom2)
                 self.atom_states[atom1] = 2 * above
                 self.atom_states[atom2] = 2 * above
-                self.update_affinity(atom1+1)
-                self.update_affinity(atom2+1)
+                self.update_affinity(atom1 + 1)
+                self.update_affinity(atom2 + 1)
                 epoxy_added += 1
             self.Noxygens += 1
 
             # outputs
             if not self.Noxygens % 20:
                 oxygens_to_add = int(self.Ncarbons / self.target_ratio)
-                print self.Noxygens,'/',oxygens_to_add,'\toxygens added\t',nodes,'nodes'
+                print self.Noxygens, "/", oxygens_to_add, "\toxygens added\t", nodes, "nodes"
             if self.video_xyz and not self.Noxygens % self.video_xyz:
                 self.output_snapshot(crystal)
             if self.video_lammps and not self.Noxygens % self.video_lammps:
-                self.output_snapshot(crystal, format_='lammps',filename=str(self.Noxygens))
+                self.output_snapshot(
+                    crystal, format_="lammps", filename=str(self.Noxygens)
+                )
 
-        print OH_added,'\tOH were added'
-        print epoxy_added,'\tepoxy were added'
+        print OH_added, "\tOH were added"
+        print epoxy_added, "\tepoxy were added"
         if epoxy_added != 0:
-            print 'OH/epoxy = ',float(OH_added)/(epoxy_added)
+            print "OH/epoxy = ", float(OH_added) / (epoxy_added)
         else:
-            print 'OH/epoxy = inf'
-        print nodes,'nodes'
-        print '=========='
-        print 'C/O = ',self.Ncarbons,'/',self.Noxygens,'=',self.ratio()
+            print "OH/epoxy = inf"
+        print nodes, "nodes"
+        print "=========="
+        print "C/O = ", self.Ncarbons, "/", self.Noxygens, "=", self.ratio()
 
     def ratio(self):
         if self.Noxygens == 0:
@@ -198,34 +207,33 @@ class Oxidiser(Reactor):
         expected_first_neighbours = 4
         expected_second_neighbours = 8
 
-        first_neighbours = crystal.bonded_to(i-1)
-        first_neighbours += crystal.bonded_to(j-1)
-        first_neighbours = [n+1 for n in first_neighbours]
+        first_neighbours = crystal.bonded_to(i - 1)
+        first_neighbours += crystal.bonded_to(j - 1)
+        first_neighbours = [n + 1 for n in first_neighbours]
         first_neighbours = set(first_neighbours) - {i, j}
         if len(first_neighbours) != expected_first_neighbours:
-            raise ValueError ('Not enough first neighbours',i,j, first_neighbours)
-        
+            raise ValueError("Not enough first neighbours", i, j, first_neighbours)
+
         second_neighbours = set()
         for atom in first_neighbours:
-            if crystal.atom_labels[atom-1] == 2:
+            if crystal.atom_labels[atom - 1] == 2:
                 expected_second_neighbours -= 2
         for n in first_neighbours:
-            second_neighbours  = (second_neighbours | 
-                            set(crystal.bonded_to(n-1)) )
-        second_neighbours = {n+1 for n in second_neighbours}
-        second_neighbours = second_neighbours - first_neighbours - {i,j}
+            second_neighbours = second_neighbours | set(crystal.bonded_to(n - 1))
+        second_neighbours = {n + 1 for n in second_neighbours}
+        second_neighbours = second_neighbours - first_neighbours - {i, j}
         if len(second_neighbours) != expected_second_neighbours:
-            raise ValueError ('Not enough second neighbours',i,j,second_neighbours)
-        
-        return list(first_neighbours)+list(second_neighbours)
+            raise ValueError("Not enough second neighbours", i, j, second_neighbours)
+
+        return list(first_neighbours) + list(second_neighbours)
 
     def init_affinity_matrix(self, crystal):
-        affinities_above = np.ones(self.NCCbonds) 
+        affinities_above = np.ones(self.NCCbonds)
         affinities_below = np.ones(self.NCCbonds)
         for i in range(self.NCCbonds):
             first_neighbours = self.neighbours[i][0:4]
             for atom in first_neighbours:
-                if crystal.atom_labels[atom-1] == 2:
+                if crystal.atom_labels[atom - 1] == 2:
                     affinities_above[i] = 0
                     affinities_below[i] = 0
         return affinities_above, affinities_below
@@ -234,17 +242,17 @@ class Oxidiser(Reactor):
         Nbonds = len(crystal.bonds)
         CCbonds = []
         neighbours = []
-        CCbonds_next_to_atom = {i+1:set() for i in range(len(crystal.coords))}
+        CCbonds_next_to_atom = {i + 1: set() for i in range(len(crystal.coords))}
 
         count = 0
         for i in range(Nbonds):
             c1 = crystal.bonds[i][0]
             c2 = crystal.bonds[i][1]
-            label1 = crystal.atom_labels[ c1-1 ]
-            label2 = crystal.atom_labels[ c2-1 ]
+            label1 = crystal.atom_labels[c1 - 1]
+            label2 = crystal.atom_labels[c2 - 1]
 
             if label1 == 1 and label2 == 1:
-                CCbonds += [ [c1, c2] ]
+                CCbonds += [[c1, c2]]
                 c1c2_neighbours = self.find_12_neighbours(crystal, c1, c2)
                 neighbours += [c1c2_neighbours]
 
@@ -265,35 +273,45 @@ class Oxidiser(Reactor):
                 self.calc_affinities(bond)
 
     def calc_affinities(self, site):
-        calc_affinity = getattr(self, 'calc_affinity_' + self.method)
+        calc_affinity = getattr(self, "calc_affinity_" + self.method)
         n = []
         for i in self.neighbours[site]:
-            n += [ self.atom_states[i-1] ]
+            n += [self.atom_states[i - 1]]
         first = n[0:5]
-        second = n [5:]
-        above = calc_affinity(first,second) 
+        second = n[5:]
+        above = calc_affinity(first, second)
         self.affinities_above[site] = above
         first = -np.array(first)
         second = -np.array(second)
-        below = calc_affinity(first,second)
+        below = calc_affinity(first, second)
         self.affinities_below[site] = below
-       
+
     def calc_affinity_rf(self, first, second):
         edge = False
         X = [0] * 8
         for state in first:
-            if state == 1: X[0] += 1
-            if state ==-1: X[1] += 1
-            if state == 2: X[2] += 1
-            if state ==-2: X[3] += 1
+            if state == 1:
+                X[0] += 1
+            if state == -1:
+                X[1] += 1
+            if state == 2:
+                X[2] += 1
+            if state == -2:
+                X[3] += 1
         for state in second:
-            if state == 1: X[4] += 1
-            if state ==-1: X[5] += 1
-            if state == 2: X[6] += 1
-            if state ==-2: X[7] += 1
-            if state == 3: edge = True
-        if edge: rate = 1
-        else: 
+            if state == 1:
+                X[4] += 1
+            if state == -1:
+                X[5] += 1
+            if state == 2:
+                X[6] += 1
+            if state == -2:
+                X[7] += 1
+            if state == 3:
+                edge = True
+        if edge:
+            rate = 1
+        else:
             exponent = self.rf.predict([X])
             rate = 10 ** exponent[0]
         return rate
@@ -303,27 +321,28 @@ class Oxidiser(Reactor):
         polar = 0
         hbond = 0
         edge = 0
-        m = [ -3.867, 0.185,
-              23.169, -5.138,
-              11.648, -4.413]
+        m = [-3.867, 0.185, 23.169, -5.138, 11.648, -4.413]
         for state in first:
-            if state == 1: steric += 1
-            elif state == 2: steric += 1
-            if abs(state) == 1: polar += 1
-            if abs(state) == 2: polar += 0.633
-            
-            #if state == 1: hbond =
-        
+            if state == 1:
+                steric += 1
+            elif state == 2:
+                steric += 1
+            if abs(state) == 1:
+                polar += 1
+            if abs(state) == 2:
+                polar += 0.633
+
+            # if state == 1: hbond =
+
         for state in second:
-            if state == 1: hbond += 1
-            if state == 3: edge = 1
-        
-        steric = (  m[0]    * steric 
-                  + m[1] * steric * steric)
-        polar  = (  m[2] * polar
-                  + m[3] * polar * polar)
-        hbond  = (  m[4] * hbond
-                  + m[5] * hbond * hbond) 
+            if state == 1:
+                hbond += 1
+            if state == 3:
+                edge = 1
+
+        steric = m[0] * steric + m[1] * steric * steric
+        polar = m[2] * polar + m[3] * polar * polar
+        hbond = m[4] * hbond + m[5] * hbond * hbond
 
         if edge:
             rate = 1
@@ -337,119 +356,118 @@ class Oxidiser(Reactor):
         total = np.sum(bool_affinity) * 2
         if total == 0:
             # no reactions possible
-            return 0,0
+            return 0, 0
 
         r = np.random.random() * total
         R = 0
         above = 0
-        for i,affinity in enumerate(bool_affinity):
+        for i, affinity in enumerate(bool_affinity):
             R += affinity
             if R > r:
                 above = 1
                 break
         if not above:
-            for i,affinity in enumerate(bool_affinity):
+            for i, affinity in enumerate(bool_affinity):
                 R += affinity
                 if R > r:
-                 above = -1
-                 break
+                    above = -1
+                    break
         if above == 0:
-            #no possible oxidation sites
-            raise Exception('Couldnt find a new island site')
+            # no possible oxidation sites
+            raise Exception("Couldnt find a new island site")
 
         return i, above
 
     def find_site(self, sim, new_island=False):
-        reactivities = np.append(self.affinities_above,
-                                 self.affinities_below)
+        reactivities = np.append(self.affinities_above, self.affinities_below)
         if new_island:
             reactivities = np.array(reactivities != 0, dtype=float)
 
         total = np.sum(reactivities)
         if total == 0:
             # no reactions possible
-            return 0,0,0
+            return 0, 0, 0
         reactivities = reactivities / total
 
-        i = int( np.random.choice(xrange(self.NCCbonds*2), 1, p=reactivities) )
+        i = int(np.random.choice(xrange(self.NCCbonds * 2), 1, p=reactivities))
 
         if 0 <= i < self.NCCbonds:
             above = 1
-        elif self.NCCbonds <= i < self.NCCbonds*2:
+        elif self.NCCbonds <= i < self.NCCbonds * 2:
             above = -1
             i -= self.NCCbonds
         else:
-            #no possible oxidation sites
-            raise Exception('Couldnt find a site')
+            # no possible oxidation sites
+            raise Exception("Couldnt find a site")
 
         first_neighbours = self.neighbours[i][0:4]
         for atom in first_neighbours:
-            if sim.atom_labels[atom-1] == 2:
+            if sim.atom_labels[atom - 1] == 2:
                 raise Exception("i've picked an unallowed oxidation site...")
-        if new_island: time = 0
-        else: time = 1/( total )
+        if new_island:
+            time = 0
+        else:
+            time = 1 / (total)
         self.time_order += [time]
         return i, above, time
 
-    def add_edge_OH(self,crystal, H_at):
+    def add_edge_OH(self, crystal, H_at):
         bonded_to = crystal.bonded_to(H_at)
-        C_at = bonded_to[0] 
-        if len(bonded_to) != 1: raise ValueError
-        
+        C_at = bonded_to[0]
+        if len(bonded_to) != 1:
+            raise ValueError
+
         C_coord = crystal.coords[C_at]
         H_coord = crystal.coords[H_at]
-        CO = 1.4 
-        OH = 0.7 
+        CO = 1.4
+        OH = 0.7
         bond_vector = H_coord - C_coord
         bond_vector = bond_vector / np.linalg.norm(bond_vector)
         o_coord = C_coord + bond_vector * CO
-        above = np.random.randint(2)        
-        h_coord = (  o_coord 
-                   + bond_vector * OH 
-                   + np.array(([0,0,OH * (-1)**above ] )) )
-        
+        above = np.random.randint(2)
+        h_coord = o_coord + bond_vector * OH + np.array(([0, 0, OH * (-1) ** above]))
+
         molecule = crystal.molecule_labels[C_at]
-        O_at = H_at # H becomes O to preserve bond already there
+        O_at = H_at  # H becomes O to preserve bond already there
         H_at = len(crystal.atom_labels)
-        crystal.atom_labels[C_at] = 11 #3 is a C-OH carbon
+        crystal.atom_labels[C_at] = 11  # 3 is a C-OH carbon
         crystal.atom_charges[C_at] = 0.15
         crystal.coords[O_at] = o_coord
         crystal.atom_labels[O_at] = 7
         crystal.atom_charges[O_at] = -0.585
- 
-        crystal.coords = np.vstack((crystal.coords,h_coord))
-        crystal.atom_labels += [5] # H
+
+        crystal.coords = np.vstack((crystal.coords, h_coord))
+        crystal.atom_labels += [5]  # H
         crystal.atom_charges += [0.435]
         crystal.molecule_labels += [molecule]
 
-        new_bond = np.array(([O_at+1, H_at+1]))
-        crystal.bonds = np.vstack((crystal.bonds,new_bond))
-    
+        new_bond = np.array(([O_at + 1, H_at + 1]))
+        crystal.bonds = np.vstack((crystal.bonds, new_bond))
+
     def add_carboxyl(self, crystal, H_at):
         bonded_to = crystal.bonded_to(H_at)
-        C_at = bonded_to[0] 
-        if len(bonded_to) != 1: raise ValueError
-        
+        C_at = bonded_to[0]
+        if len(bonded_to) != 1:
+            raise ValueError
+
         C_coord = crystal.coords[C_at]
         H_coord = crystal.coords[H_at]
         CC = 1.4
-        CO = 1.4 
-        OH = 1.1 
+        CO = 1.4
+        OH = 1.1
         angle = np.pi / 3
         sangle = np.sin(angle) * CO
         cangle = np.cos(angle) * CO
         bond_vector = H_coord - C_coord
         bond_vector = bond_vector / np.linalg.norm(bond_vector)
-        
-        C1_coord = C_coord + bond_vector * CC
-        above = (-1)**( np.random.randint(2) )
-        O1_coord = (  C1_coord 
-                    + bond_vector * cangle
-                    + np.array([0,0,sangle*above]) )
-        O2_coord = (  O1_coord + np.array([0,0,-2*sangle*above]) )
 
-        H_coord  = O2_coord + bond_vector * OH
-        
+        C1_coord = C_coord + bond_vector * CC
+        above = (-1) ** (np.random.randint(2))
+        O1_coord = C1_coord + bond_vector * cangle + np.array([0, 0, sangle * above])
+        O2_coord = O1_coord + np.array([0, 0, -2 * sangle * above])
+
+        H_coord = O2_coord + bond_vector * OH
+
         molecule = crystal.molecule_labels[C_at]
 
         C1_at = H_at
@@ -457,101 +475,93 @@ class Oxidiser(Reactor):
         O2_at = O1_at + 1
         H_at = O1_at + 2
 
-        crystal.atom_labels[C_at] = 11 
+        crystal.atom_labels[C_at] = 11
         crystal.atom_charges[C_at] = -0.115
 
         crystal.coords[C1_at] = C1_coord
         crystal.atom_labels[C1_at] = 8
         crystal.atom_charges[C1_at] = 0.635
-        crystal.coords = np.vstack((crystal.coords,O1_coord))
-        crystal.coords = np.vstack((crystal.coords,O2_coord))
-        crystal.coords = np.vstack((crystal.coords,H_coord))
-        crystal.atom_labels += [9,10,5]
-        crystal.atom_charges += [-0.44,-0.53,0.45]
-        crystal.molecule_labels += [molecule]*3 
+        crystal.coords = np.vstack((crystal.coords, O1_coord))
+        crystal.coords = np.vstack((crystal.coords, O2_coord))
+        crystal.coords = np.vstack((crystal.coords, H_coord))
+        crystal.atom_labels += [9, 10, 5]
+        crystal.atom_charges += [-0.44, -0.53, 0.45]
+        crystal.molecule_labels += [molecule] * 3
 
-        new_bonds = np.array(([C1_at+1,O1_at+1],
-                              [C1_at+1,O2_at+1],
-                              [O2_at+1,H_at+1]))
-        crystal.bonds = np.vstack((crystal.bonds,new_bonds))
-    
-    def add_OH(self,crystal,above, at):
-        crystal.atom_labels[at] = 3 #3 is a C-OH carbon
+        new_bonds = np.array(
+            ([C1_at + 1, O1_at + 1], [C1_at + 1, O2_at + 1], [O2_at + 1, H_at + 1])
+        )
+        crystal.bonds = np.vstack((crystal.bonds, new_bonds))
+
+    def add_OH(self, crystal, above, at):
+        crystal.atom_labels[at] = 3  # 3 is a C-OH carbon
         crystal.atom_charges[at] = 0.265
         molecule = crystal.molecule_labels[at]
 
         CO = 1.4 * above
         OH = 1.0 * above
-        o_coord = crystal.coords[at] + np.array([0,0,CO])
-        h_coord = o_coord + np.array([0,0,OH])
-        crystal.coords = np.vstack((crystal.coords,o_coord))
-        crystal.coords = np.vstack((crystal.coords,h_coord))
-        crystal.atom_labels += [4,5]
-        crystal.atom_charges += [-0.683,0.418]
-        crystal.molecule_labels += [molecule,molecule]
-        
+        o_coord = crystal.coords[at] + np.array([0, 0, CO])
+        h_coord = o_coord + np.array([0, 0, OH])
+        crystal.coords = np.vstack((crystal.coords, o_coord))
+        crystal.coords = np.vstack((crystal.coords, h_coord))
+        crystal.atom_labels += [4, 5]
+        crystal.atom_charges += [-0.683, 0.418]
+        crystal.molecule_labels += [molecule, molecule]
+
         hid = len(crystal.atom_labels)
-        oid = hid -1
-        new_bonds = np.array(([at+1, oid],
-                              [oid, hid]))
-        crystal.bonds = np.vstack((crystal.bonds,new_bonds))
- 
+        oid = hid - 1
+        new_bonds = np.array(([at + 1, oid], [oid, hid]))
+        crystal.bonds = np.vstack((crystal.bonds, new_bonds))
 
-
-    def add_epoxy(self,crystal,above, c1, c2):
-        crystal.atom_labels[c1] = 3 #3 is epoxy carbon
-        crystal.atom_labels[c2] = 3 #3 is epoxy carbon
+    def add_epoxy(self, crystal, above, c1, c2):
+        crystal.atom_labels[c1] = 3  # 3 is epoxy carbon
+        crystal.atom_labels[c2] = 3  # 3 is epoxy carbon
         crystal.atom_charges[c1] = 0.2
         crystal.atom_charges[c2] = 0.2
-        
+
         molecule = crystal.molecule_labels[c1]
 
-        c1c2 = crystal.coords[c2]-crystal.coords[c1]
+        c1c2 = crystal.coords[c2] - crystal.coords[c1]
         if c1c2[0] > 2:
-            c1c2[0] += crystal.box_dimensions[0,1]
+            c1c2[0] += crystal.box_dimensions[0, 1]
         elif c1c2[0] < -2:
-            c1c2[0] += crystal.box_dimensions[0,1]
+            c1c2[0] += crystal.box_dimensions[0, 1]
         if c1c2[1] > 2:
-            c1c2[1] += crystal.box_dimensions[1,1]
+            c1c2[1] += crystal.box_dimensions[1, 1]
         elif c1c2[1] < -2:
-            c1c2[1] += crystal.box_dimensions[1,1]
+            c1c2[1] += crystal.box_dimensions[1, 1]
         CO = 0.9 * above
-        o_coord = ( crystal.coords[c1] 
-                    + np.array([0,0,CO])
-                    + 0.5 * c1c2 
-                    )
-                                        
-        crystal.coords = np.vstack((crystal.coords,o_coord))
+        o_coord = crystal.coords[c1] + np.array([0, 0, CO]) + 0.5 * c1c2
+
+        crystal.coords = np.vstack((crystal.coords, o_coord))
         crystal.atom_labels += [6]
         crystal.atom_charges += [-0.4]
         crystal.molecule_labels += [molecule]
         oid = len(crystal.atom_labels)
-        new_bonds = np.array(([c1+1, oid],
-                              [c2+1, oid]))
-        crystal.bonds = np.vstack((crystal.bonds,new_bonds))
-        
+        new_bonds = np.array(([c1 + 1, oid], [c2 + 1, oid]))
+        crystal.bonds = np.vstack((crystal.bonds, new_bonds))
+
     def remove_graphitic_bonds(self, crystal, a):
-        connections = self.find_connections(crystal.bonds,a+1)
+        connections = self.find_connections(crystal.bonds, a + 1)
         for i in range(len(connections)):
             bond = connections[i][0]
             if crystal.bond_labels[bond] == 1:
                 crystal.bond_labels[bond] = 3
 
     def change_bond_label(self, crystal, a1, a2, label):
-        connections = self.find_connections(crystal.bonds,a1+1)
+        connections = self.find_connections(crystal.bonds, a1 + 1)
         for i in range(len(connections)):
             bond = connections[i][0]
-            if a2+1 in crystal.bonds[bond]:
+            if a2 + 1 in crystal.bonds[bond]:
                 crystal.bond_labels[bond] = label
 
-    def find_connections(self,bonds,centre):
-        connections = np.where(bonds==centre)
-        connections = np.vstack((connections[0],
-                                 connections[1]))
-        return connections.transpose()  
+    def find_connections(self, bonds, centre):
+        connections = np.where(bonds == centre)
+        connections = np.vstack((connections[0], connections[1]))
+        return connections.transpose()
 
     def oxidise_islands(self, crystal):
-        removed = 1 # not 0
+        removed = 1  # not 0
         sp3 = [3]
         epoxy_added = 0
         OH_added = 0
@@ -560,42 +570,39 @@ class Oxidiser(Reactor):
             OH_added_cycle = 0
             removed = 0
             for bond in crystal.bonds:
-                c1 = bond[0]-1
-                c2 = bond[1]-1
-                label1 = crystal.atom_labels[ c1 ]
-                label2 = crystal.atom_labels[ c2 ]
+                c1 = bond[0] - 1
+                c2 = bond[1] - 1
+                label1 = crystal.atom_labels[c1]
+                label2 = crystal.atom_labels[c2]
                 # if i is a graphitic bond
                 if label1 == 1 and label2 == 1:
-                  # is it near oxidised sections
-                  bonded_to = ( crystal.bonded_to(c1) 
-                               +crystal.bonded_to(c2))
-                  sp3_flag = 0
-                  for atom in bonded_to:
-                      if crystal.atom_labels[atom] in sp3:
-                          sp3_flag += 1
-                  
-                  #if bond is surrounded by sp3 carbons
-                  if sp3_flag  >= 3:
-                      self.add_epoxy(crystal, c1, c2)
-                      removed += 1
-                      epoxy_added_cycle += 1
-        
+                    # is it near oxidised sections
+                    bonded_to = crystal.bonded_to(c1) + crystal.bonded_to(c2)
+                    sp3_flag = 0
+                    for atom in bonded_to:
+                        if crystal.atom_labels[atom] in sp3:
+                            sp3_flag += 1
+
+                    # if bond is surrounded by sp3 carbons
+                    if sp3_flag >= 3:
+                        self.add_epoxy(crystal, c1, c2)
+                        removed += 1
+                        epoxy_added_cycle += 1
+
             for i in range(len(crystal.atom_labels)):
                 if crystal.atom_labels[i] == 1:
                     bonded_to = crystal.bonded_to(i)
                     sp3_flag = 0
                     for atom in bonded_to:
-                      if crystal.atom_labels[atom] in sp3:
-                           sp3_flag += 1
+                        if crystal.atom_labels[atom] in sp3:
+                            sp3_flag += 1
                     # if bond is surrounded by sp3 carbons
                     if sp3_flag >= 3:
-                      self.add_OH(crystal, i)
-                      removed += 1
-                      OH_added_cycle += 1
+                        self.add_OH(crystal, i)
+                        removed += 1
+                        OH_added_cycle += 1
 
-            print 'cycle: islands removed', removed,' with ',\
-                   epoxy_added_cycle,' epoxy and ',\
-                   OH_added_cycle,' OH'
+            print "cycle: islands removed", removed, " with ", epoxy_added_cycle, " epoxy and ", OH_added_cycle, " OH"
             OH_added += OH_added_cycle
             epoxy_added += epoxy_added_cycle
 
@@ -603,5 +610,5 @@ class Oxidiser(Reactor):
 
     def init_atom_states(self, sim):
         atom_states = np.zeros(len(sim.atom_labels))
-        atom_states[atom_states==2] = 3
+        atom_states[atom_states == 2] = 3
         return atom_states
