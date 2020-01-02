@@ -13,7 +13,7 @@ class Oxidiser(Reactor):
         method="rf",  # which method to calculate a site's affinity
         # empirical / rf (random forest)
         new_island_freq=0,  # Freq s-1 attempt to add new island
-        find_site_partition=False,  # speed up for flakes > 100 nm
+        n_partitions=None,  # find_site speed up, for flakes > 100 nm
         video_xyz=False,
         video_lammps=False,
         stats=False,
@@ -30,6 +30,11 @@ class Oxidiser(Reactor):
 
         assert type(new_island_freq) in [int, float]
         self.new_island_freq = new_island_freq
+
+        assert ((n_partitions is None) or  # default, will estimate a good partition
+                (n_partitions is False) or  # no partitioning
+                (type(n_partitions) == int and n_partitions > 0))  # specify
+        self.n_partitions = n_partitions
 
         assert video_xyz == False or (type(video_xyz) == int and video_xyz > 0)
         self.video_xyz = video_xyz
@@ -87,6 +92,8 @@ class Oxidiser(Reactor):
         self.time_elapsed_list = []
         self.node_order = []
 
+        self.partitions = self.set_partitions(self.n_partitions, self.NCCbonds)
+
         # all OPLS atom types that are introduced by oxidation
         sim.vdw_defs = {
             1: 90,  # Cg, graphitic (aromatic)
@@ -101,6 +108,25 @@ class Oxidiser(Reactor):
             9: 210,  # Oc, Ketone oxygen
             10: 211,  # Oa, alcohol
         }  # OPLS definitions
+
+    def set_partitions(self, n_partitions, NCCbonds):
+        if n_partitions is None:
+            n_partitions = int(NCCbonds / 1000)
+            if n_partitions == 0:
+                n_partitions = 1
+        elif n_partitions is False:
+            n_partitions = 1
+        self.n_partitions = n_partitions
+
+        partition_size = int(NCCbonds / n_partitions)
+        partitions = np.empty((n_partitions, 2), dtype=int)
+        for i in range(n_partitions):
+            partitions[i, 0] = i*partition_size
+            partitions[i, 1] = (i+1)*partition_size
+        # in case NCCBonds is not evenly divisible,
+        # include remainder in the last partition
+        partitions[-1][1] = NCCbonds
+        return partitions
 
     def oxidise_edges(self, sim):
         edge_OH = 0
@@ -386,24 +412,13 @@ class Oxidiser(Reactor):
             reactivity_above = self.affinities_above
             reactivity_below = self.affinities_below
 
-        n_partitions = 10
-        if n_partitions is False:
-            n_partitions = 1
-        partition_size = self.NCCbonds / n_partitions
-        partitions = []
-        for i in range(n_partitions):
-            partitions += [[i*partition_size, (i+1)*partition_size]]
-        # in case NCCBonds is not evenly divisible,
-        # include remainder in the last partition
-        partitions[-1][1] = self.NCCbonds
-
-        totals_above = np.zeros(n_partitions)
-        totals_below = np.zeros(n_partitions)
-        for i in xrange(n_partitions):
-            totals_above[i] = np.sum(reactivity_above[partitions[i][0]:
-                                                      partitions[i][1]])
-            totals_below[i] = np.sum(reactivity_below[partitions[i][0]:
-                                                      partitions[i][1]])
+        totals_above = np.zeros(self.n_partitions)
+        totals_below = np.zeros(self.n_partitions)
+        for i in xrange(self.n_partitions):
+            totals_above[i] = np.sum(reactivity_above[self.partitions[i][0]:
+                                                      self.partitions[i][1]])
+            totals_below[i] = np.sum(reactivity_below[self.partitions[i][0]:
+                                                      self.partitions[i][1]])
 
         total_above = np.sum(totals_above)
         total_below = np.sum(totals_below)
@@ -416,11 +431,11 @@ class Oxidiser(Reactor):
 
         def search(running_total, r, reactivity, totals):
             found = False
-            for partition in range(n_partitions):
+            for partition in range(self.n_partitions):
                 running_total += totals[partition]
                 if running_total > r:
                     running_total -= totals[partition]
-                    for site in range(*partitions[partition]):
+                    for site in range(*self.partitions[partition]):
                         running_total += reactivity[site]
                         if running_total > r:
                             found = True
