@@ -412,9 +412,7 @@ class Oxidiser(Reactor):
             # no reactions possible
             return 0, 0, 0
 
-        npr = np.random.random()
-
-        r = npr * total
+        r = np.random.random() * total
 
         def search(running_total, r, reactivity, totals):
             found = False
@@ -429,16 +427,15 @@ class Oxidiser(Reactor):
                             break
                     if found:
                         break
-
             assert found
             return site
 
         if r < total_above:
             site = search(0, r, reactivity_above, totals_above)
-            above = True
+            above = 1
         else:
             site = search(total_above, r, reactivity_below, totals_below)
-            above = False
+            above = -1
 
         # check its a valid site
         first_neighbours = self.neighbours[i][0:4]
