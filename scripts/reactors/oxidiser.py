@@ -379,37 +379,79 @@ class Oxidiser(Reactor):
         return i, above
 
     def find_site(self, sim, new_island=False):
-        reactivities = np.append(self.affinities_above, self.affinities_below)
         if new_island:
-            reactivities = np.array(reactivities != 0, dtype=float)
+            reactivity_above = np.array(self.affinities_above != 0, dtype=float)
+            reactivity_below = np.array(self.affinities_below != 0, dtype=float)
+        else:
+            reactivity_above = self.affinities_above
+            reactivity_below = self.affinities_below
 
-        total = np.sum(reactivities)
+        n_partitions = 10
+        if n_partitions is False:
+            n_partitions = 1
+        partition_size = self.NCCbonds / n_partitions
+        partitions = []
+        for i in range(n_partitions):
+            partitions += [[i*partition_size, (i+1)*partition_size]]
+        # in case NCCBonds is not evenly divisible,
+        # include remainder in the last partition
+        partitions[-1][1] = self.NCCbonds
+
+        totals_above = np.zeros(n_partitions)
+        totals_below = np.zeros(n_partitions)
+        for i in xrange(n_partitions):
+            totals_above[i] = np.sum(reactivity_above[partitions[i][0]:
+                                                      partitions[i][1]])
+            totals_below[i] = np.sum(reactivity_below[partitions[i][0]:
+                                                      partitions[i][1]])
+
+        total_above = np.sum(totals_above)
+        total_below = np.sum(totals_below)
+        total = total_above + total_below
         if total == 0:
             # no reactions possible
             return 0, 0, 0
-        reactivities = reactivities / total
 
-        i = int(np.random.choice(xrange(self.NCCbonds * 2), 1, p=reactivities))
+        npr = np.random.random()
 
-        if 0 <= i < self.NCCbonds:
-            above = 1
-        elif self.NCCbonds <= i < self.NCCbonds * 2:
-            above = -1
-            i -= self.NCCbonds
+        r = npr * total
+
+        def search(running_total, r, reactivity, totals):
+            found = False
+            for partition in range(n_partitions):
+                running_total += totals[partition]
+                if running_total > r:
+                    running_total -= totals[partition]
+                    for site in range(*partitions[partition]):
+                        running_total += reactivity[site]
+                        if running_total > r:
+                            found = True
+                            break
+                    if found:
+                        break
+
+            assert found
+            return site
+
+        if r < total_above:
+            site = search(0, r, reactivity_above, totals_above)
+            above = True
         else:
-            # no possible oxidation sites
-            raise Exception("Couldnt find a site")
+            site = search(total_above, r, reactivity_below, totals_below)
+            above = False
 
+        # check its a valid site
         first_neighbours = self.neighbours[i][0:4]
         for atom in first_neighbours:
             if sim.atom_labels[atom - 1] == 2:
                 raise Exception("i've picked an unallowed oxidation site...")
+
         if new_island:
             time = 0
         else:
             time = 1 / (total)
         self.time_order += [time]
-        return i, above, time
+        return site, above, time
 
     def add_edge_OH(self, crystal, H_at):
         bonded_to = crystal.bonded_to(H_at)
