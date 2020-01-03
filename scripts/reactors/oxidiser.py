@@ -111,7 +111,7 @@ class Oxidiser(Reactor):
 
     def set_partitions(self, n_partitions, NCCbonds):
         if n_partitions is None:
-            n_partitions = int(NCCbonds / 1000)
+            n_partitions = int(NCCbonds / 10000)
             if n_partitions == 0:
                 n_partitions = 1
         elif n_partitions is False:
