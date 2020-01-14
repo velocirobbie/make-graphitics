@@ -1,4 +1,5 @@
 import numpy as np
+import os
 
 
 class Reaction(object):
@@ -8,8 +9,9 @@ class Reaction(object):
         self.second = second
 
 
+oxidise_data = os.path.dirname(__file__) + "/../params/oxidise.data"
 reactions = []
-with open("params/oxidise.data", "r") as f:
+with open(oxidise_data, "r") as f:
     count = 0
     for line in f:
         count += 1
