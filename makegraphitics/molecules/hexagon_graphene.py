@@ -1,6 +1,6 @@
 from math import pi, cos, sin, sqrt
 import numpy as np
-from molecule import Molecule
+from base import Molecule
 
 
 class Hexagon_Graphene(Molecule):

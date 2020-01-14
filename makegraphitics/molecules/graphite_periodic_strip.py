@@ -1,7 +1,6 @@
 import numpy as np
-from math import pi, sin, cos
-import yaml
-from molecule import Molecule
+from math import pi, cos
+from base import Molecule
 
 
 class GraphiteStrip(Molecule):

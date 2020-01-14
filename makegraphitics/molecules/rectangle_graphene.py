@@ -1,6 +1,6 @@
-from math import pi, cos, sin, sqrt
+from math import pi, cos, sin
 import numpy as np
-from molecule import Molecule
+from base import Molecule
 
 
 class Rectangle_Graphene(Molecule):
