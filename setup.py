@@ -7,5 +7,6 @@ setup(
                    for atomistic simulation""",
     url="https://github.com/velocirobbie/make-graphitics",
     author="Robert C Sinclair",
-    packages = find_packages(),
+    packages=find_packages(),
+    include_package_data=True
 )
