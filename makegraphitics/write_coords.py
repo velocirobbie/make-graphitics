@@ -90,7 +90,6 @@ class Writer(object):
         nreax_types = len(masses)
         # reax_types = {mass:i+1 for i,mass in enumerate(masses)}
         reax_types = {12.011: 1, 1.008: 2, 15.999: 3}
-        print reax_types
         with open(filename, "w") as outfile:
             outfile.write(
                 "# "
