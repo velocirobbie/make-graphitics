@@ -4,7 +4,7 @@ from base import Molecule
 
 
 class Rectangle_Graphene(Molecule):
-    def __init__(self, config, forcefield, x_length, y_length):
+    def __init__(self, x_length, y_length, forcefield="OPLS"):
         # zigzag edges run along the x axis
         # armchair edges run along the y axis
         config = self.crystal_params()
