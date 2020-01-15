@@ -453,7 +453,7 @@ class Oxidiser(Reactor):
             above = -1
 
         # check its a valid site
-        first_neighbours = self.neighbours[i][0:4]
+        first_neighbours = self.neighbours[site][0:4]
         for atom in first_neighbours:
             if sim.atom_labels[atom - 1] == 2:
                 raise Exception("i've picked an unallowed oxidation site...")
