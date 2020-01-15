@@ -1,6 +1,8 @@
 from lattice import Lattice
 from connector import Connector
 import numpy as np
+import os
+import yaml
 
 
 class Sim(object):
@@ -53,3 +55,8 @@ class Sim(object):
 
     def bonded_to(self, centre):
         return list(self.bond_graph[centre])
+
+    def crystal_params(self):
+        path = os.path.dirname(__file__) + "/params/"
+        return yaml.load(open(path + "config.yaml"), Loader=yaml.FullLoader)
+

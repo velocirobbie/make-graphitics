@@ -1,14 +1,13 @@
 from lattice import Lattice
 from connector import Connector
 from sim import Sim
-import numpy as np
 
 
 class Crystal(Sim):
-    def __init__(self, molecule, config, forcefield=[], lattice_dimensions=[]):
+    def __init__(self, molecule, lattice_dimensions, forcefield="OPLS"):
 
         self.molecule = molecule
-        self.config = config
+        self.config = self.crystal_params()
         if forcefield:
             self.forcefield = forcefield
         else:

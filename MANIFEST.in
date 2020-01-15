@@ -1,2 +1,3 @@
 include makegraphitics/params/oxidise.data
 include makegraphitics/params/oplsaa.prm
+include makegraphitics/params/config.yaml
