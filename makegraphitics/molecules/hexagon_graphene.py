@@ -4,7 +4,9 @@ from base import Molecule
 
 
 class Hexagon_Graphene(Molecule):
-    def __init__(self, config, forcefield, radius):
+    def __init__(self, radius, forcefield="OPLS"):
+        config = self.crystal_params()
+
         self.CC = config[forcefield]["CC"]
         self.CH = config[forcefield]["CH"]
         self.layer_gap = config[forcefield]["layer_gap"]
