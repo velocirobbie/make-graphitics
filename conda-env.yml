@@ -1,0 +1,14 @@
+name: graphene-blah
+channels:
+  - anaconda
+  - defaults
+  - conda
+  - conda-forge
+dependencies:
+  - numpy=1.16.5=py27hacdab7b_0
+  - pytest=4.6.2=py27_0
+  - python=2.7.17=h97142e2_0
+  - pyyaml=5.1.1=py27h1de35cc_0
+  - scikit-learn=0.20.3=py27h27c97d8_0
+  - setuptools=41.6.0=py27_0
+
