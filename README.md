@@ -1,6 +1,6 @@
 # Graphite, Graphene and Graphene Oxide Builder
 
-These scripts can create many graphitic structures for use in atomistic modelling.
+MakeGraphitics is a library to ceate various atomistic graphitic structures for molecular dynamics.
 
 Available structures:
 - Hexagonal graphene flake
@@ -18,19 +18,32 @@ Automatically parameterise by forcefields:
 - GraFF
 - ReaxFF
 
+## Install
+
+Clone this repository. Install using Python2.7. A conda environment is provided (not required). Run the tests to check the installation has worked.
+```
+git clone https://github.com/velocirobbie/make-graphitics
+cd make-graphitics
+pip install -r requirements.txt #(conda install requirements.txt)
+python setup.py install 
+pytest
+```
+
 ## Examples
+
+See the scripts in the `examples/` directory for a number of sample structures.
 
 1) Make a rectangular graphene sheet that extends through periodic boundaries. Parameterised with OPLS and outputs to .xyz for easy veiwing with VMD and a LAMMPS data file.
 ```
-python2.7 make_graphene_sheet.py
+python2.7 graphene_sheet.py
 ```
-Size of the sheet can be specified in `make_graphene_sheet.py`.
+Size of the sheet can be specified in `graphene_sheet.py`.
 
 2) Make a hexagonal flake of graphene oxide. Parameterised with OPLS and outputs to .xyz for easy veiwing with VMD and a LAMMPS data file.
 ```
-python2.7 make_GO_flake.py
+python2.7 GO_flake.py
 ```
-There are several tunable parameters in `make_GO_flake.py` including
+There are several tunable parameters in `GO_flake.py` that you may be interested in. Including:
 - flake radius
 - C/O target ratio, `ratio`
 - Rate at which new nodes are added, `new_island_freq`
@@ -58,9 +71,9 @@ Not all the bonded interactions that can occur in graphene oxide are included in
 
 ## More structure examples
 
-More examples of building structures with this script are in the `build_files` directory. Files must be copied to the source directory and executed there.
+More examples of building structures with this script are in the `examples` directory. Files must be copied to the source directory and executed there.
 
-Note that differenct structures can be combined into one simulation object with `Combine`. Also coordinates can be manipulated before writing to a lammps file. An examploe of this is shown in `make_peel.py`.
+Note that differenct structures can be combined into one simulation object with `Combine`. Also coordinates can be manipulated before writing to a lammps file. An examploe of this is shown in `peel_sim.py`.
 
 # Citing
 
