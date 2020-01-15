@@ -1,13 +1,10 @@
-import yaml
 import makegraphitics as mg
 
-config = yaml.load(open("config.yaml"))
-forcefield = "OPLS"
 flake_radius = 25
 layout = [1, 1, 1]  # make a 1x1x1 array of flakes
 
-motif = mg.molecules.Hexagon_Graphene(config, forcefield, flake_radius)
-flake = mg.Crystal(motif, config, forcefield, layout)
+motif = mg.molecules.Hexagon_Graphene(flake_radius)
+flake = mg.Crystal(motif, layout)
 
 oxidiser = mg.reactors.Oxidiser(ratio=2.5, video_xyz=20,
                                 new_island_freq=1e14, method="rf")

@@ -1,11 +1,7 @@
-import yaml
 import makegraphitics as mg
 
-config = yaml.load(open('config.yaml'))
-forcefield = 'OPLS'
-
-motif = mg.molecules.Rectangle_Graphene(config, forcefield, 50, 50)
-flake = mg.Crystal(motif, config, forcefield, [1, 1, 1])
+motif = mg.molecules.Rectangle_Graphene(50, 50)
+flake = mg.Crystal(motif, [1, 1, 1])
 
 oxidiser = mg.reactors.Oxidiser(ratio=2.5, video_xyz=20,
                                 new_island_freq=1e14, method='rf')

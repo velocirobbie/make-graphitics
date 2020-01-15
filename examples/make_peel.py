@@ -3,15 +3,15 @@ import numpy as np
 import math
 import makegraphitics as mg
 
-config = yaml.load(open("config.yaml"))
+config = yaml.load(open("config.yaml"),  Loader=yaml.FullLoader)
 forcefield = "GraFF_5"
-graphite = mg.molecules.Graphite(config, forcefield)
-bulk = mg.Crystal(graphite, config, forcefield, [21, 12, 1])
+graphite = mg.molecules.Graphite()
+bulk = mg.Crystal(graphite, [21, 12, 1])
 bulk.coords = bulk.coords + np.array((0, 0, 1 * config[forcefield]["layer_gap"]))
 
 
-molecule1 = mg.molecules.Hexagon_Graphene(config, forcefield, 15)
-flake1 = mg.Crystal(molecule1, config, forcefield, [1, 1, 1])
+molecule1 = mg.molecules.Hexagon_Graphene(15)
+flake1 = mg.Crystal(molecule1, [1, 1, 1])
 
 flake1.coords = flake1.coords + np.array(
     (

@@ -2,13 +2,13 @@ import yaml
 import numpy as np
 import makegraphitics as mg
 
-config = yaml.load(open("config.yaml"))
+config = yaml.load(open("config.yaml"), Loader=yaml.FullLoader)
 forcefield = "OPLS"
 
 vdw_defs = {1: 90, 2: 91}
 
-graphite = mg.molecules.Graphene(config, forcefield)
-sim = mg.Crystal(graphite, config, forcefield, [40, 30, 1])
+graphite = mg.molecules.Graphene()
+sim = mg.Crystal(graphite, [40, 30, 1])
 sim.vdw_defs = vdw_defs
 mg.Parameterise(sim, vdw_defs)
 
@@ -48,8 +48,8 @@ for i in [
 ]:
     print j
     j += 1
-    motif = mg.molecules.Hexagon_Graphene(config, forcefield, 5 + i * 2.44)
-    next_layer = mg.Crystal(motif, config, forcefield, [1, 1, 1])
+    motif = mg.molecules.Hexagon_Graphene(5 + i * 2.44)
+    next_layer = mg.Crystal(motif, [1, 1, 1])
 
     next_layer.coords = next_layer.coords + np.array(
         (

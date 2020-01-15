@@ -2,7 +2,7 @@ import yaml
 from math import cos, pi
 import makegraphitics as mg
 
-config = yaml.load(open("config.yaml"))
+config = yaml.load(open("config.yaml"),  Loader=yaml.FullLoader)
 forcefield = "OPLS"
 
 x_length = 20
@@ -21,8 +21,8 @@ layout = [
     int(layers / 2),
 ]  # make an array of unit cells with this dimension
 
-motif = mg.molecules.Graphite(config, forcefield)
-graphite = mg.Crystal(motif, config, forcefield, layout)
+motif = mg.molecules.Graphite()
+graphite = mg.Crystal(motif, layout)
 vdw_defs = {1: 90}
 
 mg.Parameterise(graphite, vdw_defs)

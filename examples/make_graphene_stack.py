@@ -2,14 +2,14 @@ import yaml
 import numpy as np
 import makegraphitics as mg
 
-config = yaml.load(open("config.yaml"))
+config = yaml.load(open("config.yaml"), Loader=yaml.FullLoader)
 forcefield = "OPLS"
 
 vdw_defs = {1: 90, 2: 91}
 R = 25
 for i in range(5):
-    motif = mg.molecules.Hexagon_Graphene(config, forcefield, R)
-    new_layer = mg.Crystal(motif, config, forcefield, [1, 1, 1])
+    motif = mg.molecules.Hexagon_Graphene(R)
+    new_layer = mg.Crystal(motif, [1, 1, 1])
 
     new_layer.coords = new_layer.coords + np.array(
         (0, 0, i * config[forcefield]["layer_gap"])
