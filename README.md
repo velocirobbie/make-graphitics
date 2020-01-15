@@ -34,6 +34,8 @@ conda env create --file graphene-env.yml
 conda activate graphene
 ```
 
+Running `pytest` will create a bunch of unwanted output files. Sorry about this, I will try and tidy up the outputs soon. In the mean time you can remove with `rm *xyz *data`.
+
 ## Examples
 
 See the scripts in the `examples/` directory for a number of sample structures.
