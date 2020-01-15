@@ -12,6 +12,7 @@ flake = oxidiser.react(flake)
 
 mg.Parameterise(flake)
 
+name = 'graphene'
 output = mg.Writer(flake, name)
 output.write_xyz(name + ".xyz")
 output.write_lammps(name + ".data")
