@@ -1,0 +1,44 @@
+Crystal:
+    CC: 1.421
+    layer_gap: 3.354
+
+GraFF_5:
+    CC: 1.42845
+    layer_gap: 3.4827
+    CH: 1.077
+    dq: 0.115
+
+GraFF_77:
+    CC: 1.42827
+    layer_gap: 3.4827
+    CH: 1.077
+    dq: 0.115
+
+OPLS:
+    CC: 1.4148         # OPLS
+#    layer_gap: 3.3827
+    layer_gap: 3.4827
+    CH: 1.077 
+    dq: 0.115
+
+AMBER:
+    CC: 1.4293          # AMBER
+    layer_gap: 3.3693
+    CH: 1.088
+    dq: 0.115
+
+COMPASS:
+    CC: 1.3913          # COMPASS
+    layer_gap: 3.3548
+    CH: 1.070
+    dq: 0.1268 
+
+Driedling:
+    CC: 1.3838          # Driedling
+    layer_gap:  3.3955
+    CH: 1.020
+    dq: 0.062
+
+system:
+    vdw_cutoff: 12.0
+    N_layers: 2
