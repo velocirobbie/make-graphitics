@@ -1,17 +1,16 @@
 import yaml
-from scripts.molecules import *
-from scripts import *
 import numpy as np
+import makegraphitics as mg
 
 config = yaml.load(open("config.yaml"))
 forcefield = "OPLS"
 
 vdw_defs = {1: 90, 2: 91}
 
-graphite = Graphene(config, forcefield)
-sim = Crystal(graphite, config, forcefield, [40, 30, 1])
+graphite = mg.molecules.Graphene(config, forcefield)
+sim = mg.Crystal(graphite, config, forcefield, [40, 30, 1])
 sim.vdw_defs = vdw_defs
-Parameterise(sim, vdw_defs)
+mg.Parameterise(sim, vdw_defs)
 
 j = 0
 for i in [
@@ -49,8 +48,8 @@ for i in [
 ]:
     print j
     j += 1
-    motif = Hexagon_Graphene(config, forcefield, 5 + i * 2.44)
-    next_layer = Crystal(motif, config, forcefield, [1, 1, 1])
+    motif = mg.molecules.Hexagon_Graphene(config, forcefield, 5 + i * 2.44)
+    next_layer = mg.Crystal(motif, config, forcefield, [1, 1, 1])
 
     next_layer.coords = next_layer.coords + np.array(
         (
@@ -59,8 +58,8 @@ for i in [
             j * config[forcefield]["layer_gap"],
         )
     )
-    Parameterise(next_layer, vdw_defs)
-    sim = Combine(sim, next_layer)
+    mg.Parameterise(next_layer, vdw_defs)
+    sim = mg.Combine(sim, next_layer)
 """
 for vector in [[4,10,10],[6,65,22],[15,40,10],[11,14,25],[10,70,10],[19,67,13]]:
     motif = Hexagon_Graphene(config,forcefield,8)
@@ -75,6 +74,6 @@ for vector in [[4,10,10],[6,65,22],[15,40,10],[11,14,25],[10,70,10],[19,67,13]]:
 
 
 name = "graphene"
-output = Writer(sim, name)
+output = mg.Writer(sim, name)
 output.write_xyz(name + ".xyz")
 output.write_lammps(name + ".data")

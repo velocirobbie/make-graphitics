@@ -1,19 +1,17 @@
 import yaml
-from scripts.molecules import *
-from scripts import *
-import numpy as np
+import makegraphitics as mg
 
 config = yaml.load(open("config.yaml"))
 forcefield = "OPLS"
 
 R = 40
-motif = Hexagon_Graphene(config, forcefield, R)
-flake = Crystal(motif, config, forcefield, [1, 1, 1])
+motif = mg.molecules.Hexagon_Graphene(config, forcefield, R)
+flake = mg.Crystal(motif, config, forcefield, [1, 1, 1])
 vdw_defs = {1: 90, 2: 91}
 
-Parameterise(flake, vdw_defs)
+mg.Parameterise(flake, vdw_defs)
 
 name = "graphene"
-output = Writer(flake, name)
+output = mg.Writer(flake, name)
 output.write_xyz(name + ".xyz")
 output.write_lammps(name + ".data")

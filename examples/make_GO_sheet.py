@@ -1,9 +1,6 @@
 import yaml
-from scripts.molecules import *
-from scripts import *
-import numpy as np
-import json
 from math import pi, cos
+import makegraphitics as mg
 
 config = yaml.load(open("config.yaml"))
 forcefield = "OPLS"
@@ -18,15 +15,16 @@ x_cells = int(x_length / unit_cell_x)
 y_cells = int(y_length / unit_cell_y)
 layout = [x_cells, y_cells, 1]  # make an array of unit cells with this dimension
 
-motif = Graphene(config, forcefield)
-sheet = Crystal(motif, config, forcefield, layout)
+motif = mg.molecules.Graphene(config, forcefield)
+sheet = mg.Crystal(motif, config, forcefield, layout)
 
-oxidiser = Oxidiser(ratio=2.5, video_xyz=20, new_island_freq=1e14, method="rf")
+oxidiser = mg.reactors.Oxidiser(ratio=2.5, video_xyz=20,
+                                new_island_freq=1e14, method="rf")
 sheet = oxidiser.react(sheet)
 
-Parameterise(sheet, sheet.vdw_defs)
+mg.Parameterise(sheet, sheet.vdw_defs)
 
 name = "GO_sheet"
-output = Writer(sheet, name)
+output = mg.Writer(sheet, name)
 output.write_xyz(name + ".xyz")
 output.write_lammps(name + ".data")

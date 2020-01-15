@@ -1,18 +1,17 @@
 import yaml
-from scripts.molecules import *
-from scripts import *
 import numpy as np
+import makegraphitics as mg
 
 forcefield = "GraFF_5"
 
 config = yaml.load(open("config.yaml"))
 
-graphite = Graphite(config, forcefield)
-bulk = Crystal(graphite, config, forcefield, [122, 71, 2])
+graphite = mg.molecules.Graphite(config, forcefield)
+bulk = mg.Crystal(graphite, config, forcefield, [122, 71, 2])
 
 
-molecule1 = Hexagon_Graphene(config, forcefield, 50)
-flake1 = Crystal(molecule1, config, forcefield, [1, 1, 1])
+molecule1 = mg.molecules.Hexagon_Graphene(config, forcefield, 50)
+flake1 = mg.Crystal(molecule1, config, forcefield, [1, 1, 1])
 # make flake carbons different to bulk
 # for atom in range(molecule.natoms):
 #    if flake.atom_labels[atom] == 1:
@@ -28,10 +27,10 @@ flake1.coords = flake1.coords + np.array(
 bulk.coords = bulk.coords + np.array((0, 0, 3.7))
 
 
-sim = Combine(bulk, flake1)
+sim = mg.Combine(bulk, flake1)
 sim.box_dimensions[2] = 30
 # output = Shifter(sim,'lammps')
 # output.rotate(180,1)
-output = Writer(sim, "flake on graphite")
+output = mg.Writer(sim, "flake on graphite")
 output.write_xyz("graphene.xyz")
 output.write_lammps("data.flake")
