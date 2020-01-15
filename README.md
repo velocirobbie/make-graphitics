@@ -20,13 +20,18 @@ Automatically parameterise by forcefields:
 
 ## Install
 
-Clone this repository. Install using Python2.7. A conda environment is provided (not required). Run the tests to check the installation has worked.
+Clone this repository. Install using Python2.7. Run the tests to check the installation has worked.
 ```
 git clone https://github.com/velocirobbie/make-graphitics
 cd make-graphitics
-pip install -r requirements.txt #(conda install requirements.txt)
-python setup.py install 
+python setup.py install
 pytest
+```
+
+A conda environment is provided if you do not have the right packages. If you have conda set up, execute these commands to create a working python environment before the install setp.
+```
+conda env create --file graphene-env.yml
+conda activate graphene
 ```
 
 ## Examples
