@@ -1,6 +1,7 @@
 import yaml
 import os
 
+
 class Molecule(object):
     """A molecule or motif to be projected onto lattice points
        Structure and bonding is defined within a derivative of this class"""

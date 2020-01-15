@@ -5,8 +5,9 @@ vdw_defs = {1: 90, 2: 91}
 R = 15
 GO_separation = 10  # approx 1 nm in experiment (with water!)
 
-oxidiser = mg.reactors.Oxidiser(ratio=2.5, video_xyz=20,
-                                new_island_freq=1e14, method="rf")
+oxidiser = mg.reactors.Oxidiser(
+    ratio=2.5, video_xyz=20, new_island_freq=1e14, method="rf"
+)
 
 for i in range(3):
     motif = mg.molecules.Hexagon_Graphene(R)

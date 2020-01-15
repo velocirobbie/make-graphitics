@@ -18,8 +18,9 @@ layout = [x_cells, y_cells, 1]  # make an array of unit cells with this dimensio
 motif = mg.molecules.Graphene(forcefield=forcefield)
 sheet = mg.Crystal(motif, layout)
 
-oxidiser = mg.reactors.Oxidiser(ratio=2.5, video_xyz=20,
-                                new_island_freq=1e14, method="rf")
+oxidiser = mg.reactors.Oxidiser(
+    ratio=2.5, video_xyz=20, new_island_freq=1e14, method="rf"
+)
 sheet = oxidiser.react(sheet)
 
 mg.Parameterise(sheet, sheet.vdw_defs)

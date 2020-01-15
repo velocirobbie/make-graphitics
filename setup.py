@@ -8,5 +8,5 @@ setup(
     url="https://github.com/velocirobbie/make-graphitics",
     author="Robert C Sinclair",
     packages=find_packages(),
-    include_package_data=True
+    include_package_data=True,
 )

@@ -339,7 +339,7 @@ class Parameterise(object):
 
     def retrieve_ff_data(self, forcefield):
         if forcefield == "OPLS":
-            paramfile = os.path.dirname(__file__) +"/params/oplsaa.prm"
+            paramfile = os.path.dirname(__file__) + "/params/oplsaa.prm"
             data = OPLS_Reader(paramfile)
         elif forcefield == "ReaxFF":
             # paramters can be found https://github.com/lammps/lammps/tree/master/potentials

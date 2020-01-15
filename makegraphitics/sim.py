@@ -59,4 +59,3 @@ class Sim(object):
     def crystal_params(self):
         path = os.path.dirname(__file__) + "/params/"
         return yaml.load(open(path + "config.yaml"), Loader=yaml.FullLoader)
-

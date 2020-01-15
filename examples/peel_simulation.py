@@ -3,7 +3,7 @@ import numpy as np
 import math
 import makegraphitics as mg
 
-config = yaml.load(open("config.yaml"),  Loader=yaml.FullLoader)
+config = yaml.load(open("config.yaml"), Loader=yaml.FullLoader)
 forcefield = "GraFF_5"
 graphite = mg.molecules.Graphite()
 bulk = mg.Crystal(graphite, [21, 12, 1])

@@ -2,7 +2,7 @@ import yaml
 from math import cos, pi
 import makegraphitics as mg
 
-config = yaml.load(open("config.yaml"),  Loader=yaml.FullLoader)
+config = yaml.load(open("config.yaml"), Loader=yaml.FullLoader)
 forcefield = "OPLS"
 
 x_length = 20

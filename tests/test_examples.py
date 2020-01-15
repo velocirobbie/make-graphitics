@@ -9,7 +9,7 @@ def test_examples():
     example_files = [f for f in example_files if f[-3:] == ".py"]
 
     for example in example_files:
-        return_code = subprocess.call(['python', path+example])
+        return_code = subprocess.call(["python", path + example])
         assert not return_code
 
 

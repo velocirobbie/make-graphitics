@@ -31,9 +31,11 @@ class Oxidiser(Reactor):
         assert type(new_island_freq) in [int, float]
         self.new_island_freq = new_island_freq
 
-        assert ((n_partitions is None) or  # default, will estimate a good partition
-                (n_partitions is False) or  # no partitioning
-                (type(n_partitions) == int and n_partitions > 0))  # specify
+        assert (
+            (n_partitions is None)
+            or (n_partitions is False)  # default, will estimate a good partition
+            or (type(n_partitions) == int and n_partitions > 0)  # no partitioning
+        )  # specify
         self.n_partitions = n_partitions
 
         assert video_xyz == False or (type(video_xyz) == int and video_xyz > 0)
@@ -121,8 +123,8 @@ class Oxidiser(Reactor):
         partition_size = int(NCCbonds / n_partitions)
         partitions = np.empty((n_partitions, 2), dtype=int)
         for i in range(n_partitions):
-            partitions[i, 0] = i*partition_size
-            partitions[i, 1] = (i+1)*partition_size
+            partitions[i, 0] = i * partition_size
+            partitions[i, 1] = (i + 1) * partition_size
         # in case NCCBonds is not evenly divisible,
         # include remainder in the last partition
         partitions[-1][1] = NCCbonds
@@ -415,10 +417,12 @@ class Oxidiser(Reactor):
         totals_above = np.zeros(self.n_partitions)
         totals_below = np.zeros(self.n_partitions)
         for i in xrange(self.n_partitions):
-            totals_above[i] = np.sum(reactivity_above[self.partitions[i][0]:
-                                                      self.partitions[i][1]])
-            totals_below[i] = np.sum(reactivity_below[self.partitions[i][0]:
-                                                      self.partitions[i][1]])
+            totals_above[i] = np.sum(
+                reactivity_above[self.partitions[i][0] : self.partitions[i][1]]
+            )
+            totals_below[i] = np.sum(
+                reactivity_below[self.partitions[i][0] : self.partitions[i][1]]
+            )
 
         total_above = np.sum(totals_above)
         total_below = np.sum(totals_below)
