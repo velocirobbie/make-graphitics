@@ -1,4 +1,4 @@
-name: graphene-blah
+name: graphene
 channels:
   - anaconda
   - defaults
