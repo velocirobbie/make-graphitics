@@ -7,6 +7,8 @@ class Rectangle_Graphene(Molecule):
     def __init__(self, config, forcefield, x_length, y_length):
         # zigzag edges run along the x axis
         # armchair edges run along the y axis
+        config = self.crystal_params()
+
         self.CC = config[forcefield]["CC"]
         self.CH = config[forcefield]["CH"]
         self.layer_gap = config[forcefield]["layer_gap"]

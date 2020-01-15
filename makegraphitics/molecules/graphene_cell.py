@@ -4,7 +4,9 @@ from base import Molecule
 
 
 class Graphene(Molecule):
-    def __init__(self, config, forcefield):
+    def __init__(self, forcefield="OPLS"):
+        config = self.crystal_params()
+
         self.CC = config[forcefield]["CC"]
         self.layer_gap = config[forcefield]["layer_gap"]
 
