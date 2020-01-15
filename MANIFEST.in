@@ -1,2 +1,2 @@
-import makegraphitics/params/oxidise.data
-import makegraphitics/params/oplsaa.prm
+include makegraphitics/params/oxidise.data
+include makegraphitics/params/oplsaa.prm
