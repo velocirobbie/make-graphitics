@@ -74,11 +74,11 @@ The Oxidiser takes a graphitic structure and attempts to oxidise it by the proce
 
 ## Notes on Parameterisation
 
-Not all the bonded interactions that can occur in graphene oxide are included in the OPLS parameterisation. We make some neccesary like for like atom-type substitutions to get around this problem. It is not ideal but common practice in molecular dynamics. The substitutions used are outputed after a parameterisation step. Each substitution line outputs the origional atom types, the atom types used to parameterise them, and a summary string that you can use to find in the script `scripts/params.py`. Substitutions keep atom types as close to the origional as possible e.g. replaces an aromatic C with an alkene C, whcih are both sp2 carbon atoms. 
+Not all the bonded interactions that can occur in graphene oxide are included in the OPLS parameterisation. We make some neccesary like for like atom-type substitutions to get around this problem. It is not ideal but common practice in molecular dynamics. The substitutions used are outputed after a parameterisation step. Each substitution line outputs the origional atom types, the atom types used to parameterise them, and a summary string that you can use to find in the script `makegraphitics/params.py`. Substitutions keep atom types as close to the origional as possible e.g. replaces an aromatic C with an alkene C, whcih are both sp2 carbon atoms. 
 
 ## More structure examples
 
-More examples of building structures with this script are in the `examples` directory. Files must be copied to the source directory and executed there.
+More examples of building structures with this script are in the `examples` directory.
 
 Note that differenct structures can be combined into one simulation object with `Combine`. Also coordinates can be manipulated before writing to a lammps file. An examploe of this is shown in `peel_sim.py`.
 
