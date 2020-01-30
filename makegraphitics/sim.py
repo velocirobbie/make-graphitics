@@ -56,6 +56,13 @@ class Sim(object):
     def bonded_to(self, centre):
         return list(self.bond_graph[centre])
 
+    def validate(self):
+        n_atoms = len(self.coords)
+        for attr in ["molecule_labels", "atom_charges", "atom_labels"]:
+            if hasattr(self, attr):
+                assert len(getattr(self, attr)) == n_atoms, attr
+        assert abs(np.sum(self.atom_charges)) < 0.01
+
     def crystal_params(self):
         path = os.path.dirname(__file__) + "/params/"
         return yaml.load(open(path + "config.yaml"), Loader=yaml.FullLoader)
