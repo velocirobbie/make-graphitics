@@ -1,9 +1,11 @@
 import os
+import numpy as np
 from opls_reader import OPLS_Reader
 
 
 class Parameterise(object):
-    def __init__(self, crystal, vdw_defs=None, forcefield="OPLS"):
+    def __init__(self, crystal, vdw_defs=None, forcefield="OPLS",
+                 assign_charge=False):
         # use vdw_defs of atoms to paramterise the bonded and nonbonded coefficients
         if not vdw_defs:
             try:
@@ -39,20 +41,30 @@ class Parameterise(object):
         crystal.pair_coeffs = self.match_pairs()
         crystal.masses = self.match_masses()
 
-    def match_charges(self):
+        if assign_charge:
+            crystal.atom_charges = self.match_charges(crystal.atom_labels)
+
+    def match_charges(self, atom_labels):
         charge_data = self.charge_data
-        charge_coeffs = {"a": [], "q": []}
+        charge_coeffs = {}
         for label in self.vdw_defs:
             found = 0
             for j in range(len(charge_data["a"])):
                 atom_data = charge_data["a"][j]
                 if self.vdw_defs[label] == atom_data:
                     found += 1
-                    charge_coeffs["a"] += [label]
-                    charge_coeffs["q"] += [charge_data["q"][j]]
+                    charge_coeffs[label] = charge_data["q"][j]
             if found != 1:
                 raise ValueError("WRONG", label, "\t found ", found, " entries")
-        return charge_coeffs
+
+
+        print charge_coeffs
+        print atom_labels
+        charges = np.empty(len(atom_labels))
+        print charges
+        for i, label in enumerate(atom_labels):
+            charges[i] = charge_coeffs[label]
+        return charges
 
     def match_masses(self):
         mass_data = self.mass_data
