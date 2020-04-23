@@ -57,11 +57,7 @@ class Parameterise(object):
             if found != 1:
                 raise ValueError("WRONG", label, "\t found ", found, " entries")
 
-
-        print charge_coeffs
-        print atom_labels
         charges = np.empty(len(atom_labels))
-        print charges
         for i, label in enumerate(atom_labels):
             charges[i] = charge_coeffs[label]
         return charges
