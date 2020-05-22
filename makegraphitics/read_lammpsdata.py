@@ -1,7 +1,8 @@
 import numpy as np
+from sim import Sim
 
 
-class ReadLammpsData(object):
+class ReadLammpsData(Sim):
     def __init__(self, filename):
         """ Given a lammps data file this script will read in all 
         the available data. 
