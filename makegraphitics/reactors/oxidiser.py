@@ -10,6 +10,7 @@ class Oxidiser(Reactor):
         surface_OHratio=0.5,  # Surface OH/epoxy fraction
         edge_OHratio=0.25,  # edge H:OH:carboxyl ratio
         edge_carboxyl_ratio=0.25,  # edge H:OH:carboxyl ratio
+        carboxyl_charged_ratio=0, # proportion of deprotonated carboxyls
         method="rf",  # which method to calculate a site's affinity
         # empirical / rf (random forest)
         new_island_freq=0,  # Freq s-1 attempt to add new island
@@ -48,10 +49,12 @@ class Oxidiser(Reactor):
         assert 0 <= surface_OHratio <= 1
         assert 0 <= edge_OHratio <= 1
         assert 0 <= edge_carboxyl_ratio <= 1
+        assert 0 <= carboxyl_charged_ratio <= 1
         assert edge_OHratio + edge_carboxyl_ratio <= 1
         self.surface_OHratio = surface_OHratio
         self.edge_OHratio = edge_OHratio
         self.edge_carboxyl_ratio = edge_carboxyl_ratio
+        self.carboxyl_charged_ratio = carboxyl_charged_ratio
 
     def react(self, sim):
         # check sim is suitible for oxidation reaction implemented here
@@ -109,6 +112,9 @@ class Oxidiser(Reactor):
             8: 209,  # Cc, Carboxylic carbon
             9: 210,  # Oc, Ketone oxygen
             10: 211,  # Oa, alcohol
+            12: 213, # C, carboxylate -COO
+            13: 214 # O, carboxylate -COO
+
         }  # OPLS definitions
 
     def set_partitions(self, n_partitions, NCCbonds):
@@ -133,6 +139,7 @@ class Oxidiser(Reactor):
     def oxidise_edges(self, sim):
         edge_OH = 0
         carboxyl = 0
+        charged_carboxyls = 0
         for i in range(len(sim.atom_labels)):
             if sim.atom_labels[i] == 2:
                 r = np.random.random()
@@ -141,13 +148,18 @@ class Oxidiser(Reactor):
                     self.Noxygens += 1
                     edge_OH += 1
                 elif r > 1 - self.edge_carboxyl_ratio:
-                    self.add_carboxyl(sim, i)
+                    r2 = np.random.random()
+                    if r2 > self.carboxyl_charged_ratio:
+                        self.add_carboxyl(sim, i)
+                    else:
+                        self.add_charged_carboxyl(sim, i)
+                        charged_carboxyls += 1
                     self.Noxygens += 2
                     self.Ncarbons += 1
                     carboxyl += 1
                 else:
                     pass  # leave as H
-        print "added ", edge_OH, " OH and ", carboxyl, " COOH at edges"
+        print "added ", edge_OH, " OH, ", carboxyl - charged_carboxyls, " COOH, and ", charged_carboxyls," COO- at edges"
         return edge_OH, carboxyl
 
     def oxidise(self, crystal):
@@ -501,6 +513,52 @@ class Oxidiser(Reactor):
 
         new_bond = np.array(([O_at + 1, H_at + 1]))
         crystal.bonds = np.vstack((crystal.bonds, new_bond))
+
+
+    def add_charged_carboxyl(self, crystal, H_at):
+        bonded_to = crystal.bonded_to(H_at)
+        C_at = bonded_to[0]
+        if len(bonded_to) != 1:
+            raise ValueError
+
+        C_coord = crystal.coords[C_at]
+        H_coord = crystal.coords[H_at]
+        CC = 1.4
+        CO = 1.4
+        angle = np.pi / 3
+        sangle = np.sin(angle) * CO
+        cangle = np.cos(angle) * CO
+        bond_vector = H_coord - C_coord
+        bond_vector = bond_vector / np.linalg.norm(bond_vector)
+
+        C1_coord = C_coord + bond_vector * CC
+        above = (-1) ** (np.random.randint(2))
+        O1_coord = C1_coord + bond_vector * cangle + np.array([0, 0, sangle * above])
+        O2_coord = O1_coord + np.array([0, 0, -2 * sangle * above])
+
+        molecule = crystal.molecule_labels[C_at]
+
+        C1_at = H_at
+        O1_at = len(crystal.atom_labels)
+        O2_at = O1_at + 1
+
+        crystal.atom_labels[C_at] = 11
+        crystal.atom_charges[C_at] = -0.100
+
+        crystal.coords[C1_at] = C1_coord
+        crystal.atom_labels[C1_at] = 12
+        crystal.atom_charges[C1_at] = 0.7
+        crystal.coords = np.vstack((crystal.coords, O1_coord))
+        crystal.coords = np.vstack((crystal.coords, O2_coord))
+        crystal.atom_labels += [13, 13]
+        crystal.atom_charges += [-0.8, -0.8]
+        crystal.molecule_labels += [molecule] * 2
+
+        new_bonds = np.array(
+            ([C1_at + 1, O1_at + 1], [C1_at + 1, O2_at + 1])
+        )
+        crystal.bonds = np.vstack((crystal.bonds, new_bonds))
+
 
     def add_carboxyl(self, crystal, H_at):
         bonded_to = crystal.bonded_to(H_at)

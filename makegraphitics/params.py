@@ -295,6 +295,16 @@ class Parameterise(object):
                     if found != 0:
                         print found, [a1, a2, a3, a4], atoms, "made phenol sub"
 
+            if found == 0:
+                if atoms == [47, 47, 3, 52] or atoms == [52, 3, 47, 47]:
+                    atoms = [48, 48, 3, 4]
+                    dihedral_coeffs, found = search_dihedrals(
+                        dihedral_data, atoms, dihedral_coeffs
+                    )
+                    if found != 0:
+                        print found, [a1, a2, a3, a4], atoms, "made carboxylate sub"
+
+
             if found != 1:
                 raise ValueError(
                     "Torsion", [a1, a2, a3, a4], "found ", found, " entries"
