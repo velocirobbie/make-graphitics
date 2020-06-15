@@ -76,6 +76,10 @@ class Writer(object):
                         atom_label = "N "
                     elif abs(mass - 16.0) < 0.5:
                         atom_label = "O "
+                    elif abs(mass - 22.9) < 0.5:
+                        atom_label = "Na "
+                    elif abs(mass - 40.1) < 0.5:
+                        atom_label ="Ca "
                     else:
                         atom_label = str(self.atom_labels[i]) + " "
                 else:
